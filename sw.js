@@ -28,7 +28,7 @@ const API_CACHE_PATTERNS = [
 
 const EXPECTED_CACHES = [CACHE_NAME];
 
-const API_BASE = 'https://script.google.com/macros/s/AKfycbwsbPqeRiqW2it0f1UpTNMRba_YQ5KO7wo2syRn_u7CvxM5oEyct6n9zq0lntfbRTm4/exec';
+const API_BASE = 'https://script.google.com/macros/s/AKfycbyG18AvucL_ckaUQr6V-nzBtwxi21TEOL_096iArq8RXC-Z6xAQotZwtFU7WiYOl8xG/exec';
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -217,3 +217,4 @@ async function syncPendingMessages() {
   console.log('[SW] Background sync triggered — attempting to send pending messages/announcements');
   // → Add IndexedDB queue + retry logic here in future if needed
 }
+
