@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Q&A Games · Riverside</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+ 
+  <link rel="manifest" href="./manifest.json">
+    <!-- iOS Safari home screen support -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Riverside Connect">
+<!-- Reuse your existing 192×192 icon for Apple devices -->
+<link rel="apple-touch-icon" sizes="180x180" href="maskable_icon_x192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="maskable_icon_x192.png">
+<link rel="apple-touch-icon" sizes="167x167" href="maskable_icon_x192.png">
+<!-- Fallback (also uses the same file) -->
+<link rel="apple-touch-icon" href="maskable_icon_x192.png">
+ 
+<!-- Open Graph / Social sharing preview -->
+<meta property="og:title" content="Riverside Connect ">
+<meta property="og:description" content="Join the conversation in Riverside Connect – a simple, real-time chat experience. Share thoughts, media & more.">
+<meta property="og:image" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/maskable_icon_x192.png">
+<meta property="og:url" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/">
+<meta property="og:type" content="website">
+<!-- Recommended extras (helps Twitter/X, WhatsApp, Discord, etc.) -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Riverside Connect ">
+<meta name="twitter:description" content="Join the conversation in Riverside Connect – a simple, real-time chat experience.">
+<meta name="twitter:image" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/maskable_icon_x192.png">
+<!-- Optional but useful -->
+<meta property="og:site_name" content="Riverside Connect">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Riverside Connect chat preview">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #e2e8f0;
+  min-height: 100dvh;
+  display: flex;
+  overflow: hidden; /* keep this */
+}
+html, body {
+  height: 100%;
+}
+    .sidebar {
+      width: 280px;
+      background: rgba(15,23,42,0.94);
+      backdrop-filter: blur(14px);
+      border-right: 1px solid rgba(96,165,250,0.18);
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding: 16px;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(96,165,250,0.2);
+      margin-bottom: 16px;
+    }
+    .back-btn {
+      color: #60a5fa;
+      font-size: 1.5rem;
+      text-decoration: none;
+      padding: 8px;
+      border-radius: 50%;
+    }
+    .sidebar h1 {
+      font-size: 1.4rem;
+      color: #60a5fa;
+      font-weight: 700;
+      flex: 1;
+    }
+    .channel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .channel-tab {
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      background: rgba(30,41,59,0.4);
+      transition: all 0.2s;
+    }
+    .channel-tab:hover, .channel-tab.active {
+      background: rgba(96,165,250,0.3);
+    }
+    .channel-tab.active { border-left: 4px solid #60a5fa; }
+    .channel-tab-name { font-weight: 600; font-size: 1.05rem; }
+    .channel-tab-desc { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+    .channel-header {
+      background: rgba(15,23,42,0.94);
+      backdrop-filter: blur(14px);
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(96,165,250,0.22);
+      flex-shrink: 0;
+    }
+    .channel-title {
+      font-size: 1.7rem;
+      color: #60a5fa;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .channel-meta { color: #94a3b8; font-size: 0.98rem; }
+   .feed-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+    .feed {
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .game {
+      background: rgba(30,41,59,0.88);
+      border-radius: 16px;
+      margin-bottom: 28px;
+      border: 1px solid rgba(96,165,250,0.15);
+      overflow: hidden;
+      width: 100%;
+    }
+    .game-header {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .game-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid rgba(96,165,250,0.45);
+    }
+    .game-author { font-weight: 700; font-size: 1.1rem; color: #60a5fa; }
+    .game-time { color: #94a3b8; font-size: 0.85rem; }
+    .game-content {
+      padding: 0 16px 16px;
+      line-height: 1.6;
+      font-size: 1.05rem;
+      white-space: pre-wrap;
+    }
+    .game-footer {
+      padding: 12px 16px;
+      display: flex;
+      gap: 24px;
+      border-top: 1px solid rgba(96,165,250,0.12);
+      color: #94a3b8;
+    }
+
+    .delete-btn:hover {
+  background: #dc2626 !important;
+  transform: scale(1.04);
+}
+.delete-btn:active {
+  transform: scale(0.97);
+}
+    .play-btn {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .play-btn:hover {
+      transform: scale(1.05);
+    }
+  /* Base style for both quiz and survey buttons */
+.leaderboard-btn {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);   /* default = quiz blue */
+  color: white;
+  border: none;
+  border-radius: 999px;               /* pill shape / fully rounded */
+  padding: 8px 18px;                  /* nice inner spacing */
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;                           /* space between icon and text */
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  white-space: nowrap;                /* prevents text wrapping */
+  min-width: 130px;                   /* prevents shrinking too much */
+  justify-content: center;
+  text-align: center;
+}
+
+/* Hover & active states */
+.leaderboard-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+.leaderboard-btn:active {
+  transform: scale(0.97);
+}
+
+/* Survey variant – different color */
+.leaderboard-btn.survey {
+  background: linear-gradient(135deg, #8b5cf6, #c084fc);   /* purple-ish for survey */
+}
+    .leaderboard-btn:hover { color: #60a5fa; }
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 8px 24px rgba(59,130,246,0.4);
+      cursor: pointer;
+      z-index: 1000;
+      transition: all 0.2s;
+    }
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 32px rgba(59,130,246,0.5);
+    }
+ .game-panel {
+  position: fixed;
+  inset: auto 0 0 0;
+  background: rgba(15,23,42,0.98);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(96,165,250,0.3);
+  padding: 24px 16px 60px;
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s ease-out;
+  z-index: 999;
+  max-height: 88vh;
+  overflow-y: auto;
+  display: none;                    /* default hidden */
+  box-shadow: 0 -8px 25px rgba(0,0,0,0.4);
+}
+
+.game-panel.active {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+  display: block !important;        /* force visible */
+}
+    .game-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .game-panel-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
+    .question-input {
+      width: 100%;
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(96,165,250,0.4);
+      color: white;
+      font-size: 1.05rem;
+      margin-bottom: 16px;
+    }
+    .choice-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .choice-input {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .choice-input input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(96,165,250,0.4);
+      color: white;
+    }
+    .correct-checkbox {
+      width: 20px;
+      height: 20px;
+    }
+    .add-choice-btn {
+      color: #60a5fa;
+      cursor: pointer;
+    }
+    .reason-input {
+      width: 100%;
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(96,165,250,0.4);
+      color: white;
+      font-size: 1.05rem;
+      min-height: 80px;
+      resize: vertical;
+      margin-bottom: 16px;
+    }
+    .timer-input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(96,165,250,0.4);
+      color: white;
+      margin-bottom: 16px;
+    }
+    .submit-game {
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .empty, .loading {
+      text-align: center;
+      padding: 140px 32px;
+      color: #94a3b8;
+      font-size: 1.2rem;
+    }
+    #toast-container {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      max-width: 90%;
+    }
+    .toast {
+      background: #1e293b;
+      padding: 14px 24px;
+      border-radius: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+      border-left: 5px solid #3b82f6;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideDown 0.35s ease;
+    }
+    .toast.error { border-left-color: #ef4444; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        max-height: 45dvh;
+        border-right: none;
+        border-bottom: 1px solid rgba(96,165,250,0.18);
+      }
+      .fab { bottom: 90px; right: 24px; }
+      .game-panel { padding: 20px; }
+    }
+   .feed-wrapper {
+  padding-left: 0;
+  padding-right: 0;
+}
+/* Custom thin beautiful scrollbar */
+.feed-wrapper::-webkit-scrollbar {
+  width: 5px;
+}
+.feed-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.feed-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(96, 165, 250, 0.5);
+  border-radius: 10px;
+}
+.feed-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
+}
+/* Extra bottom space so last game isn't hidden under FAB */
+.feed {
+  padding-bottom: 120px; /* ← increased safety margin */
+  min-height: 100%; /* helps when few games */
+}
+    .top-nav {
+      background: rgba(15,23,42,0.94);
+      backdrop-filter: blur(14px);
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(96,165,250,0.22);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      flex-shrink: 0;
+    }
+    .channels-btn {
+      background: rgba(96,165,250,0.2);
+      color: #60a5fa;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .channels-btn:hover {
+      background: rgba(96,165,250,0.4);
+    }
+    .page-title {
+      font-size: 1.3rem;
+      color: #60a5fa;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+    }
+    .channels-panel {
+      position: fixed;
+      top: 0;
+      left: -320px;
+      width: 300px;
+      height: 100%;
+      background: rgba(15,23,42,0.98);
+      backdrop-filter: blur(14px);
+      border-right: 1px solid rgba(96,165,250,0.3);
+      transition: left 0.35s ease;
+      z-index: 950;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .channels-panel.open {
+      left: 0;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(96,165,250,0.2);
+    }
+    .panel-header h2 {
+      margin: 0;
+      color: #60a5fa;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+    main.main {
+      width: 100%;
+    }
+    @media (max-width: 768px) {
+      .channels-panel {
+        width: 100%;
+        left: -100%;
+      }
+      .channels-panel.open {
+        left: 0;
+      }
+    }
+    .back-btn-top {
+      color: #60a5fa;
+      font-size: 1.4rem;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .back-btn-top:hover {
+      background: rgba(96,165,250,0.25);
+      transform: scale(1.1);
+    }
+    .page-title {
+      font-size: 1.3rem;
+      color: #60a5fa;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    @media (max-width: 480px) {
+      .top-nav {
+        padding: 10px 12px;
+        gap: 10px;
+      }
+      .back-btn-top {
+        padding: 6px 10px;
+        font-size: 1.3rem;
+      }
+      .channels-btn {
+        padding: 6px 12px;
+        font-size: 0.95rem;
+      }
+    }
+    .channel-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.25s ease;
+      z-index: 2000;
+    }
+    .channel-modal.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .channel-modal-content {
+      background: rgba(15,23,42,0.95);
+      padding: 28px;
+      width: 90%;
+      max-width: 420px;
+      border-radius: 18px;
+      border: 1px solid rgba(96,165,250,0.3);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .channel-modal-content h3 {
+      margin-bottom: 18px;
+      color: #60a5fa;
+    }
+    .channel-modal-content input,
+    .channel-modal-content textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(96,165,250,0.4);
+      background: rgba(255,255,255,0.06);
+      color: white;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+    }
+    .channel-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .cancel-btn {
+      background: transparent;
+      border: 1px solid #64748b;
+      color: #94a3b8;
+      padding: 8px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .create-btn {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      border: none;
+      color: white;
+      padding: 8px 22px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .game-play-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+    }
+    .game-play-modal.active {
+      display: flex;
+    }
+    .game-play-content {
+      background: rgba(30,41,59,0.96);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      position: relative;
+    }
+    .game-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.8rem;
+      cursor: pointer;
+    }
+    .timer-bar {
+      height: 4px;
+      background: #60a5fa;
+      transition: width 1s linear;
+      margin-bottom: 16px;
+    }
+/* Horizontal swipeable question cards container */
+#questionsContainer {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 24px;
+  padding: 20px 0 32px;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #60a5fa rgba(96,165,250,0.2);
+  -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
+}
+
+/* Custom scrollbar styling */
+#questionsContainer::-webkit-scrollbar {
+  height: 10px;
+}
+#questionsContainer::-webkit-scrollbar-track {
+  background: rgba(96,165,250,0.1);
+  border-radius: 10px;
+}
+#questionsContainer::-webkit-scrollbar-thumb {
+  background: #60a5fa;
+  border-radius: 10px;
+  border: 2px solid rgba(96,165,250,0.1);
+}
+
+/* Each question card - swipeable slide */
+.question-container {
+  flex: 0 0 360px;                /* fixed width - feels like a full slide */
+  min-width: 360px;
+  background: rgba(30,41,59,0.95);
+  border-radius: 20px;
+  border: 1px solid rgba(96,165,250,0.4);
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  scroll-snap-align: start;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hover / active feel when swiping or focusing */
+.question-container:hover,
+.question-container:focus-within {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(96,165,250,0.4);
+  border-color: #60a5fa;
+}
+
+/* Inputs & elements inside each card */
+.question-container .question-input,
+.question-container .reason-input,
+.question-container .timer-input {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.question-container .preview-area {
+  margin: 16px 0;
+  text-align: center;
+}
+
+.question-container .preview-area img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 12px;
+  border: 1px solid rgba(96,165,250,0.35);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  object-fit: contain;
+}
+
+.question-container .choice-container {
+  margin: 20px 0;
+  padding: 16px;
+  background: rgba(15,23,42,0.6);
+  border-radius: 12px;
+}
+
+/* Swipe hint arrows when there are multiple questions */
+#questionsContainer.has-many::before,
+#questionsContainer.has-many::after {
+  content: '';
+  position: sticky;
+  top: 50%;
+  width: 50px;
+  height: 50px;
+  background: rgba(96,165,250,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: white;
+  pointer-events: none;
+  z-index: 10;
+  transform: translateY(-50%);
+  backdrop-filter: blur(4px);
+}
+
+#questionsContainer.has-many::before {
+  left: 16px;
+  content: '←';
+}
+
+#questionsContainer.has-many::after {
+  right: 16px;
+  content: '→';
+}
+
+/* Hide arrows when only one question */
+#questionsContainer:not(.has-many)::before,
+#questionsContainer:not(.has-many)::after {
+  display: none;
+}
+
+/* Mobile - cards take almost full width */
+@media (max-width: 768px) {
+  .question-container {
+    flex: 0 0 90vw;
+    min-width: 90vw;
+  }
+}
+
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .choice-btn {
+      padding: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(96,165,250,0.4);
+      color: white;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .choice-btn:hover {
+      background: rgba(96,165,250,0.2);
+    }
+    .choice-btn.correct {
+      background: #10b981;
+      border-color: #34d399;
+    }
+    .choice-btn.incorrect {
+      background: #ef4444;
+      border-color: #f87171;
+    }
+    .reason {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 12px;
+      display: none;
+    }
+    .next-btn {
+      margin-top: 16px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      display: none;
+    }
+    .leaderboard-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+    }
+    .leaderboard-modal.active {
+      display: flex;
+    }
+    .leaderboard-content {
+      background: rgba(30,41,59,0.96);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid rgba(96,165,250,0.3);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    }
+    .leaderboard-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(96,165,250,0.25);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .leaderboard-header h3 {
+      margin: 0;
+      color: #60a5fa;
+    }
+    .leaderboard-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.8rem;
+      cursor: pointer;
+    }
+    .leaderboard-list {
+      padding: 12px 0;
+    }
+    .leader-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      transition: background 0.2s;
+    }
+    .leader-item:hover {
+      background: rgba(96,165,250,0.12);
+    }
+    .leader-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(96,165,250,0.4);
+    }
+    .leader-info {
+      flex: 1;
+    }
+    .leader-name {
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .leader-score {
+      font-size: 0.92rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .no-leaders {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    /* Game card image + text overlay - centered, compact & cool */
+.game-content {
+  position: relative;
+  text-align: center;
+  padding: 0;
+  background: rgba(30, 41, 59, 0.9);
+  border-radius: 0 0 16px 16px;
+}
+
+/* Image as full background-like cover */
+.game-content img {
+  width: 100%;
+  max-height: 220px;               /* ← compact height */
+  object-fit: cover;               /* crops nicely, fills space */
+  object-position: center;
+  border-radius: 12px 12px 0 0;
+  display: block;
+  margin: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+}
+
+/* Hover zoom on image */
+.game:hover .game-content img {
+  transform: scale(1.04);
+}
+
+/* Cool centered text overlay on image */
+.game-overlay-text {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 16px 16px;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, transparent 100%);
+  border-radius: 0 0 16px 16px;
+  color: white;
+  text-align: center;
+  z-index: 2;
+}
+
+.game-overlay-text h3 {
+  margin: 0 0 8px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #60a5fa;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+}
+
+.game-overlay-text p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #e2e8f0;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .game-content img {
+    max-height: 180px;
+  }
+  
+  .game-overlay-text {
+    padding: 16px 12px 12px;
+  }
+  
+  .game-overlay-text h3 {
+    font-size: 1.25rem;
+  }
+  
+  .game-overlay-text p {
+    font-size: 0.9rem;
+  }
+}
+
+.delete-confirm-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(30, 41, 59, 0.98);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 20px 70px rgba(0,0,0,0.6);
+  z-index: 10001;
+  width: 90%;
+  max-width: 380px;
+  padding: 24px;
+  color: #e2e8f0;
+  animation: fadeIn 0.3s ease;
+}
+
+.delete-confirm-toast strong {
+  color: #ef4444;
+}
+
+.delete-confirm-toast button:hover {
+  opacity: 0.9;
+  transform: scale(1.03);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+    
+  </style>
+</head>
+<body>
+<!-- Top Navigation Bar -->
+<nav class="top-nav">
+  <a href="index.html" class="back-btn-top" title="Back to main page">
+    <i class="fas fa-arrow-left"></i>
+  </a>
+  <button id="channelsToggle" class="channels-btn">
+    <i class="fas fa-layer-group"></i> Q&A Channels
+  </button>
+  <h1 class="page-title">Riverside Q&A</h1>
+</nav>
+<!-- Slide-in Channels Panel -->
+<div class="channels-panel" id="channelsPanel">
+  <div class="panel-header">
+    <h2>Q&A Channels</h2>
+    <button id="closeChannels" class="close-btn">×</button>
+  </div>
+  <div class="channel-list" id="channelList">
+    <div class="loading">Loading channels...</div>
+  </div>
+  <button id="createChannelBtn" style="display:none; width:100%; margin:16px 0; padding:12px; background:#60a5fa; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer;">
+    + New Q&A Channel
+  </button>
+</div>
+<main class="main">
+  <header class="channel-header" id="channelHeader" style="display:none;">
+    <h2 class="channel-title" id="channelTitle"></h2>
+    <div class="channel-meta" id="channelMeta"></div>
+  </header>
+  <div class="feed-wrapper">
+    <div class="feed" id="feed">
+      <div class="empty" id="emptyState">
+        <i class="fas fa-question-circle" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
+        No games yet<br>
+        <small>Click the + button to create one</small>
+      </div>
+    </div>
+  </div>
+</main>
+<!-- Floating + Button -->
+<div class="fab" id="fabGame" onclick="openGamePanel()" style="display:none;">
+  <i class="fas fa-plus"></i>
+</div>
+<!-- Game Creation Panel -->
+<div class="game-panel" id="gamePanel">
+  <div class="game-panel-header">
+    <h3>Create Q&A Game</h3>
+    <button class="game-panel-close" onclick="closeGamePanel()">×</button>
+  </div>
+  <input id="gameName" class="question-input" placeholder="Game Name">
+  <input id="gameDesc" class="question-input" placeholder="Description (optional)">
+  <input id="gameTimer" class="timer-input" type="number" placeholder="Timer in seconds (optional)">
+
+  <div style="margin: 16px 0; padding: 12px; background: rgba(96,165,250,0.12); border-radius: 12px;">
+  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Game Type</label>
+  <div style="display: flex; gap: 16px;">
+    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <input type="radio" name="gameMode" value="quiz" checked>
+      Quiz (timed, scored, leaderboard)
+    </label>
+    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <input type="radio" name="gameMode" value="survey">
+      Survey (opinion, results summary, no scoring)
+    </label>
+  </div>
+</div>
+
+  <div id="questionsContainer"></div>
+  <button onclick="addQuestion()" class="add-choice-btn"><i class="fas fa-plus"></i> Add Question</button>
+  <button class="submit-game" onclick="submitGame()">Create Game</button>
+</div>
+
+
+<!-- Create Q&A Channel Modal -->
+<div id="channelModal" class="channel-modal">
+  <div class="channel-modal-content">
+    <h3>Create New Q&A Channel</h3>
+    <div style="position:relative; width:110px; height:110px; margin:0 auto 20px;">
+      <img id="channelAvatarPreview"
+           src="https://via.placeholder.com/110?text=Icon"
+           style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid #60a5fa; box-shadow:0 4px 12px rgba(96,165,250,0.3);">
+      <label for="channelAvatarInput"
+             style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(59,130,246,0.7),rgba(96,165,250,0.7)); opacity:0; transition:opacity 0.25s; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:50%;">
+        <i class="fas fa-camera" style="font-size:2.2rem; color:white; opacity:0.9;"></i>
+      </label>
+      <input type="file" id="channelAvatarInput" accept="image/*" style="display:none;">
+    </div>
+    <input type="text" id="channelNameInput" placeholder="Q&A Channel name" />
+    <textarea id="channelDescInput" placeholder="Short description (optional)"></textarea>
+    <div class="channel-modal-actions">
+      <button class="cancel-btn" onclick="closeChannelModal()">Cancel</button>
+      <button class="create-btn" onclick="submitQnAChannel()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Leaderboard Modal -->
+<div id="leaderboardModal" class="leaderboard-modal">
+  <div class="leaderboard-content">
+    <div class="leaderboard-header">
+      <h3>Leaderboard</h3>
+      <button class="leaderboard-close" onclick="closeLeaderboardModal()">×</button>
+    </div>
+    <div class="leaderboard-list" id="leaderboardList"></div>
+  </div>
+</div>
+<div id="toast-container"></div>
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsUojWQz4SE_84AWazYtVQMAa5oFy5MdZnC2kursSNhVg6GJVmCY9wrlEyP1ZxrMWV/exec'; 
+let currentUserName = localStorage.getItem("userName") || "";
+let currentQnAChannelId = null;
+let allQnAChannels = [];
+let isUserApproved = false;
+if (!currentUserName) window.location.href = "index.html";
+const channelList = document.getElementById("channelList");
+const channelHeader = document.getElementById("channelHeader");
+const channelTitle = document.getElementById("channelTitle");
+const channelMeta = document.getElementById("channelMeta");
+const feed = document.getElementById("feed");
+const fabGame = document.getElementById("fabGame");
+const gamePanel = document.getElementById("gamePanel");
+const leaderboardModal = document.getElementById("leaderboardModal");
+let selectedChannelAvatar = null;
+let questions = [];
+let currentGame = null;
+let timerInterval = null;
+
+function getLh3Link(url) {
+  if (!url) return '';
+  const id = url.match(/[-\w]{25,}/)?.[0];
+  return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${msg}`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+async function checkCreateQnAChannelPermission() {
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getUserStatus&name=${encodeURIComponent(currentUserName)}`);
+    const data = await r.json();
+    if (data.status === "success") {
+      const canCreate = data.userStatus === "approved" && data.isAdmin === true;
+      isUserApproved = data.userStatus === "approved";
+      document.getElementById("createChannelBtn").style.display = canCreate ? "block" : "none";
+    }
+  } catch(e) {
+    console.error("Permission check failed", e);
+  }
+}
+
+document.getElementById("createChannelBtn").onclick = () => {
+  document.getElementById("channelModal").classList.add("active");
+};
+
+async function loadAllQnAChannels() {
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getAllQnAChannels`);
+    const resp = await r.json();
+    allQnAChannels = resp.channels || [];
+    channelList.innerHTML = allQnAChannels.length === 0
+      ? '<div class="empty" style="padding:32px;text-align:center;">No Q&A channels yet</div>'
+      : '';
+    allQnAChannels.forEach(ch => {
+      const tab = document.createElement("div");
+      tab.className = "channel-tab";
+      const avatarSrc = ch.picLink ? getLh3Link(ch.picLink) : 'https://via.placeholder.com/48?text=' + ch.name.charAt(0).toUpperCase();
+      tab.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="${avatarSrc}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4); flex-shrink:0;" onerror="this.src='https://via.placeholder.com/48?text=@'">
+          <div>
+            <div class="channel-tab-name">${ch.name}</div>
+            <div class="channel-tab-desc">${ch.description || "No description"}</div>
+          </div>
+        </div>
+      `;
+      tab.onclick = () => openQnAChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
+      channelList.appendChild(tab);
+    });
+    let channelToOpen = null;
+    const lastId = localStorage.getItem("lastQnAChannelId");
+    if (lastId) {
+      channelToOpen = allQnAChannels.find(ch => ch.id === lastId);
+    }
+    if (!channelToOpen && allQnAChannels.length > 0) {
+      channelToOpen = allQnAChannels[0];
+    }
+    if (channelToOpen) {
+      openQnAChannelTab(channelToOpen.id, channelToOpen.name, channelToOpen.description, channelToOpen.creator, channelToOpen.created, channelToOpen.picLink);
+    }
+  } catch (err) {
+    channelList.innerHTML = '<div class="empty">Failed to load Q&A channels</div>';
+  }
+}
+
+function closeChannelModal() {
+  document.getElementById("channelModal").classList.remove("active");
+  document.getElementById("channelNameInput").value = "";
+  document.getElementById("channelDescInput").value = "";
+  selectedChannelAvatar = null;
+  document.getElementById('channelAvatarPreview').src = "https://via.placeholder.com/110?text=Icon";
+}
+
+
+// ── New function: Show survey report in a modal ────────────────────────────────
+async function showSurveyReport(gameId) {
+  // Reuse the existing leaderboard modal styling (or create new if you prefer)
+  const modal = document.getElementById("leaderboardModal");
+  const list = document.getElementById("leaderboardList");
+  
+  // Change title
+  modal.querySelector('.leaderboard-header h3').textContent = "Survey Report";
+  
+  list.innerHTML = '<div class="no-leaders">Loading report...</div>';
+  modal.classList.add("active");
+
+  try {
+    // 1. Get survey summary statistics
+    const res = await fetch(`${SCRIPT_URL}?operation=getSurveyResults&gameId=${gameId}`);
+    const data = await res.json();
+
+    if (data.status !== "success" || !data.results?.length) {
+      list.innerHTML = '<div class="no-leaders">No responses yet</div>';
+      return;
+    }
+
+    // 2. Get list of participants
+    const partRes = await fetch(`${SCRIPT_URL}?operation=getSurveyParticipants&gameId=${gameId}`);
+    const partData = await partRes.json();
+    const participants = partData.participants || [];
+
+    let html = '<div style="padding: 0 16px 16px;">';
+
+    // Questions + response stats
+    data.results.forEach((q, idx) => {
+      html += `
+        <div style="margin: 24px 0; padding-bottom: 20px; ${idx < data.results.length-1 ? 'border-bottom: 1px solid rgba(96,165,250,0.18);' : ''}">
+          <div style="font-weight: 600; color: #60a5fa; margin-bottom: 8px;">
+            Q${idx+1}: ${q.questionText}
+          </div>
+          ${q.questionImage ? `<img src="${getLh3Link(q.questionImage)}" style="max-width:100%; border-radius:10px; margin:12px 0; display:block;">` : ''}
+          <div style="color: #94a3b8; margin-bottom: 16px; font-size: 0.95rem;">
+            Total responses: <strong style="color:#e2e8f0;">${q.totalResponses}</strong>
+          </div>
+      `;
+
+      q.choices.forEach(choice => {
+        const percent = Math.round(choice.percent || 0);
+        html += `
+          <div style="margin: 10px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 0.98rem;">
+              <span>${choice.text}</span>
+              <span style="color: #60a5fa; font-weight: 600;">${percent}% (${choice.count})</span>
+            </div>
+            <div style="height: 10px; background: rgba(255,255,255,0.08); border-radius: 5px; overflow: hidden;">
+              <div style="height: 100%; width: ${percent}%; background: #8b5cf6; transition: width 0.5s ease;"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+    });
+
+    // Participants section
+    html += `
+      <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(96,165,250,0.18);">
+        <div style="font-weight: 600; color: #60a5fa; margin-bottom: 16px;">
+          Participants (${participants.length})
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
+    `;
+
+    if (participants.length === 0) {
+      html += '<div style="color: #94a3b8; font-style: italic;">No participants yet</div>';
+    } else {
+      participants.forEach(p => {
+        const avatar = p.picLink ? getLh3Link(p.picLink) : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username)}&background=60a5fa&color=fff&size=128`;
+        html += `
+          <div style="text-align: center; min-width: 80px;">
+            <img src="${avatar}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #60a5fa;">
+            <div style="margin-top: 6px; font-size: 0.9rem;">${p.username}</div>
+          </div>
+        `;
+      });
+    }
+
+    html += '</div></div></div>';
+
+    list.innerHTML = html;
+
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = '<div class="no-leaders">Failed to load survey report</div>';
+  }
+}
+
+// Optional: override close function so it resets title when closing
+function closeLeaderboardModal() {
+  leaderboardModal.classList.remove("active");
+  // Reset title for next time
+  leaderboardModal.querySelector('.leaderboard-header h3').textContent = "Leaderboard";
+}
+
+async function submitQnAChannel() {
+  const name = document.getElementById("channelNameInput").value.trim();
+  const desc = document.getElementById("channelDescInput").value.trim();
+  if (!name) {
+    showToast("Q&A Channel name required", "error");
+    return;
+  }
+  const payload = {
+    operation: "createQnAChannel",
+    creator: currentUserName,
+    name,
+    description: desc
+  };
+  if (selectedChannelAvatar) {
+    payload.imageData = selectedChannelAvatar.base64;
+    payload.imageName = selectedChannelAvatar.name;
+  }
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      showToast("Q&A Channel created!", "success");
+      closeChannelModal();
+      loadAllQnAChannels();
+    } else {
+      showToast(data.message || "Failed to create Q&A channel", "error");
+    }
+  } catch (err) {
+    showToast("Network error – try again", "error");
+  }
+}
+
+document.getElementById('channelAvatarInput')?.addEventListener('change', function(e) {
+  const file = e.target.files?.[0];
+  if (!file || !file.type.startsWith('image/')) {
+    showToast("Please select an image file", "error");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    selectedChannelAvatar = {
+      base64: ev.target.result.split(',')[1],
+      name: file.name,
+      type: file.type
+    };
+    document.getElementById('channelAvatarPreview').src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+async function openQnAChannelTab(channelId, name, description, creator, created, picLink) {
+  if (!channelId) return;
+  localStorage.setItem("lastQnAChannelId", channelId);
+  currentQnAChannelId = channelId;
+  document.querySelectorAll('.channel-tab').forEach(el => el.classList.remove('active'));
+  const active = [...document.querySelectorAll('.channel-tab')].find(el =>
+    el.querySelector('.channel-tab-name')?.textContent === name
+  );
+  if (active) active.classList.add('active');
+  channelTitle.textContent = name;
+  channelMeta.textContent = `By ${creator} on ${new Date(created).toLocaleDateString()}`;
+  channelHeader.style.display = 'block';
+ // Show FAB only if current user is the creator of this channel
+// More reliable creator check (case-insensitive + trim)
+const normalizedCreator = (creator || '').trim().toLowerCase();
+const normalizedUser = (currentUserName || '').trim().toLowerCase();
+const isCreator = normalizedCreator === normalizedUser && normalizedUser !== '';
+
+fabGame.style.display = isCreator ? 'flex' : 'none';
+
+console.log('Creator check:', { 
+  currentUser: currentUserName, 
+  channelCreator: creator, 
+  isCreator 
+});  // ← debug – check this in console
+
+  await loadGames(channelId);
+}
+
+async function loadGames(channelId) {
+  feed.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading games...</div>';
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getQnAGames&channelId=${channelId}`);
+    const { games = [] } = await r.json();
+
+    feed.innerHTML = games.length === 0
+      ? `<div class="empty">
+           <i class="fas fa-gamepad" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
+           No games yet<br>
+           <small>Click the + button to create one</small>
+         </div>`
+      : '';
+
+    // For each game, fetch its first question image
+    for (const game of games) {
+      try {
+        const qRes = await fetch(`${SCRIPT_URL}?operation=getQnAQuestionsAndChoices&gameId=${game.id}`);
+        const qData = await qRes.json();
+        if (qData.status === "success" && qData.questions?.length > 0) {
+          game.firstQuestionImage = qData.questions[0].imageLink || '';
+        }
+      } catch (e) {
+        console.warn("Failed to fetch questions for game", game.id, e);
+      }
+    }
+
+games.forEach(game => {
+  const div = document.createElement("div");
+  div.className = "game";
+  div.dataset.gameId = game.id;
+
+  const imgSrc = game.firstQuestionImage ? getLh3Link(game.firstQuestionImage) : '';
+
+  div.innerHTML = `
+    <div class="game-header">
+      <img class="game-avatar" src="${getLh3Link(game.creatorPicLink) || 'https://via.placeholder.com/52?text=@'}" 
+           onerror="this.src='https://via.placeholder.com/52?text=@'">
+      <div>
+        <div class="game-author">${game.creator}</div>
+        <div class="game-time">${new Date(game.created).toLocaleString()}</div>
+      </div>
+    </div>
+    <div class="game-content">
+      ${imgSrc ? `
+        <img src="${imgSrc}"
+             onerror="this.src='https://via.placeholder.com/600x340?text=No+Image'; this.style.opacity='0.7';"
+             alt="First question image">
+      ` : ''}
+      <div class="game-overlay-text">
+        <h3>${game.name}</h3>
+        <p>${game.description || 'No description provided'}</p>
+      </div>
+    </div>
+    <div class="game-footer">
+      <button class="play-btn" onclick="window.location.href='play.html?gameId=${game.id}'">Play</button>
+     <button class="leaderboard-btn ${game.mode === 'survey' ? 'survey' : ''}"
+        onclick="${game.mode === 'survey' ? `showSurveyReport('${game.id}')` : `showLeaderboard('${game.id}')`}">
+  <i class="fas ${game.mode === 'survey' ? 'fa-chart-bar' : 'fa-trophy'}"></i>
+  ${game.mode === 'survey' ? 'Results' : 'Leaderboard'}
+</button>
+
+      <button class="delete-btn"
+              style="margin-left:auto; background:#ef4444aa; color:white; border:none; padding:8px 14px; border-radius:999px; font-weight:600; cursor:pointer; display:none;"
+              onclick="confirmDeleteGame('${game.id}', '${game.name.replace(/'/g,"\\'")}')">
+        <i class="fas fa-trash-alt"></i> Delete
+      </button>
+    </div>
+  `;
+
+  feed.appendChild(div);
+
+  // Show delete button only to the creator — same logic as FAB
+  const deleteBtn = div.querySelector('.delete-btn');
+  if (deleteBtn) {
+    const normalizedCreator = (game.creator || '').trim().toLowerCase();
+    const normalizedUser    = (currentUserName || '').trim().toLowerCase();
+    const isCreator = normalizedCreator === normalizedUser && normalizedUser !== '';
+    deleteBtn.style.display = isCreator ? 'inline-block' : 'none';
+  }
+});
+
+
+
+  } catch (err) {
+    feed.innerHTML = '<div class="empty">Failed to load games — check connection</div>';
+  }
+}
+function openGamePanel() {
+  console.log("openGamePanel called – should show setup panel now");
+
+  questions = [];
+  document.getElementById("gameName").value = "";
+  document.getElementById("gameDesc").value = "";
+  document.getElementById("gameTimer").value = "";
+  document.getElementById("questionsContainer").innerHTML = "";
+
+  addQuestion(); // creates initial question + 2 choices
+
+  gamePanel.classList.add('active');
+  gamePanel.style.display = 'block';
+  gamePanel.style.opacity = '1';
+  gamePanel.style.pointerEvents = 'auto';
+  gamePanel.style.transform = 'translateY(0)';
+  gamePanel.scrollTop = 0;
+
+  document.getElementById("gameName")?.focus();
+
+  // Important: apply correct visibility right after first question is added
+  setTimeout(updateGameModeUI, 50);   // small delay so DOM is ready
+
+  console.log("Panel should be visible at bottom – check screen");
+}
+function closeGamePanel() {
+  gamePanel.classList.remove('active');
+  gamePanel.style.display = 'none'; // safety
+  console.log("Panel closed");
+}
+
+// Auto-show/hide swipe arrows when number of questions changes
+function updateSwipeArrows() {
+  const container = document.getElementById("questionsContainer");
+  if (container.children.length > 1) {
+    container.classList.add("has-many");
+  } else {
+    container.classList.remove("has-many");
+  }
+}
+
+// Call after every new question is added
+// Add this line at the VERY END of your addQuestion() function:
+updateSwipeArrows();
+
+// Also call when opening the panel
+openGamePanel = (function(original) {
+  return function() {
+    original.apply(this, arguments);
+    setTimeout(updateSwipeArrows, 100);
+  };
+})(openGamePanel);
+
+// ── Live update UI when user changes Quiz ↔ Survey ─────────────────────────────
+function updateGameModeUI() {
+  const isSurvey = isSurveyMode();
+
+  // Update ALL existing reason inputs
+  document.querySelectorAll('.reason-input').forEach(el => {
+    el.style.display = isSurvey ? 'none' : 'block';
+    if (isSurvey) el.value = '';  // optional: clear reason when switching to survey
+  });
+
+  // Update ALL existing correct checkboxes
+  document.querySelectorAll('.correct-checkbox').forEach(el => {
+    el.style.display = isSurvey ? 'none' : 'inline-block';
+    if (isSurvey) {
+      el.checked = false;           // optional: uncheck when hiding
+      el.removeAttribute('title');
+    } else {
+      el.setAttribute('title', 'Correct answer');
+    }
+  });
+}
+
+// Attach listeners to both radio buttons
+document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
+  radio.addEventListener('change', updateGameModeUI);
+});
+
+function isSurveyMode() {
+  const surveyRadio = document.querySelector('input[name="gameMode"][value="survey"]');
+  return surveyRadio && surveyRadio.checked;
+}
+
+function addQuestion() {
+  const index = questions.length;
+  questions[index] = { choices: [] };
+
+  const container = document.createElement("div");
+  container.className = "question-container";
+  container.innerHTML = `
+    <input class="question-input" placeholder="Question ${index + 1}" data-index="${index}">
+    
+    <!-- Preview area for question image -->
+    <div class="preview-area" style="margin:12px 0; text-align:center;">
+      <img id="qPreview${index}" src="https://via.placeholder.com/300x180?text=Question+Image+Preview" 
+           style="max-width:100%; max-height:180px; border-radius:8px; display:none; border:1px solid #60a5fa;">
+    </div>
+    
+    <label class="media-btn" for="questionImage${index}"><i class="fas fa-image"></i> Add Image</label>
+    <input type="file" id="questionImage${index}" accept="image/*" style="display:none;">
+    
+    <div class="choice-container" data-index="${index}"></div>
+    <button onclick="addChoice(${index})" class="add-choice-btn"><i class="fas fa-plus"></i> Add Choice</button>
+    <textarea class="reason-input" placeholder="Reason for correct answer" data-index="${index}"></textarea>
+  `;
+  document.getElementById("questionsContainer").appendChild(container);
+
+  if (isSurveyMode()) {
+    const reasonInput = container.querySelector('.reason-input');
+    if (reasonInput) {
+      reasonInput.style.display = 'none';
+      reasonInput.value = '';           // optional – clear it so it doesn't get sent
+    }
+  }
+
+  // Add default choices
+  addChoice(index);
+  addChoice(index);
+
+  // Preview handler for question image
+  const fileInput = container.querySelector(`#questionImage${index}`);
+  const previewImg = container.querySelector(`#qPreview${index}`);
+
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const base64 = await fileToBase64(file);
+      questions[index].image = { base64: base64.split(',')[1], name: file.name, type: file.type };
+
+      // Show preview
+      previewImg.src = base64;
+      previewImg.style.display = 'block';
+    }
+  };
+}
+
+function addChoice(qIndex) {
+  const container = document.querySelector(`.choice-container[data-index="${qIndex}"]`);
+  const choiceIndex = questions[qIndex].choices.length;
+
+  const div = document.createElement("div");
+  div.className = "choice-input";
+  div.innerHTML = `
+    <input placeholder="Choice ${choiceIndex + 1}">
+    
+    <!-- Preview for this choice -->
+    <div style="margin:8px 0; text-align:center;">
+      <img id="cPreview${qIndex}_${choiceIndex}" src="https://via.placeholder.com/120?text=Choice+Preview" 
+           style="max-width:120px; max-height:80px; border-radius:6px; display:none; border:1px dashed #60a5fa;">
+    </div>
+    
+    <label class="media-btn" for="choiceImage${qIndex}_${choiceIndex}"><i class="fas fa-image"></i></label>
+    <input type="file" id="choiceImage${qIndex}_${choiceIndex}" accept="image/*" style="display:none;">
+    <input type="checkbox" class="correct-checkbox" title="Correct answer">
+  `;
+  container.appendChild(div);
+
+  // ── Hide correct checkbox when in survey mode ────────────────────────────────
+  if (isSurveyMode()) {
+    const checkbox = div.querySelector('.correct-checkbox');
+    if (checkbox) {
+      checkbox.style.display = 'none';
+      checkbox.removeAttribute('title');     // optional but recommended
+    }
+  }
+
+  questions[qIndex].choices.push({});
+
+  // Preview handler for choice image
+  const fileInput = div.querySelector(`#choiceImage${qIndex}_${choiceIndex}`);
+  const previewImg = div.querySelector(`#cPreview${qIndex}_${choiceIndex}`);
+
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const base64 = await fileToBase64(file);
+      questions[qIndex].choices[choiceIndex].image = { base64: base64.split(',')[1], name: file.name, type: file.type };
+
+      // Show preview
+      previewImg.src = base64;
+      previewImg.style.display = 'block';
+    }
+  };
+}
+async function submitGame() {
+  const name = document.getElementById("gameName").value.trim();
+  const desc = document.getElementById("gameDesc").value.trim();
+  const timer = document.getElementById("gameTimer").value.trim();
+
+  if (!name || !currentQnAChannelId) {
+    return showToast("Game name and channel required", "error");
+  }
+
+  // 1. Get mode FIRST
+  const mode = document.querySelector('input[name="gameMode"]:checked')?.value || 'quiz';
+
+  // 2. NOW safely create payload
+  const payload = {
+    operation: "createQnAGame",
+    channelId: currentQnAChannelId,
+    creator: currentUserName,
+    name,
+    description: desc,
+    timer,
+    mode,                    // ← included here
+    questions: []
+  };
+
+  // Build questions
+  document.querySelectorAll(".question-container").forEach((qCont, qIndex) => {
+    const text = qCont.querySelector(".question-input").value.trim();
+    if (!text) return; // skip empty
+
+    const question = {
+      text,
+      image: questions[qIndex]?.image || null,
+      choices: [],
+      correctIndex: -1,
+      reason: qCont.querySelector(".reason-input").value.trim()
+    };
+
+    qCont.querySelectorAll(".choice-input").forEach((cDiv, cIndex) => {
+      const choiceText = cDiv.querySelector("input[placeholder^='Choice']").value.trim();
+      if (!choiceText) return;
+
+      const isCorrect = cDiv.querySelector(".correct-checkbox").checked;
+
+      question.choices.push({
+        text: choiceText,
+        image: questions[qIndex]?.choices?.[cIndex]?.image || null
+      });
+
+      if (isCorrect) question.correctIndex = cIndex;
+    });
+
+    if (question.choices.length > 0) {
+      payload.questions.push(question);
+    }
+  });
+
+  // Validation
+  if (payload.questions.length === 0) {
+    return showToast("Add at least one question with choices", "error");
+  }
+
+  if (mode === 'quiz') {
+    const missingCorrect = payload.questions.some(q => q.correctIndex === -1);
+    if (missingCorrect) {
+      return showToast("Quiz mode requires each question to have at least one correct choice", "error");
+    }
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+      showToast(`Game created! (${mode === 'survey' ? 'Survey' : 'Quiz'})`, "success");
+      closeGamePanel();
+      loadGames(currentQnAChannelId);
+    } else {
+      showToast(data.message || "Failed to create game", "error");
+    }
+  } catch (err) {
+    console.error("Create game error:", err);
+    showToast("Network error – check connection", "error");
+  }
+}
+
+
+
+async function submitScore(gameId, score) {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "submitQnAScore",
+        gameId,
+        username: currentUserName,
+        score
+      })
+    });
+  } catch (err) {}
+}
+
+
+
+
+
+async function showLeaderboard(gameId) {
+  const list = document.getElementById("leaderboardList");
+  list.innerHTML = '<div class="no-leaders">Loading leaderboard...</div>';
+  leaderboardModal.classList.add("active");
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getQnALeaderboard&gameId=${gameId}`);
+    const data = await r.json();
+    if (data.status !== "success") {
+      list.innerHTML = '<div class="no-leaders">Could not load leaderboard</div>';
+      return;
+    }
+    const leaders = data.leaders || [];
+    if (leaders.length === 0) {
+      list.innerHTML = '<div class="no-leaders">No scores yet</div>';
+      return;
+    }
+    list.innerHTML = '';
+    leaders.forEach((l, index) => {
+      const item = document.createElement('div');
+      item.className = 'leader-item';
+      const avatarSrc = l.picLink ? getLh3Link(l.picLink) : 'https://via.placeholder.com/44?text=@';
+      item.innerHTML = `
+        <span style="font-size:1.2rem; color:${index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : '#cd7f32'};">${index + 1}</span>
+        <img class="leader-avatar" src="${avatarSrc}" onerror="this.src='https://via.placeholder.com/44?text=@'">
+        <div class="leader-info">
+          <div class="leader-name">${l.username}</div>
+          <div class="leader-score">Score: ${l.score}</div>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    list.innerHTML = '<div class="no-leaders">Error loading leaderboard</div>';
+  }
+}
+
+function closeLeaderboardModal() {
+  leaderboardModal.classList.remove("active");
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
+// ── Delete game functionality ────────────────────────────────────────
+
+function confirmDeleteGame(gameId, gameName) {
+  // Prevent multiple confirmations open at once
+  const existing = document.querySelector('.delete-confirm-toast');
+  if (existing) existing.remove();
+
+  // Create simple confirmation toast
+  const toast = document.createElement('div');
+  toast.className = 'delete-confirm-toast';
+  toast.innerHTML = `
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <i class="fas fa-exclamation-triangle" style="font-size:1.6rem; color:#fbbf24;"></i>
+      <strong style="font-size:1.2rem; color:#ef4444;">Delete "${gameName}"?</strong>
+    </div>
+    <p style="margin-bottom:20px; color:#cbd5e1; line-height:1.5;">
+      This will permanently delete the game, all questions, choices and scores.
+    </p>
+    <div style="display:flex; gap:12px; justify-content:flex-end;">
+      <button class="cancel-btn" style="padding:10px 20px; background:rgba(148,163,184,0.25); color:#cbd5e1; border:none; border-radius:999px; font-weight:600; cursor:pointer;">
+        Cancel
+      </button>
+      <button class="confirm-delete-btn" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#f87171); color:white; border:none; border-radius:999px; font-weight:600; cursor:pointer;">
+        Delete
+      </button>
+    </div>
+  `;
+
+  // Append to body (centered overlay style)
+  document.body.appendChild(toast);
+
+  // Cancel
+  toast.querySelector('.cancel-btn').onclick = () => {
+    toast.remove();
+    showToast("Cancelled", "info");
+  };
+
+  // Confirm → delete
+  toast.querySelector('.confirm-delete-btn').onclick = () => {
+    toast.remove();
+    showToast("Deleting…", "info");
+    performDelete(gameId, gameName);
+  };
+}
+
+async function performDelete(gameId, gameName) {
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "deleteQnAGame",
+        gameId: gameId,
+        username: currentUserName
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+  showToast(`"${gameName}" Game deleted`, "success");
+
+      const card = document.querySelector(`.game[data-game-id="${gameId}"]`);
+      if (card) card.remove();
+
+      if (!document.querySelector('.game')) {
+        feed.innerHTML = `
+          <div class="empty">
+            <i class="fas fa-gamepad" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
+            No games yet<br>
+            <small>Click the + button to create one</small>
+          </div>`;
+      }
+    } else {
+      showToast(data.message || "Failed to delete game", "error");
+    }
+  } catch (err) {
+    console.error("Delete failed:", err);
+    showToast("Network error — try again", "error");
+  }
+}
+
+
+window.addEventListener("load", async () => {
+  await checkCreateQnAChannelPermission();
+  await loadAllQnAChannels();
+});
+
+document.getElementById('channelsToggle')?.addEventListener('click', () => {
+  document.getElementById('channelsPanel').classList.add('open');
+});
+document.getElementById('closeChannels')?.addEventListener('click', () => {
+  document.getElementById('channelsPanel').classList.remove('open');
+});
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(reg => console.log('✅ SW registered in subfolder scope'))
+      .catch(err => console.error('❌ SW registration failed:', err));
+  }
+</script>
+</body>
+</html>

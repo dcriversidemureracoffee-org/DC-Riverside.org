@@ -1,0 +1,3591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Channels · Riverside</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  
+  <link rel="manifest" href="./manifest.json">
+
+
+    <!-- iOS Safari home screen support -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Riverside Connect">
+
+<!-- Reuse your existing 192×192 icon for Apple devices -->
+<link rel="apple-touch-icon" sizes="180x180" href="maskable_icon_x192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="maskable_icon_x192.png">
+<link rel="apple-touch-icon" sizes="167x167" href="maskable_icon_x192.png">
+<!-- Fallback (also uses the same file) -->
+<link rel="apple-touch-icon" href="maskable_icon_x192.png">
+  
+<!-- Open Graph / Social sharing preview -->
+<meta property="og:title" content="Riverside Connect ">
+<meta property="og:description" content="Join the conversation in Riverside Connect – a simple, real-time chat experience. Share thoughts, media & more.">
+<meta property="og:image" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/maskable_icon_x192.png">
+<meta property="og:url" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/">
+<meta property="og:type" content="website">
+
+<!-- Recommended extras (helps Twitter/X, WhatsApp, Discord, etc.) -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Riverside Connect ">
+<meta name="twitter:description" content="Join the conversation in Riverside Connect – a simple, real-time chat experience.">
+<meta name="twitter:image" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/maskable_icon_x192.png">
+
+<!-- Optional but useful -->
+<meta property="og:site_name" content="Riverside Connect">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Riverside Connect chat preview">
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #e2e8f0;
+  min-height: 100dvh;
+  display: flex;
+  overflow: hidden;   /* keep this */
+}
+
+html, body {
+  height: 100%;
+}
+
+
+    .sidebar {
+      width: 280px;
+      background: rgba(15,23,42,0.94);
+      backdrop-filter: blur(14px);
+      border-right: 1px solid rgba(96,165,250,0.18);
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding: 16px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(96,165,250,0.2);
+      margin-bottom: 16px;
+    }
+
+    .back-btn {
+      color: #60a5fa;
+      font-size: 1.5rem;
+      text-decoration: none;
+      padding: 8px;
+      border-radius: 50%;
+    }
+
+    .sidebar h1 {
+      font-size: 1.4rem;
+      color: #60a5fa;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .channel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .channel-tab {
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      background: rgba(30,41,59,0.4);
+      transition: all 0.2s;
+    }
+
+    .channel-tab:hover, .channel-tab.active {
+      background: rgba(96,165,250,0.3);
+    }
+
+    .channel-tab.active { border-left: 4px solid #60a5fa; }
+
+    .channel-tab-name { font-weight: 600; font-size: 1.05rem; }
+    .channel-tab-desc { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+    .channel-header {
+      background: rgba(15,23,42,0.94);
+      backdrop-filter: blur(14px);
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(96,165,250,0.22);
+      flex-shrink: 0;
+    }
+
+    .channel-title {
+      font-size: 1.7rem;
+      color: #60a5fa;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .channel-meta { color: #94a3b8; font-size: 0.98rem; }
+
+   .feed-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+
+    .feed {
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .post {
+      background: rgba(30,41,59,0.88);
+      border-radius: 16px;
+      margin-bottom: 28px;
+      border: 1px solid rgba(96,165,250,0.15);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .post-header {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .post-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid rgba(96,165,250,0.45);
+    }
+
+    .post-author { font-weight: 700; font-size: 1.1rem; color: #60a5fa; }
+    .post-time { color: #94a3b8; font-size: 0.85rem; }
+
+    .post-content {
+      padding: 0 16px 16px;
+      line-height: 1.6;
+      font-size: 1.05rem;
+      white-space: pre-wrap;
+    }
+
+    .post-media img, .post-media video {
+      width: 100%;
+      display: block;
+      max-height: 580px;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .post-footer {
+      padding: 12px 16px;
+      display: flex;
+      gap: 24px;
+      border-top: 1px solid rgba(96,165,250,0.12);
+      color: #94a3b8;
+    }
+
+    .post-like {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .post-like:hover { color: #ef4444; }
+
+   /* ── Make comments section swipeable vertically when many ── */
+.comment-section {
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(96,165,250,0.12);
+  max-height: 60vh;                    /* ← NEW: limit height so it doesn't push whole page */
+  overflow-y: auto;                    /* ← NEW: enable vertical scroll inside comments */
+  -webkit-overflow-scrolling: touch;   /* ← NEW: smooth momentum scrolling on iOS */
+  scrollbar-width: thin;               /* Firefox thin scrollbar */
+  scrollbar-color: #60a5fa #1e293b;
+}
+
+/* Custom scrollbar for comments (matches your feed style) */
+.comment-section::-webkit-scrollbar {
+  width: 5px;
+}
+.comment-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+.comment-section::-webkit-scrollbar-thumb {
+  background: rgba(96, 165, 250, 0.5);
+  border-radius: 10px;
+}
+.comment-section::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
+}
+
+/* Comments list inside — ensure it grows but stays scrollable */
+.comments-list {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;                            /* nicer spacing between bubbles */
+}
+
+/* Optional: make sure last message has space at bottom */
+.comments-list::after {
+  content: "";
+  height: 20px;                        /* breathing room at end of list */
+  flex-shrink: 0;
+}
+
+/* Make input area sticky at bottom of comment section */
+.comment-section .input-area {
+  position: sticky;
+  bottom: 0;
+  background: rgba(15,23,42,0.98);     /* match your panel bg */
+  padding: 12px 0;
+  z-index: 10;
+  border-top: 1px solid rgba(96,165,250,0.25);
+}
+
+/* Prevent input from being squished */
+.comment-section .input-wrapper {
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  padding: 4px;
+}
+    .comment {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .comment-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .comment-body {
+      background: rgba(255,255,255,0.06);
+      padding: 10px 14px;
+      border-radius: 16px;
+      flex: 1;
+    }
+
+    .comment-author { font-weight: 600; font-size: 0.95rem; }
+    .comment-text { margin-top: 4px; }
+
+    /* Floating + button */
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 8px 24px rgba(59,130,246,0.4);
+      cursor: pointer;
+      z-index: 1000;
+      transition: all 0.2s;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 32px rgba(59,130,246,0.5);
+    }
+
+    /* Posting panel (appears when + clicked) */
+    .post-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15,23,42,0.98);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(96,165,250,0.3);
+      padding: 24px;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      z-index: 999;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .post-panel.active {
+      transform: translateY(0);
+    }
+
+    .post-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .post-panel-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(96,165,250,0.4);
+      color: white;
+      font-size: 1.05rem;
+      min-height: 120px;
+      resize: vertical;
+      margin-bottom: 16px;
+    }
+
+    .media-preview {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      margin: 12px 0;
+      display: block;
+    }
+
+    .post-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .media-btn {
+      color: #60a5fa;
+      font-size: 1.8rem;
+      cursor: pointer;
+      padding: 12px;
+    }
+
+    .submit-post {
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .empty, .loading {
+      text-align: center;
+      padding: 140px 32px;
+      color: #94a3b8;
+      font-size: 1.2rem;
+    }
+
+    #toast-container {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      max-width: 90%;
+    }
+
+    .toast {
+      background: #1e293b;
+      padding: 14px 24px;
+      border-radius: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+      border-left: 5px solid #3b82f6;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideDown 0.35s ease;
+    }
+
+    .toast.error { border-left-color: #ef4444; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        max-height: 45dvh;
+        border-right: none;
+        border-bottom: 1px solid rgba(96,165,250,0.18);
+      }
+      .fab { bottom: 90px; right: 24px; }
+      .post-panel { padding: 20px; }
+    }
+
+   .feed-wrapper {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+
+/* Custom thin beautiful scrollbar */
+.feed-wrapper::-webkit-scrollbar {
+  width: 5px;
+}
+
+.feed-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.feed-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(96, 165, 250, 0.5);
+  border-radius: 10px;
+}
+
+.feed-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
+}
+
+/* Extra bottom space so last post isn't hidden under FAB */
+.feed {
+  padding-bottom: 120px;             /* ← increased safety margin */
+  min-height: 100%;                  /* helps when few posts */
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; }
+  20%, 80% { opacity: 0.8; }
+}
+
+/* Hide when user has scrolled down a bit */
+.feed-wrapper.scrolled-far::after {
+  opacity: 0;
+}
+
+.post-media {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #60a5fa #1e293b;
+}
+
+.post-media::-webkit-scrollbar {
+  height: 6px;
+}
+
+.post-media::-webkit-scrollbar-thumb {
+  background: #60a5fa;
+  border-radius: 3px;
+}
+
+/* ── Bubble comment style (copied & adapted from index.html) ── */
+.bubble-comments .message {
+  display: flex;
+  align-items: flex-start;
+  max-width: 82%;
+  gap: 10px;
+  margin-bottom: 14px;
+  animation: fadeIn 0.35s ease-out;
+}
+
+.bubble-comments .message.own {
+  margin-left: auto;
+  flex-direction: row-reverse;
+}
+
+.bubble-comments .avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #60a5fa33;
+  flex-shrink: 0;
+}
+
+.bubble-comments .message-content {
+  background: rgba(30,41,59,0.78);
+  backdrop-filter: blur(6px);
+  padding: 10px 14px;
+  border-radius: 18px;
+  border-top-left-radius: 4px;
+  position: relative;
+  max-width: calc(100% - 52px);
+}
+
+.bubble-comments .message.own .message-content {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: white;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 4px;
+}
+
+.bubble-comments .name {
+  font-weight: 600;
+  color: #60a5fa;
+  font-size: 0.92rem;
+  margin-bottom: 3px;
+}
+
+.bubble-comments .message.own .name {
+  color: white;
+  opacity: 0.95;
+}
+
+.bubble-comments .text {
+  word-break: break-word;
+  line-height: 1.38;
+  font-size: 0.96rem;
+}
+
+.bubble-comments .time {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 5px;
+  opacity: 0.85;
+  display: block;
+}
+
+.bubble-comments .message.own .time {
+  color: rgba(255,255,255,0.75);
+}
+
+/* Quoted reply inside comment */
+.bubble-comments .quoted-msg {
+  background: rgba(0,0,0,0.25);
+  border-left: 3px solid #60a5fa;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin: 6px 0 10px 0;
+  font-size: 0.86rem;
+  color: #cbd5e1;
+}
+
+.bubble-comments .message.own .quoted-msg {
+  background: rgba(255,255,255,0.12);
+  border-left-color: white;
+  color: #f1f5f9;
+}
+
+/* Media in comments */
+.bubble-comments .media-content {
+  margin: 8px 0 4px 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bubble-comments .media-content img,
+.bubble-comments .media-content video {
+  max-width: 100%;
+  max-height: 280px;
+  display: block;
+  border-radius: 10px;
+}
+
+/* Like button in post footer */
+.post-footer .post-like {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.post-footer .post-like.liked {
+  color: #f87171;
+}
+
+.post-footer .post-like:hover {
+  transform: scale(1.15);
+}
+
+/* Top Navigation */
+.top-nav {
+  background: rgba(15,23,42,0.94);
+  backdrop-filter: blur(14px);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(96,165,250,0.22);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  flex-shrink: 0;
+}
+
+.channels-btn {
+  background: rgba(96,165,250,0.2);
+  color: #60a5fa;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.channels-btn:hover {
+  background: rgba(96,165,250,0.4);
+}
+
+.page-title {
+  font-size: 1.3rem;
+  color: #60a5fa;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+/* Channels Panel (slide from left) */
+.channels-panel {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  height: 100%;
+  background: rgba(15,23,42,0.98);
+  backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(96,165,250,0.3);
+  transition: left 0.35s ease;
+  z-index: 950;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.channels-panel.open {
+  left: 0;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(96,165,250,0.2);
+}
+
+.panel-header h2 {
+  margin: 0;
+  color: #60a5fa;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+/* Make main content full width now */
+main.main {
+  width: 100%;
+}
+
+/* On small screens — channels panel becomes full width */
+@media (max-width: 768px) {
+  .channels-panel {
+    width: 100%;
+    left: -100%;
+  }
+  .channels-panel.open {
+    left: 0;
+  }
+}
+
+/* Back button in top nav */
+.back-btn-top {
+  color: #60a5fa;
+  font-size: 1.4rem;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.back-btn-top:hover {
+  background: rgba(96,165,250,0.25);
+  transform: scale(1.1);
+}
+
+/* Adjust top-nav layout to accommodate back button */
+.top-nav {
+  background: rgba(15,23,42,0.94);
+  backdrop-filter: blur(14px);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(96,165,250,0.22);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  flex-shrink: 0;
+}
+
+/* Make sure title takes available space but doesn't push things off */
+.page-title {
+  font-size: 1.3rem;
+  color: #60a5fa;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* On small screens, reduce padding/gaps if needed */
+@media (max-width: 480px) {
+  .top-nav {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .back-btn-top {
+    padding: 6px 10px;
+    font-size: 1.3rem;
+  }
+  .channels-btn {
+    padding: 6px 12px;
+    font-size: 0.95rem;
+  }
+}
+
+
+/* ── Comment toggle ─────────────────────────────────────── */
+.post-footer .comment-count {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+}
+
+.post-footer .comment-count:hover {
+  color: #60a5fa;
+}
+
+.post-footer .comment-count .icon {
+  margin-right: 6px;
+}
+
+.comment-section {
+  display: none;           /* hidden by default */
+  transition: all 0.25s ease;
+}
+
+.comment-section.open {
+  display: block;
+  animation: fadeIn 0.4s ease-out;
+}
+.post-header {
+  position: relative;           /* important for absolute positioning of delete btn */
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.delete-post-btn {
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.delete-post-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.delete-post-btn:active {
+  transform: scale(0.95);
+}
+
+.delete-post-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Visual feedback while deleting */
+.post.deleting {
+  opacity: 0.45;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+
+.post.deleting .post-content,
+.post.deleting .post-media {
+  filter: grayscale(40%);
+}
+/* Optional: small indicator when collapsed */
+.post-footer .comment-count::after {
+  content: "Show Comments";
+  font-size: 0.7rem;
+  margin-left: 4px;
+  opacity: 0.7;
+}
+
+.post-footer .comment-count.open::after {
+  content: "Hide Comments";
+}
+
+/* Channel Modal */
+.channel-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.25s ease;
+  z-index: 2000;
+}
+
+.channel-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.channel-modal-content {
+  background: rgba(15,23,42,0.95);
+  padding: 28px;
+  width: 90%;
+  max-width: 420px;
+  border-radius: 18px;
+  border: 1px solid rgba(96,165,250,0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.channel-modal-content h3 {
+  margin-bottom: 18px;
+  color: #60a5fa;
+}
+
+.channel-modal-content input,
+.channel-modal-content textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(96,165,250,0.4);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+}
+
+.channel-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: 1px solid #64748b;
+  color: #94a3b8;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.create-btn {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  border: none;
+  color: white;
+  padding: 8px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.message .delete-comment-btn {
+  background: none;
+  border: none;
+  color: #f87171;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.message:hover .delete-comment-btn,
+.message.own .delete-comment-btn {
+  opacity: 0.9;
+}
+
+.message .delete-comment-btn:hover {
+  opacity: 1;
+  transform: scale(1.15);
+  color: #ef4444;
+}
+
+/* Optional: make it even more subtle — only show on hover for own messages */
+.message:not(.own) .delete-comment-btn {
+  display: none;
+}
+
+.message.deleting {
+  opacity: 0.5;
+  transition: opacity 0.4s;
+}
+
+.delete-comment-btn:disabled {
+  cursor: not-allowed !important;
+}
+
+.toast.confirm-toast {
+  min-width: 400px;
+  text-align: left;
+}
+
+.toast.confirm-toast button:hover {
+  opacity: 0.9;
+  transform: scale(1.03);
+}
+
+.desc-container {
+  position: relative;
+}
+
+.desc-toggle-wrapper {
+  margin-top: 2px;
+}
+
+.desc-toggle {
+  color: #60a5fa;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.desc-toggle:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+.desc-short,
+.desc-full {
+  transition: all 0.4s ease;
+}
+.desc-scroll-area::-webkit-scrollbar {
+  width: 5px;
+}
+.desc-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.desc-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(96, 165, 250, 0.5);
+  border-radius: 10px;
+}
+.desc-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
+}
+
+.post-views {
+  color: #94a3b8;
+  cursor: pointer;           /* ← changed */
+  user-select: none;
+  transition: color 0.18s ease;
+}
+
+.post-views:hover {
+  color: #60a5fa;
+}
+
+.post-views i {
+  margin-right: 4px;
+}
+.post-views .view-count {
+  font-weight: 500;
+}
+
+/* Viewer modal / floating card */
+.viewers-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+.viewers-modal.active {
+  display: flex;
+}
+.viewers-content {
+  background: rgba(30,41,59,0.96);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid rgba(96,165,250,0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+}
+.viewers-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(96,165,250,0.25);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.viewers-header h3 {
+  margin: 0;
+  color: #60a5fa;
+}
+.viewers-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+.viewers-list {
+  padding: 12px 0;
+}
+.viewer-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  transition: background 0.2s;
+}
+.viewer-item:hover {
+  background: rgba(96,165,250,0.12);
+}
+.viewer-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(96,165,250,0.4);
+}
+.viewer-info {
+  flex: 1;
+}
+.viewer-name {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.viewer-time {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+.no-viewers {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+}
+
+/* ── Comment Reaction Styles (updated: hide zero counts, single reaction) ── */
+.comment-reactions {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  min-height: 20px; /* prevents layout shift */
+}
+
+.comment-reaction-toggle {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 50%;
+  opacity: 0.6;
+  transition: all 0.18s;
+}
+
+.message:hover .comment-reaction-toggle,
+.message.own:hover .comment-reaction-toggle {
+  opacity: 1;
+}
+
+.comment-reaction-toggle:hover {
+  color: #60a5fa;
+  background: rgba(96,165,250,0.15);
+}
+
+.comment-reaction-menu {
+  position: absolute;
+  background: #1e293b;
+  border: 1px solid rgba(96,165,250,0.3);
+  border-radius: 10px;
+  padding: 6px 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  display: none;
+  z-index: 2000;           /* raised so it floats above comments */
+  right: 0;
+  top: 50%;                /* centered vertically relative to toggle */
+  transform: translateY(-50%) translateX(10px);  /* slight offset right + vertical center */
+  margin: 0;               /* removed margin-top */
+}
+.comment-reaction-menu button {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: all 0.18s;
+}
+
+.comment-reaction-menu button:hover {
+  background: rgba(96,165,250,0.25);
+}
+
+.comment-reaction-menu button.active {
+  background: rgba(96,165,250,0.5);
+  transform: scale(1.15);
+}
+
+/* Hide counts if zero */
+.comment-reaction-counts span {
+  display: none;
+}
+
+.comment-reaction-counts span.has-count {
+  display: inline;
+  margin-right: 10px;
+  cursor: default;
+}
+
+.comment-reaction-counts .reaction-count {
+  font-weight: 500;
+  min-width: 16px;
+  display: inline-block;
+  text-align: center;
+  color: #cbd5e1;
+}
+
+
+/* ── Calendar Post Display ──────────────────────────────────────────────── */
+.calendar-container {
+  padding: 16px 0;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  margin: 12px 0;
+
+  /* ── The important parts for horizontal scrolling ── */
+  display: flex;                    /* ← changed from block */
+  flex-direction: row;              /* horizontal layout */
+  flex-wrap: nowrap;                /* prevent wrapping to new line */
+  overflow-x: auto;                 /* enable horizontal scroll */
+  gap: 24px;                        /* space between months */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #60a5fa #1e293b;
+  padding-bottom: 12px;             /* breathing room for scrollbar */
+}
+
+.calendar-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.calendar-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-container::-webkit-scrollbar-thumb {
+  background: #60a5fa;
+  border-radius: 3px;
+}
+
+/* Each month block */
+.month-calendar {
+  flex: 0 0 auto;                   /* don't grow/shrink, keep natural width */
+  min-width: 280px;                 /* minimum width per calendar */
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* Optional: make it look nicer on narrow screens */
+@media (max-width: 600px) {
+  .month-calendar {
+    min-width: 260px;               /* slightly smaller on mobile */
+  }
+}
+
+.month-calendar:last-child {
+  margin-right: 0;
+}
+
+.month-calendar h4 {
+  text-align: center;
+  color: #60a5fa;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.day-header {
+  font-weight: 600;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  padding: 8px 4px;
+}
+
+.calendar-grid > div:not(.day-header) {
+  padding: 10px 4px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  color: #e2e8f0;
+  cursor: default;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-grid .highlighted {
+  background: rgba(96, 165, 250, 0.25);
+  border: 2px solid #60a5fa;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.calendar-grid .highlighted:hover {
+  background: rgba(96, 165, 250, 0.45);
+  transform: scale(1.08);
+}
+
+/* ── Event Detail Modal ─────────────────────────────────────────────────── */
+#eventModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+}
+
+#eventModal.active {
+  display: flex;
+}
+
+.event-modal-content {
+  background: rgba(30,41,59,0.98);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 460px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid rgba(96,165,250,0.4);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  position: relative;
+}
+
+.event-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.event-modal-header h4 {
+  margin: 0;
+  color: #60a5fa;
+}
+
+.event-modal-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-item {
+  background: rgba(96,165,250,0.12);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border-left: 4px solid #60a5fa;
+  margin-bottom: 8px;
+}
+
+.event-item-title {
+  font-weight: 600;
+  color: #60a5fa;
+  margin-bottom: 2px;
+}
+
+.event-item-desc {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+  </style>
+</head>
+<body>
+
+<!-- Top Navigation Bar -->
+<nav class="top-nav">
+  <!-- Back Button -->
+  <a href="index.html" class="back-btn-top" title="Back to main page">
+    <i class="fas fa-arrow-left"></i>
+  </a>
+
+  <!-- Channels Toggle Button -->
+  <button id="channelsToggle" class="channels-btn">
+    <i class="fas fa-layer-group"></i> Channels
+  </button>
+
+  <!-- Page Title (centered or right-aligned depending on space) -->
+  <h1 class="page-title">Riverside Channels</h1>
+</nav>
+
+<!-- Slide-in Channels Panel (hidden by default) -->
+<div class="channels-panel" id="channelsPanel">
+  <div class="panel-header">
+    <h2>Channels</h2>
+    <button id="closeChannels" class="close-btn">×</button>
+  </div>
+  <div class="channel-list" id="channelList">
+    <div class="loading">Loading channels...</div>
+  </div>
+
+  <button id="createChannelBtn" style="display:none; width:100%; margin:16px 0; padding:12px; background:#60a5fa; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer;">
+    + New Channel
+  </button>
+</div>
+<main class="main">
+  <header class="channel-header" id="channelHeader" style="display:none;">
+    <h2 class="channel-title" id="channelTitle"></h2>
+    <div class="channel-meta" id="channelMeta"></div>
+  </header>
+
+  <div class="feed-wrapper">
+    <div class="feed" id="feed">
+      <div class="empty" id="emptyState">
+        <i class="fas fa-layer-group" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
+        No posts yet<br>
+        <small>Click the + button to share something</small>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Floating + Button -->
+<div class="fab" id="fabPost" onclick="openPostPanel()" style="display:none;">
+  <i class="fas fa-plus"></i>
+</div>
+
+<!-- Posting Panel -->
+<div class="post-panel" id="postPanel">
+  <div class="post-panel-header">
+    <h3>Create Post</h3>
+    <button class="post-panel-close" onclick="closePostPanel()">×</button>
+  </div>
+ <div id="mediaPreview" style="display:none;"></div>
+  <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+  
+ <div id="eventsContainer" style="display:none;"></div>
+
+
+  
+
+  <div class="post-actions">
+    <label class="media-btn" for="mediaInput">
+      <i class="fas fa-image"></i>
+    </label>
+   <label class="calendar-btn" id="calendarToggle" onclick="openEventModal()">
+  <i class="fas fa-calendar-alt"></i>
+</label>
+    <input type="file" id="mediaInput" accept="image/*,video/*" style="display:none;">
+
+    <button class="submit-post" onclick="submitPost()">Post</button>
+  </div>
+</div>
+<!-- Create Channel Modal -->
+<div id="channelModal" class="channel-modal">
+  <div class="channel-modal-content">
+    <h3>Create New Channel</h3>
+
+    <!-- ── Channel Avatar ─────────────────────────────── -->
+    <div style="position:relative; width:110px; height:110px; margin:0 auto 20px;">
+      <img id="channelAvatarPreview"
+           src="https://via.placeholder.com/110?text=Icon"
+           style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid #60a5fa; box-shadow:0 4px 12px rgba(96,165,250,0.3);">
+      <label for="channelAvatarInput"
+             style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(59,130,246,0.7),rgba(96,165,250,0.7)); opacity:0; transition:opacity 0.25s; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:50%;">
+        <i class="fas fa-camera" style="font-size:2.2rem; color:white; opacity:0.9;"></i>
+      </label>
+      <input type="file" id="channelAvatarInput" accept="image/*" style="display:none;">
+    </div>
+
+    <input type="text" id="channelNameInput" placeholder="Channel name" />
+    <textarea id="channelDescInput" placeholder="Short description (optional)"></textarea>
+
+    <div class="channel-modal-actions">
+      <button class="cancel-btn" onclick="closeChannelModal()">Cancel</button>
+      <button class="create-btn" onclick="submitChannel()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Channel Modal (completely separate) -->
+<div id="editChannelModal" class="channel-modal">
+  <div class="channel-modal-content">
+    <h3>Edit Channel</h3>
+
+    <!-- Channel Avatar -->
+    <div style="position:relative; width:110px; height:110px; margin:0 auto 20px;">
+      <img id="editChannelAvatarPreview"
+           src="https://via.placeholder.com/110?text=Icon"
+           style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid #60a5fa; box-shadow:0 4px 12px rgba(96,165,250,0.3);">
+      <label for="editChannelAvatarInput"
+             style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(59,130,246,0.7),rgba(96,165,250,0.7)); opacity:0; transition:opacity 0.25s; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:50%;">
+        <i class="fas fa-camera" style="font-size:2.2rem; color:white; opacity:0.9;"></i>
+      </label>
+      <input type="file" id="editChannelAvatarInput" accept="image/*" style="display:none;">
+    </div>
+
+    <input type="text" id="editChannelNameInput" placeholder="Channel name" />
+    <textarea id="editChannelDescInput" placeholder="Short description (optional)"></textarea>
+
+    <div class="channel-modal-actions">
+      <button class="cancel-btn" onclick="closeEditChannelModal()">Cancel</button>
+      <button class="create-btn" onclick="submitChannelEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Viewers Modal -->
+<div id="viewersModal" class="viewers-modal">
+  <div class="viewers-content">
+    <div class="viewers-header">
+      <h3>Post Viewers</h3>
+      <button class="viewers-close" onclick="closeViewersModal()">×</button>
+    </div>
+    <div class="viewers-list" id="viewersList"></div>
+  </div>
+</div>
+
+
+<!-- Event Detail Modal -->
+<div id="eventModal">
+  <div class="event-modal-content">
+    <div class="event-modal-header">
+      <h4 id="eventModalDate"></h4>
+      <button class="event-modal-close" onclick="document.getElementById('eventModal').classList.remove('active')">×</button>
+    </div>
+    <div class="event-list" id="eventList"></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsUojWQz4SE_84AWazYtVQMAa5oFy5MdZnC2kursSNhVg6GJVmCY9wrlEyP1ZxrMWV/exec';
+
+// Store events per post for quick lookup when clicking dates
+const postEventsMap = new Map(); // postId → array of events
+
+let currentUserName = localStorage.getItem("userName") || "";
+let currentChannelId = null;
+let allChannels      = [];
+let isUserApproved   = false;
+
+if (!currentUserName) window.location.href = "index.html";
+
+const channelList    = document.getElementById("channelList");
+const channelHeader  = document.getElementById("channelHeader");
+const channelTitle   = document.getElementById("channelTitle");
+const channelMeta    = document.getElementById("channelMeta");
+const feed           = document.getElementById("feed");
+const fabPost        = document.getElementById("fabPost");
+const postPanel      = document.getElementById("postPanel");
+const postContent    = document.getElementById("postContent");
+const mediaInput     = document.getElementById("mediaInput");
+const mediaPreview   = document.getElementById("mediaPreview");
+const createBtn      = document.getElementById("createChannelBtn");
+
+function getLh3Link(url) {
+  if (!url) return '';
+  const id = url.match(/[-\w]{25,}/)?.[0];
+  return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
+}
+function showToast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${msg}`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+async function checkCreateChannelPermission() {
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getUserStatus&name=${encodeURIComponent(currentUserName)}`);
+    const data = await r.json();
+
+    if (data.status === "success") {
+      const canCreate = data.userStatus === "approved" && data.isAdmin === true;
+      
+      isUserApproved = data.userStatus === "approved";  // keep for other logic if needed
+      createBtn.style.display = canCreate ? "block" : "none";
+      
+      // Optional: visual feedback
+      if (!canCreate && data.userStatus === "approved") {
+        createBtn.title = "Only admins can create new channels";
+        createBtn.style.opacity = "0.5";
+        createBtn.style.cursor = "not-allowed";
+      }
+    }
+  } catch(e) {
+    console.error("Permission check failed", e);
+    createBtn.style.display = "none";
+  }
+}
+
+createBtn.onclick = () => {
+  document.getElementById("channelModal").classList.add("active");
+};
+
+async function loadAllChannels() {
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getAllChannels`);
+    const resp = await r.json();
+    allChannels = resp.channels || [];
+
+    channelList.innerHTML = allChannels.length === 0
+      ? '<div class="empty" style="padding:32px;text-align:center;">No channels yet</div>'
+      : '';
+
+    allChannels.forEach(ch => {
+      const tab = document.createElement("div");
+      tab.className = "channel-tab";
+      
+      const avatarSrc = ch.picLink
+        ? getLh3Link(ch.picLink)
+        : 'https://via.placeholder.com/48?text=' + ch.name.charAt(0).toUpperCase();
+
+      tab.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="${avatarSrc}"
+               style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4); flex-shrink:0;"
+               onerror="this.src='https://via.placeholder.com/48?text=@'">
+          <div>
+            <div class="channel-tab-name">${ch.name}</div>
+            <div class="channel-tab-desc">${ch.description || "No description"}</div>
+          </div>
+        </div>
+      `;
+      
+      tab.onclick = () => openChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
+      channelList.appendChild(tab);
+    });
+
+    // ── Decide which channel to open automatically ───────────────────────────────
+    let channelToOpen = null;
+
+    const lastId = localStorage.getItem("lastChannelId");
+    if (lastId) {
+      channelToOpen = allChannels.find(ch => ch.id === lastId);
+    }
+
+    // If no last channel (or it was deleted) → use first one
+    if (!channelToOpen && allChannels.length > 0) {
+      channelToOpen = allChannels[0];
+    }
+
+    if (channelToOpen) {
+      openChannelTab(
+        channelToOpen.id,
+        channelToOpen.name,
+        channelToOpen.description,
+        channelToOpen.creator,
+        channelToOpen.created,
+        channelToOpen.picLink
+      );
+    }
+
+  } catch (err) {
+    channelList.innerHTML = '<div class="empty">Failed to load channels</div>';
+  }
+}
+function closeChannelModal() {
+  const modal = document.getElementById("channelModal");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+
+  // Clear inputs
+  document.getElementById("channelNameInput").value = "";
+  document.getElementById("channelDescInput").value = "";
+
+  // Reset avatar preview & data
+  selectedChannelAvatar = null;
+  document.getElementById('channelAvatarPreview').src = "https://via.placeholder.com/110?text=Icon";
+}
+async function submitChannel() {
+  const name = document.getElementById("channelNameInput").value.trim();
+  const desc = document.getElementById("channelDescInput").value.trim();
+
+  if (!name) {
+    showToast("Channel name required", "error");
+    return;
+  }
+
+  const payload = {
+    operation: "createChannel",
+    creator: currentUserName,
+    name,
+    description: desc
+  };
+
+  // Attach image if selected
+  if (selectedChannelAvatar) {
+    payload.imageData = selectedChannelAvatar.base64;
+    payload.imageName = selectedChannelAvatar.name;
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      showToast("Channel created!", "success");
+      closeChannelModal();
+      loadAllChannels();           // refresh list → will show new avatar
+    } else {
+      showToast(data.message || "Failed to create channel", "error");
+    }
+  } catch (err) {
+    showToast("Network error – try again", "error");
+  }
+}
+
+// ── Edit modal logic (separate state) ────────────────────────────────
+let selectedEditAvatar = null;
+let editingChannelId = null;
+
+// Avatar preview for edit modal
+document.getElementById('editChannelAvatarInput')?.addEventListener('change', e => {
+  const file = e.target.files?.[0];
+  if (!file || !file.type.startsWith('image/')) {
+    showToast("Please select an image", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    selectedEditAvatar = {
+      base64: ev.target.result.split(',')[1],
+      name: file.name,
+      type: file.type
+    };
+    document.getElementById('editChannelAvatarPreview').src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Open edit modal when creator clicks avatar
+function openEditChannelModal(channelId, name, description, picLink) {
+  editingChannelId = channelId;
+
+  document.getElementById('editChannelNameInput').value = name;
+  document.getElementById('editChannelDescInput').value = description || '';
+
+  const preview = document.getElementById('editChannelAvatarPreview');
+  preview.src = picLink ? getLh3Link(picLink) : `https://via.placeholder.com/110?text=${name.charAt(0).toUpperCase()}`;
+
+  selectedEditAvatar = null; // reset any previous upload
+
+  document.getElementById("editChannelModal").classList.add("active");
+}
+
+// Close edit modal
+function closeEditChannelModal() {
+  document.getElementById("editChannelModal").classList.remove("active");
+  document.getElementById('editChannelNameInput').value = "";
+  document.getElementById('editChannelDescInput').value = "";
+  selectedEditAvatar = null;
+  document.getElementById('editChannelAvatarPreview').src = "https://via.placeholder.com/110?text=Icon";
+  editingChannelId = null;
+}
+
+// Submit edit changes
+async function submitChannelEdit() {
+  if (!editingChannelId) return showToast("No channel selected", "error");
+
+  const name = document.getElementById("editChannelNameInput").value.trim();
+  const desc = document.getElementById("editChannelDescInput").value.trim();
+
+  if (!name) return showToast("Channel name required", "error");
+
+  const payload = {
+    operation: "editChannel",
+    channelId: editingChannelId,
+    user: currentUserName,
+    newName: name,
+    newDescription: desc
+  };
+
+  if (selectedEditAvatar) {
+    payload.imageData = selectedEditAvatar.base64;
+    payload.imageName = selectedEditAvatar.name;
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+      showToast("Channel updated!", "success");
+      closeEditChannelModal();
+      loadAllChannels();
+      // Refresh current view
+      const ch = allChannels.find(c => c.id === editingChannelId);
+      if (ch) openChannelTab(ch.id, name, desc, ch.creator, ch.created, data.picLink || ch.picLink);
+    } else {
+      showToast(data.message || "Update failed", "error");
+    }
+  } catch (err) {
+    showToast("Network error", "error");
+  }
+}
+
+// Channel creation avatar handling
+let selectedChannelAvatar = null;
+
+document.getElementById('channelAvatarInput')?.addEventListener('change', function(e) {
+  const file = e.target.files?.[0];
+  if (!file || !file.type.startsWith('image/')) {
+    showToast("Please select an image file", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    selectedChannelAvatar = {
+      base64: ev.target.result.split(',')[1],
+      name:   file.name,
+      type:   file.type
+    };
+
+    // Update preview
+    document.getElementById('channelAvatarPreview').src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Reset when modal closes
+function closeChannelModal() {
+  document.getElementById("channelModal").classList.remove("active");
+  document.getElementById("channelNameInput").value = "";
+  document.getElementById("channelDescInput").value = "";
+  
+  // Reset avatar
+  selectedChannelAvatar = null;
+  document.getElementById('channelAvatarPreview').src = "https://via.placeholder.com/110?text=Icon";
+}
+
+async function openChannelTab(channelId, name, description, creator, created, picLink) {
+  if (!channelId) return;
+
+  localStorage.setItem("lastChannelId", channelId);
+
+  currentChannelId = channelId;
+
+  document.querySelectorAll('.channel-tab').forEach(el => el.classList.remove('active'));
+  const active = [...document.querySelectorAll('.channel-tab')].find(el =>
+    el.querySelector('.channel-tab-name')?.textContent === name
+  );
+  if (active) active.classList.add('active');
+
+  const avatarSrc = picLink
+    ? getLh3Link(picLink)
+    : `https://via.placeholder.com/64?text=${name.charAt(0).toUpperCase()}`;
+
+  const isCreator = creator === currentUserName;
+
+  const descText = (description || "No description").trim();
+  const words = descText.split(/\s+/);
+  const shortDesc = words.slice(0, 3).join(" ") + (words.length > 3 ? "..." : "");
+  const needsToggle = words.length > 3;
+
+  const dateStr = new Date(created).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+  channelHeader.innerHTML = `
+    <div style="display: flex; align-items: flex-start; gap: 16px; padding: 8px 0;">
+      <div style="
+        position: relative;
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
+        cursor: ${isCreator ? 'pointer' : 'default'};
+      ">
+        <div style="
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          background: radial-gradient(circle at 30% 30%, #60a5fa, #3b82f6 60%, transparent 80%);
+          z-index: 1;
+          pointer-events: none;
+        "></div>
+        <img src="${avatarSrc}"
+             id="channelAvatarHeader"
+             style="
+               width: 100%; height: 100%;
+               border-radius: 50%;
+               object-fit: cover;
+               border: 3px solid rgba(15, 23, 42, 0.9);
+               box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35);
+               position: relative;
+               z-index: 2;
+             "
+             onerror="this.src='https://via.placeholder.com/64?text=@'"
+             alt="${name} icon">
+
+        ${isCreator ? `
+          <div id="avatarEditOverlay" style="
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.2s;
+            z-index: 3; pointer-events: none;
+          ">
+            <i class="fas fa-camera" style="font-size: 1.8rem; color: white;"></i>
+          </div>
+        ` : ''}
+      </div>
+
+      <div style="flex: 1; min-width: 0;">
+        <h2 class="channel-title" style="margin: 0 0 6px 0; font-size: 1.4rem;">${name}</h2>
+
+        <div class="channel-meta" style="line-height: 1.45;">
+          <div class="desc-line" style="display: flex; align-items: baseline; flex-wrap: nowrap; gap: 0.4em; overflow: hidden;">
+            <span class="desc-short" style="
+              color: #e2e8f0;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              transition: opacity 0.4s ease;
+            ">${shortDesc}</span>
+
+            ${needsToggle ? `
+              <span class="desc-toggle" style="
+                color: #60a5fa;
+                cursor: pointer;
+                font-size: 0.9rem;
+                white-space: nowrap;
+                flex-shrink: 0;
+                user-select: none;
+                transition: color 0.2s;
+              ">more</span>
+            ` : ''}
+
+            <span class="desc-creator-date" style="
+              color: #94a3b8;
+              font-size: 0.92rem;
+              white-space: nowrap;
+              flex-shrink: 0;
+              margin-left: auto;
+            ">
+              By ${creator} • ${dateStr}
+            </span>
+          </div>
+
+          <div class="desc-full-container" style="
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.55s ease, opacity 0.4s ease;
+          ">
+            <div class="desc-full" style="
+              color: #cbd5e1;
+              padding-top: 6px;
+              padding-bottom: 4px;
+            ">${descText}</div>
+
+            <div style="
+              color: #94a3b8;
+              font-size: 0.92rem;
+              padding-bottom: 4px;
+            ">
+              By ${creator} • ${dateStr}
+            </div>
+
+            ${needsToggle ? `
+              <span class="desc-toggle-less" style="
+                color: #f87171;
+                cursor: pointer;
+                font-size: 0.9rem;
+                display: block;
+                margin-top: 2px;
+                user-select: none;
+              ">less</span>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  channelHeader.style.display = 'block';
+
+  // Creator avatar edit handlers
+  if (isCreator) {
+    const avatarImg = document.getElementById('channelAvatarHeader');
+    const overlay = document.getElementById('avatarEditOverlay');
+    avatarImg.addEventListener('mouseenter', () => overlay && (overlay.style.opacity = '1'));
+    avatarImg.addEventListener('mouseleave', () => overlay && (overlay.style.opacity = '0'));
+    avatarImg.addEventListener('click', () => openEditChannelModal(channelId, name, description, picLink));
+  }
+
+  // Toggle logic
+  const toggleMore = channelHeader.querySelector('.desc-toggle');
+  const toggleLess = channelHeader.querySelector('.desc-toggle-less');
+  const shortLine = channelHeader.querySelector('.desc-line');
+  const fullContainer = channelHeader.querySelector('.desc-full-container');
+
+  if (toggleMore && needsToggle) {
+    const toggleClick = () => {
+      const isExpanded = fullContainer.style.maxHeight && fullContainer.style.maxHeight !== '0px';
+
+      if (!isExpanded) {
+        // Expand
+        fullContainer.style.maxHeight = `${fullContainer.scrollHeight}px`;
+        fullContainer.style.opacity = '1';
+        shortLine.style.opacity = '0';
+        shortLine.style.height = '0';
+        toggleMore.style.display = 'none';
+        if (toggleLess) toggleLess.style.display = 'inline';
+      } else {
+        // Collapse
+        fullContainer.style.maxHeight = '0';
+        fullContainer.style.opacity = '0';
+        shortLine.style.opacity = '1';
+        shortLine.style.height = 'auto';
+        toggleMore.style.display = 'inline';
+        if (toggleLess) toggleLess.style.display = 'none';
+      }
+    };
+
+    toggleMore.addEventListener('click', toggleClick);
+    if (toggleLess) toggleLess.addEventListener('click', toggleClick);
+  }
+
+    await checkChannelAuthorisation(channelId);
+  await loadPosts(channelId);
+
+  // ── Record view for all visible posts (once per user per post) ────────
+  async function recordViewsForCurrentChannel() {
+    if (!currentChannelId) return;
+
+    const postElements = document.querySelectorAll('.post');
+    const postIds = Array.from(postElements).map(el => el.dataset.postId).filter(Boolean);
+
+    if (postIds.length === 0) return;
+
+    try {
+      // Record view for each post (once per user)
+      for (const pid of postIds) {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            operation: "recordChannelPostView",
+            postId: pid,
+            username: currentUserName,
+            channelId: currentChannelId
+          })
+        });
+      }
+
+      // After recording, refresh the displayed counts
+      await updateAllPostViewCounts();
+    } catch (err) {
+      console.warn("Could not record views", err);
+    }
+  }
+
+  // Call it right after posts are loaded
+  await recordViewsForCurrentChannel();
+
+  // ── Helper: update all view counts on screen ───────────────────────────
+  async function updateAllPostViewCounts() {
+    const viewsElements = document.querySelectorAll('.post-views');
+
+    for (const el of viewsElements) {
+      const postId = el.dataset.postid;
+      if (!postId) continue;
+
+      try {
+        const r = await fetch(`${SCRIPT_URL}?operation=getChannelPostViewCount&postId=${encodeURIComponent(postId)}`);
+        const data = await r.json();
+        if (data.status === "success") {
+          el.querySelector('.view-count').textContent = data.count || 0;
+        }
+      } catch (err) {
+        el.querySelector('.view-count').textContent = "—";
+      }
+    }
+  }
+
+  startChannelPolling();
+}
+async function checkChannelAuthorisation(channelId) {
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=isAuthorised&username=${encodeURIComponent(currentUserName)}&channelId=${encodeURIComponent(channelId)}`);
+    const data = await r.json();
+
+    if (data.status === "success" && data.isAuthorised) {
+      fabPost.style.display = 'flex';
+    } else {
+      fabPost.style.display = 'none';
+    }
+  } catch (e) {
+    fabPost.style.display = 'none';
+  }
+}
+
+async function loadPosts(channelId) {
+  feed.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading posts...</div>';
+
+  try {
+   const r = await fetch(`${SCRIPT_URL}?operation=getChannelPosts&channelId=${channelId}&username=${encodeURIComponent(currentUserName)}`);
+    const { posts = [] } = await r.json();
+
+    feed.innerHTML = posts.length === 0
+      ? `<div class="empty">
+           <i class="far fa-comment-dots" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
+           No posts yet<br>
+           <small>Click the + button to be the first!</small>
+         </div>`
+      : '';
+
+    posts.forEach(post => {
+  const div = document.createElement("div");
+  div.className = "post";
+  div.dataset.postId = post.postId;
+  if (post.events?.length > 0) {
+  postEventsMap.set(post.postId, post.events);
+}
+  const avatarSrc = getLh3Link(post.picLink) || 'https://via.placeholder.com/52?text=@';
+  
+ 
+  let mediaHtml = '';
+if (post.media?.link) {
+  const mediaSrc = getMediaSrc(post.media.link, post.media.type);
+  if (post.media.type?.startsWith('image')) {
+    mediaHtml = `
+      <div class="post-media" style="overflow-x:auto; display:flex; gap:8px; padding:8px 0; scroll-snap-type:x mandatory;">
+        <img src="${mediaSrc}" loading="lazy" style="max-height:500px; border-radius:12px; scroll-snap-align:start;" onerror="this.src='https://via.placeholder.com/400?text=Image'">
+      </div>`;
+  } else {
+    mediaHtml = `
+      <div class="post-media" style="overflow-x:auto; display:flex; gap:8px; padding:8px 0;">
+        <iframe src="${mediaSrc}" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+      </div>`;
+  }
+}
+
+ const isOwnPost = post.author === currentUserName;
+
+div.innerHTML = `
+  <div class="post-header" style="position: relative;">
+    <img class="post-avatar" src="${avatarSrc}" onerror="this.src='https://via.placeholder.com/52?text=@'">
+    <div>
+      <div class="post-author">${post.author}</div>
+      <div class="post-time">${new Date(post.created).toLocaleString([], {
+        hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short'
+      })}</div>
+    </div>
+
+    ${isOwnPost ? `
+      <button class="delete-post-btn"
+              title="Delete this post"
+              onclick="deleteMyChannelPost('${post.postId}', event)"
+              style="
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                background: none;
+                border: none;
+                color: #f87171;
+                font-size: 1.3rem;
+                cursor: pointer;
+                opacity: 0.75;
+                transition: all 0.2s;
+                z-index: 5;
+              ">
+        <i class="far fa-trash-alt"></i>
+      </button>
+    ` : ''}
+
+  </div>
+  <div class="post-content">${post.content
+    .replace(/https?:\/\/[^ \n<>"']*(?:drive\.google\.com|view\?usp=|usp=sharing|usp=drive_link|drive_link)[^ \n<>"']*/gi, '')
+    .replace(/\?usp=[^ \n<>"']*/gi, '')
+    .replace(/drive_link/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+    .replace(/\n/g, '<br>')}
+  </div>
+  ${mediaHtml}
+
+  
+ ${post.events?.length > 0 ? (function() {
+  const byMonth = {};
+  post.events.forEach(ev => {
+    const [year, month] = ev.date.split('-');
+    const key = `${year}-${month}`;
+    if (!byMonth[key]) byMonth[key] = [];
+    byMonth[key].push(ev);
+  });
+
+  let calendarHtml = `<div class="calendar-container" data-post-id="${post.postId}">`;
+  Object.keys(byMonth).sort().forEach(key => {
+    const [year, month] = key.split('-');
+    const monthName = new Date(year, month-1).toLocaleString('default', { month: 'long', year: 'numeric' });
+    calendarHtml += `
+      <div class="month-calendar">
+        <h4>${monthName}</h4>
+        <div class="calendar-grid">
+          ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="day-header">${d}</div>`).join('')}
+          ${generateMonthGrid(year, month, byMonth[key])}
+        </div>
+      </div>`;
+  });
+  calendarHtml += '</div>';
+  return calendarHtml;
+})() : ''}
+
+  <div class="post-footer">
+    <span class="post-like ${post.likedByCurrentUser ? 'liked' : ''}">
+      <i class="${post.likedByCurrentUser ? 'fas' : 'far'} fa-heart"></i>
+      ${post.likes || 0}
+    </span>
+    <span class="comment-count" data-postid="${post.postId}">
+      <i class="far fa-comment icon"></i>
+      <span class="count">Loading...</span>
+    </span>
+    <span class="post-views" data-postid="${post.postId}">
+      views <span class="view-count">0</span>
+    </span>
+
+    </div>
+   <div class="comment-section bubble-comments" data-postid="${post.postId}">
+  <div class="comments-list" id="comments-${post.postId}"></div>
+
+  <div class="input-area" style="margin-top:16px; padding:12px; background:rgba(15,23,42,0.92); border-top:1px solid rgba(96,165,250,0.25);">
+    <div class="input-wrapper" style="display:flex; gap:10px; align-items:center;">
+      <input type="text" 
+             class="comment-input" 
+             id="comment-input-${post.postId}" 
+             placeholder="Write a comment..." 
+             style="flex:1; padding:12px 16px; border-radius:24px; background:rgba(255,255,255,0.08); border:none; color:white; font-size:15px;"
+      >
+      <button class="send-comment-btn" 
+              onclick="submitChannelComment('${post.postId}')"
+              style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#3b82f6,#60a5fa); color:white; border:none; font-size:1.1rem; cursor:pointer;">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+  `;
+  feed.appendChild(div);
+  // ── Attach toggle click ────────────────────────────────
+const countBtn = div.querySelector('.comment-count');
+if (countBtn) {
+  countBtn.onclick = () => toggleComments(post.postId);
+}
+
+// ── Load only the number of comments (fast) ─────────────
+const countSpan = countBtn?.querySelector('.count');
+if (countSpan) {
+  loadCommentCount(post.postId, countSpan);
+}
+
+// Attach like handler AFTER element exists
+  const likeBtn = div.querySelector('.post-like');
+  likeBtn.onclick = () => toggleLike(post.postId, likeBtn);
+
+  loadComments(post.postId, div.querySelector(".comments-list"));
+
+  const viewsElement = div.querySelector('.post-views');
+  if (viewsElement) {
+    viewsElement.onclick = () => openViewersModal(post.postId);
+  }
+});
+
+
+
+// ── ADD THIS BLOCK HERE ────────────────────────────────────────────────
+    const wrapper = document.querySelector('.feed-wrapper');
+    if (wrapper) {
+      // Go to top (newest posts usually appear at the top in feeds)
+      wrapper.scrollTop = 0;
+
+      // Alternative: if you prefer chat-like (oldest at top, scroll down to new)
+      // wrapper.scrollTop = wrapper.scrollHeight;
+
+      // Optional: small visual feedback
+      feed.classList.add('loaded');
+    }
+
+
+    // Ensure smooth vertical scroll
+    feed.scrollTop = feed.scrollHeight;
+  } catch (err) {
+    feed.innerHTML = '<div class="empty">Failed to load posts — check connection</div>';
+  }
+}
+
+function openViewersModal(postId) {
+  const modal = document.getElementById('viewersModal');
+  const list = document.getElementById('viewersList');
+  
+  if (!modal || !list) {
+    console.error("Viewers modal elements not found");
+    return;
+  }
+
+  // Optional: show loading state
+  list.innerHTML = '<div class="no-viewers">Loading viewers...</div>';
+
+  modal.classList.add('active');
+
+  // Fetch who viewed this post
+  fetch(`${SCRIPT_URL}?operation=getChannelPostViewers&postId=${encodeURIComponent(postId)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.status !== "success") {
+        list.innerHTML = '<div class="no-viewers">Could not load viewers</div>';
+        return;
+      }
+
+      const viewers = data.viewers || [];
+      if (viewers.length === 0) {
+        list.innerHTML = '<div class="no-viewers">No one has viewed this post yet</div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      viewers.forEach(v => {
+        const item = document.createElement('div');
+        item.className = 'viewer-item';
+        
+        const avatarSrc = v.picLink ? getLh3Link(v.picLink) : 'https://via.placeholder.com/44?text=@';
+        
+        item.innerHTML = `
+          <img class="viewer-avatar" src="${avatarSrc}" onerror="this.src='https://via.placeholder.com/44?text=@'">
+          <div class="viewer-info">
+            <div class="viewer-name">${v.username}</div>
+            <div class="viewer-time">Viewed ${new Date(v.viewedAt).toLocaleString([], {
+              hour: '2-digit', minute:'2-digit', day:'numeric', month:'short'
+            })}</div>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      list.innerHTML = '<div class="no-viewers">Error loading viewers</div>';
+    });
+}
+
+function closeViewersModal() {
+  document.getElementById('viewersModal')?.classList.remove('active');
+}
+
+
+// Posting Panel Controls
+function openPostPanel() {
+  postPanel.classList.add('active');
+  postContent.focus();
+}
+
+function closePostPanel() {
+  postPanel.classList.remove('active');
+  postContent.value = '';
+  mediaInput.value = '';
+  mediaPreview.innerHTML = '';
+  mediaPreview.style.display = 'none';
+}
+
+mediaInput.onchange = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const preview = document.createElement(file.type.startsWith('image') ? 'img' : 'video');
+    preview.src = ev.target.result;
+    preview.className = 'media-preview';
+    if (file.type.startsWith('video')) preview.controls = true;
+    mediaPreview.innerHTML = '';
+    mediaPreview.appendChild(preview);
+    mediaPreview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+};
+
+// Reusable modal for adding multiple events + final post
+let eventModal = null;
+
+function openEventModal() {
+  if (!eventModal) {
+    eventModal = document.createElement('div');
+    eventModal.id = 'multiEventModal';
+    eventModal.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; z-index: 5000;
+    `;
+    eventModal.innerHTML = `
+      <div style="
+        background: rgba(30,41,59,0.98); border-radius: 16px; width: 90%; max-width: 520px;
+        padding: 24px; border: 1px solid rgba(96,165,250,0.4); box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+        color: white; position: relative; max-height: 92vh; overflow-y: auto;
+      ">
+        <button onclick="closeEventModal()" 
+                style="position:absolute; top:12px; right:16px; background:none; border:none; color:#94a3b8; font-size:2.4rem; cursor:pointer;">
+          ×
+        </button>
+        <h3 style="margin:0 0 20px; color:#60a5fa; text-align:center;">Add Events to Post</h3>
+
+        <!-- Event counter (NEW) -->
+        <div id="eventCount" style="text-align:center; color:#94a3b8; margin-bottom:16px; font-size:0.95rem;">
+          Events added: <span id="countNum">0</span>
+        </div>
+
+        <!-- Event form -->
+        <div id="eventForm" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
+          <input type="date" id="evDate" required 
+                 style="padding:12px; border-radius:10px; border:1px solid #60a5fa; background:rgba(255,255,255,0.08); color:white; font-size:1rem;">
+          
+          <textarea id="evTitle" placeholder="Event title (use / for description)\nExample: Event Title/ Event Description" 
+                    required style="min-height:100px; padding:12px; border-radius:10px; border:1px solid #60a5fa; background:rgba(255,255,255,0.08); color:white; font-size:1rem; resize:vertical; line-height:1.5;"></textarea>
+          
+          <label style="color:#60a5fa; cursor:pointer; font-size:0.95rem; display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-image"></i> Add event image (optional)
+            <input type="file" id="evImage" accept="image/*" style="display:none;">
+          </label>
+          
+          <div id="evPreview" style="max-width:100%; max-height:220px; display:none; margin-top:8px; border-radius:10px; overflow:hidden; border:1px solid rgba(96,165,250,0.4); background:#000;"></div>
+          
+          <button id="addEvBtn" style="
+            padding:12px; background:linear-gradient(135deg,#3b82f6,#60a5fa); color:white; border:none;
+            border-radius:12px; font-weight:600; cursor:pointer;">
+            Add This Event
+          </button>
+        </div>
+
+        <!-- Final actions -->
+        <div style="display:flex; gap:12px; justify-content:space-between; margin-top:20px;">
+          <button onclick="closeEventModal()" style="
+            flex:1; padding:12px; background:transparent; border:1px solid #64748b; color:#94a3b8; 
+            border-radius:12px; font-weight:600; cursor:pointer;">
+            Cancel
+          </button>
+          <button id="postAllBtn" style="
+            flex:1; padding:12px; background:linear-gradient(135deg,#10b981,#34d399); color:white; border:none;
+            border-radius:12px; font-weight:700; font-size:1.1rem; cursor:pointer;">
+            Post All Events
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(eventModal);
+
+    // Close
+    function closeEventModal() {
+      eventModal.style.display = 'none';
+    }
+    eventModal.querySelector('button[onclick="closeEventModal()"]').onclick = closeEventModal;
+
+    // Image preview
+    const fileInput = eventModal.querySelector('#evImage');
+    const preview = eventModal.querySelector('#evPreview');
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        preview.innerHTML = `<img src="${ev.target.result}" style="width:100%; height:auto; display:block;">`;
+        preview.style.display = 'block';
+        preview.dataset.base64 = ev.target.result.split(',')[1];
+        preview.dataset.name = file.name;
+        preview.dataset.type = file.type;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Add event + update counter
+    eventModal.querySelector('#addEvBtn').onclick = () => {
+      const date = eventModal.querySelector('#evDate').value.trim();
+      const title = eventModal.querySelector('#evTitle').value.trim();
+
+      if (!date || !title) {
+        showToast("Date and title required", "error");
+        return;
+      }
+
+      const container = document.getElementById('eventsContainer');
+      const row = document.createElement('div');
+      row.style.display = 'none';
+      row.innerHTML = `
+        <input type="date" value="${date}">
+        <textarea>${title}</textarea>
+      `;
+
+      if (preview.dataset.base64) {
+        row.dataset.imageBase64 = preview.dataset.base64;
+        row.dataset.imageName = preview.dataset.name;
+        row.dataset.imageType = preview.dataset.type;
+      }
+
+      container.appendChild(row);
+
+      // Clear form for next event
+      eventModal.querySelector('#evDate').value = '';
+      eventModal.querySelector('#evTitle').value = '';
+      preview.style.display = 'none';
+      preview.innerHTML = '';
+      fileInput.value = '';
+
+      // Update live counter
+      const countEl = eventModal.querySelector('#countNum');
+      let currentCount = parseInt(countEl.textContent) || 0;
+      currentCount += 1;
+      countEl.textContent = currentCount;
+
+      showToast(`Event added (${currentCount} total) — continue or Post`, "success");
+    };
+
+    // Post everything
+    eventModal.querySelector('#postAllBtn').onclick = () => {
+      closeEventModal();
+      submitPost(); // your existing function
+    };
+  }
+
+  // Open + reset form + reset counter
+  eventModal.style.display = 'flex';
+  eventModal.querySelector('#evDate').value = '';
+  eventModal.querySelector('#evTitle').value = '';
+  eventModal.querySelector('#evPreview').style.display = 'none';
+  eventModal.querySelector('#evPreview').innerHTML = '';
+  eventModal.querySelector('#evImage').value = '';
+  
+  // Reset counter to 0 when opening modal
+  const countEl = eventModal.querySelector('#countNum');
+  if (countEl) countEl.textContent = '0';
+}
+function generateMonthGrid(year, month, events) {
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let html = '';
+
+  // Empty cells
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div></div>';
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayStr = d.toString().padStart(2, '0');
+    const fullDate = `${year}-${month}-${dayStr}`;
+
+    const dayEvents = events.filter(e => e.date === fullDate);
+    const hasEvent = dayEvents.length > 0;
+
+    html += `
+      <div 
+        class="${hasEvent ? 'highlighted' : ''}"
+        data-date="${fullDate}"
+      >
+        ${d}
+      </div>
+    `;
+  }
+
+  return html;
+}
+// Replace your showEventsForDate with this
+function showEventsForDate(dateStr, dayEvents) {
+  const modal = document.getElementById('eventModal');
+  if (!modal) return console.error("Event modal not found");
+
+  const titleEl = document.getElementById('eventModalDate');
+  const listEl = document.getElementById('eventList');
+  if (!titleEl || !listEl) return console.error("Modal elements missing");
+
+  // Reset & clear
+  modal.classList.remove('active');
+  listEl.innerHTML = '';
+
+  // Date header
+  const [y, m, d] = dateStr.split('-');
+  const dateObj = new Date(y, m - 1, d);
+  titleEl.textContent = isNaN(dateObj.getTime()) 
+    ? "Invalid Date" 
+    : dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  // No events
+  if (!dayEvents?.length) {
+    listEl.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">No events on this day</div>';
+  } else {
+    dayEvents.forEach(ev => {
+      const raw = (ev.title || 'Untitled Event').trim();
+      let [titlePart, descPart = ''] = raw.includes('/') ? raw.split('/', 2).map(s => s.trim()) : [raw, ''];
+
+      const item = document.createElement('div');
+      item.className = 'event-item';
+
+      let html = `<div class="event-item-title" style="font-weight:600; color:#60a5fa;">${titlePart}</div>`;
+
+      if (descPart) {
+        html += `<div class="event-item-desc" style="color:#cbd5e1; line-height:1.4; margin-top:4px; white-space:pre-wrap;">
+          ${descPart.replace(/\n/g, '<br>')}
+        </div>`;
+      }
+
+      // lh3 image proxy
+      if (ev.imageUrl?.includes('uc?id=')) {
+        const id = ev.imageUrl.match(/uc\?id=([a-zA-Z0-9_-]+)/i)?.[1];
+        if (id) {
+          html += `
+            <div style="margin-top:10px; border-radius:10px; overflow:hidden; border:1px solid rgba(96,165,250,0.3); background:#000;">
+              <img src="https://lh3.googleusercontent.com/d/${id}" 
+                   style="width:100%; height:auto; display:block;" 
+                   alt="Event image" loading="lazy"
+                   onerror="this.src='https://via.placeholder.com/400x200/1e293b/94a3b8?text=Failed';">
+            </div>`;
+        }
+      }
+
+      item.innerHTML = html;
+      listEl.appendChild(item);
+    });
+  }
+
+  modal.classList.add('active');
+  console.log(`Modal opened: ${dateStr} — ${dayEvents?.length || 0} events`);
+}
+function closeEventModal() {
+  document.getElementById('eventModal')?.classList.remove('active');
+}
+
+async function submitPost() {
+  let content = postContent.value.trim();
+  const file = mediaInput.files[0];
+
+  let fileData = null;
+  const driveRegex = /(?:drive\.google\.com\/(?:file\/d\/|open\?id=))([a-zA-Z0-9_-]+)/;
+  const match = content.match(driveRegex);
+  const parsedLink = match ? match[1] : null;
+
+  if (parsedLink && !file) {
+    content = content.replace(match[0], '').trim();
+    fileData = { link: parsedLink };
+  } else if (file) {
+    fileData = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({
+        base64: reader.result.split(',')[1],
+        name: file.name,
+        type: file.type
+      });
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ── ALWAYS collect events (force collection even if hidden) ────────────────
+  let events = [];
+  const eventsContainer = document.getElementById('eventsContainer');
+
+  // Temporarily make visible so querySelectorAll can find elements
+  const wasHidden = eventsContainer.style.display === 'none';
+  if (wasHidden) eventsContainer.style.display = 'block';
+
+  eventsContainer.querySelectorAll('div').forEach(row => {
+    const dateInput = row.querySelector('input[type="date"]');
+    const titleInput = row.querySelector('textarea');
+
+    const dateVal = dateInput?.value?.trim();
+    const titleVal = titleInput?.value?.trim();
+
+    if (dateVal && titleVal) {
+      const eventObj = {
+        date: dateVal,
+        title: titleVal
+      };
+
+      // Attach image if present
+      if (row.dataset.imageBase64) {
+        eventObj.image = {
+          base64: row.dataset.imageBase64,
+          name: row.dataset.imageName,
+          type: row.dataset.imageType
+        };
+      }
+
+      events.push(eventObj);
+    }
+  });
+
+  // Restore original visibility
+  if (wasHidden) eventsContainer.style.display = 'none';
+
+  // Clean up empty/invalid rows
+  eventsContainer.querySelectorAll('div').forEach(row => {
+    const d = row.querySelector('input[type="date"]')?.value?.trim();
+    const t = row.querySelector('textarea')?.value?.trim();
+    if (!d || !t) row.remove();
+  });
+
+  // Validation: allow pure events, text, or media
+  if (events.length === 0 && !content.trim() && !fileData) {
+    showToast("Please add text, media, or at least one event", "error");
+    return;
+  }
+
+  if (!currentChannelId) {
+    showToast("Please select a channel first", "error");
+    return;
+  }
+
+  try {
+    const payload = {
+      operation: "createChannelPost",
+      channelId: currentChannelId,
+      author: currentUserName,
+      content: content || "",
+      file: fileData || (events.length > 0 ? { events } : null)
+    };
+
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      showToast("Posted!", "success");
+      closePostPanel();
+      // Clear events after success
+      eventsContainer.innerHTML = '';
+      loadPosts(currentChannelId);
+    } else {
+      showToast("Failed: " + (data.message || "Unknown"), "error");
+    }
+  } catch (err) {
+    showToast("Network error", "error");
+  }
+}
+// Modify getLh3Link to handle videos with /preview (rename for clarity)
+function getMediaSrc(url, type) {
+  const id = url.match(/[-\w]{25,}/)?.[0];
+  if (!id) return url;
+  if (type.startsWith('image')) {
+    return `https://lh3.googleusercontent.com/d/${id}`;
+  } else if (type.startsWith('video')) {
+    return `https://drive.google.com/file/d/${id}/preview`;
+  }
+  return url;  // Fallback
+}
+
+async function toggleCommentReaction(commentId, postId, emojiType) {
+  const container = document.querySelector(`.comment-reactions[data-comment-id="${commentId}"]`);
+  if (!container) return;
+
+  // 1. Remember current state for possible rollback
+  const prevMyReaction = container.querySelector('.comment-reaction-menu button.active')?.dataset.emoji || null;
+  const prevCounts = {};
+  container.querySelectorAll('.comment-reaction-counts span').forEach(span => {
+    const type = span.dataset.type;
+    const countEl = span.querySelector('.reaction-count');
+    prevCounts[type] = countEl ? parseInt(countEl.textContent || '0', 10) : 0;
+  });
+
+  // 2. Optimistic update – do it NOW (instant feedback)
+  const isRemoving = prevMyReaction === emojiType;
+  let newMyReaction = isRemoving ? null : emojiType;
+
+  // Update menu active state
+  container.querySelectorAll('.comment-reaction-menu button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.emoji === newMyReaction);
+  });
+
+  // Update counts optimistically
+  if (isRemoving) {
+    // Remove reaction
+    const span = container.querySelector(`[data-type="${emojiType}"]`);
+    if (span) {
+      const countEl = span.querySelector('.reaction-count');
+      let count = parseInt(countEl.textContent || '1', 10);
+      count = Math.max(0, count - 1);
+      countEl.textContent = count;
+      span.classList.toggle('has-count', count > 0);
+    }
+  } else {
+    // Add or switch reaction
+    if (prevMyReaction && prevMyReaction !== emojiType) {
+      // Decrease old reaction
+      const oldSpan = container.querySelector(`[data-type="${prevMyReaction}"]`);
+      if (oldSpan) {
+        const oldCountEl = oldSpan.querySelector('.reaction-count');
+        let oldCount = parseInt(oldCountEl.textContent || '1', 10);
+        oldCount = Math.max(0, oldCount - 1);
+        oldCountEl.textContent = oldCount;
+        oldSpan.classList.toggle('has-count', oldCount > 0);
+      }
+    }
+    // Increase new reaction
+    const newSpan = container.querySelector(`[data-type="${emojiType}"]`);
+    if (newSpan) {
+      const newCountEl = newSpan.querySelector('.reaction-count');
+      let newCount = parseInt(newCountEl.textContent || '0', 10);
+      newCount += 1;
+      newCountEl.textContent = newCount;
+      newSpan.classList.add('has-count');
+    }
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "toggleChannelCommentReaction",
+        commentId: commentId,
+        postId: postId,
+        channelId: currentChannelId,
+        username: currentUserName,
+        reactionType: emojiType
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      // Backend confirmed → keep optimistic UI + sync any extra info
+      updateCommentReactionUI(commentId, data.reactions);
+      showToast(`Reaction ${data.action === "added" ? "added" : "removed"}`, "success");
+    } else {
+      // Backend error → revert
+      revertToPrevious(container, prevMyReaction, prevCounts);
+      showToast(data.message || "Failed", "error");
+    }
+  } catch (err) {
+    // Network failure → revert
+    revertToPrevious(container, prevMyReaction, prevCounts);
+    showToast("Network error", "error");
+  }
+}
+
+// Helper: revert on failure
+function revertToPrevious(container, prevMyReaction, prevCounts) {
+  // Restore active state
+  container.querySelectorAll('.comment-reaction-menu button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.emoji === prevMyReaction);
+  });
+
+  // Restore counts
+  Object.keys(prevCounts).forEach(type => {
+    const span = container.querySelector(`[data-type="${type}"]`);
+    if (span) {
+      const countEl = span.querySelector('.reaction-count');
+      if (countEl) countEl.textContent = prevCounts[type];
+      span.classList.toggle('has-count', prevCounts[type] > 0);
+    }
+  });
+}
+
+// Your original update function (unchanged – only used on success)
+function updateCommentReactionUI(commentId, reactions) {
+  const container = document.querySelector(`.comment-reactions[data-comment-id="${commentId}"]`);
+  if (!container) return;
+
+  Object.keys(reactions.counts || {}).forEach(type => {
+    const span = container.querySelector(`[data-type="${type}"]`);
+    const countEl = span?.querySelector('.reaction-count');
+    
+    if (countEl && span) {
+      const count = reactions.counts[type] || 0;
+      countEl.textContent = count;
+      span.classList.toggle('has-count', count > 0);
+    }
+  });
+
+  const menu = container.querySelector('.comment-reaction-menu');
+  if (menu) {
+    menu.querySelectorAll('button').forEach(btn => {
+      const type = btn.dataset.emoji;
+      btn.classList.toggle('active', reactions.myReaction === type);
+    });
+  }
+}
+
+// Close menus when clicking elsewhere
+document.addEventListener('click', e => {
+  if (!e.target.closest('.comment-reaction-toggle') && 
+      !e.target.closest('.comment-reaction-menu')) {
+    document.querySelectorAll('.comment-reaction-menu').forEach(m => {
+      m.style.display = 'none';
+    });
+  }
+});
+
+
+async function toggleLike(postId, likeElement) {
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "toggleChannelPostLike",
+        postId: postId,
+        username: currentUserName
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      const icon = likeElement.querySelector('i');
+      const countSpan = likeElement.lastChild; // text node after icon
+
+      let currentCount = parseInt(countSpan.textContent.trim()) || 0;
+
+      // Backend tells us the new total likes
+      // But we can also check if user just liked or unliked based on UI state
+      if (likeElement.classList.contains('liked')) {
+        // Was liked → now unliked
+        currentCount = Math.max(0, currentCount - 1);
+        likeElement.classList.remove('liked');
+        icon.className = 'far fa-heart'; // hollow heart
+        showToast("Like removed", "success");
+      } else {
+        // Was not liked → now liked
+        currentCount += 1;
+        likeElement.classList.add('liked');
+        icon.className = 'fas fa-heart'; // solid heart
+        showToast("Liked!", "success");
+      }
+
+      // Update displayed count
+      countSpan.textContent = ` ${currentCount}`;
+    } else {
+      showToast(data.message || "Could not update like", "error");
+    }
+  } catch (err) {
+    console.error("Like failed:", err);
+    showToast("Network error", "error");
+  }
+}
+// 1. Load comments – now with bubble style + avatars
+async function loadComments(postId, container) {
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getChannelComments&postId=${postId}&username=${encodeURIComponent(currentUserName)}`);
+    const { comments = [] } = await r.json();
+    
+    // ── NEW: Skip reload if we just deleted something (prevents re-adding ghosts) ──
+  const lastDelete = container.dataset.lastDeleteTime;
+  if (lastDelete && (Date.now() - parseInt(lastDelete) < 40000)) { // 40 seconds grace period
+    console.log(`Skipping comment reload for post ${postId} — recent delete`);
+    return; // ← skip re-rendering comments
+  }
+
+    container.innerHTML = comments.length === 0 
+      ? '<div style="text-align:center; padding:20px; color:#94a3b8; font-size:0.9rem;">No comments yet</div>'
+      : '';
+
+    // Reverse order: newest comments at top
+comments.reverse().forEach(c => {
+  const isOwn = c.author === currentUserName;
+  const avatarSrc = getLh3Link(c.picLink) || 'https://via.placeholder.com/38?text=@';
+
+  let mediaHtml = '';
+  if (c.media?.link) {
+    const src = getLh3Link(c.media.link);
+    if (c.media.type?.startsWith('image')) {
+      mediaHtml = `<div class="media-content"><img src="${src}" loading="lazy"></div>`;
+    } else {
+      mediaHtml = `<div class="media-content"><video controls src="${src}" loading="lazy"></video></div>`;
+    }
+  }
+
+  const msg = document.createElement('div');
+  msg.className = `message ${isOwn ? 'own' : ''}`;
+  msg.dataset.commentId = c.id;
+  msg.dataset.postId = postId;
+
+  const deleteButton = isOwn ? `
+    <button class="delete-comment-btn" 
+            title="Delete this comment" 
+            onclick="deleteMyChannelComment('${c.id}', '${postId}', event)">
+      <i class="far fa-trash-alt"></i>
+    </button>
+  ` : '';
+
+  msg.innerHTML = `
+    <img class="avatar" src="${avatarSrc}" onerror="this.src='https://via.placeholder.com/38?text=@'">
+    <div class="message-content">
+      <div class="name" style="display: flex; justify-content: space-between; align-items:center;">
+        ${c.author}
+        ${deleteButton}
+      </div>
+      ${c.replyTo ? `
+        <div class="quoted-msg">
+          <b>@${c.replyTo.author}</b>: ${c.replyTo.content.substring(0,60)}${c.replyTo.content.length > 60 ? '...' : ''}
+        </div>
+      ` : ''}
+      ${mediaHtml}
+      <div class="text">${c.content.replace(/\n/g, '<br>')}</div>
+      <span class="time">${new Date(c.created).toLocaleString([], {
+        hour: '2-digit', 
+        minute: '2-digit', 
+        day: 'numeric', 
+        month: 'short'
+      })}</span>
+
+    <div class="comment-reactions" data-comment-id="${c.id}">
+  <button class="comment-reaction-toggle" title="React">
+    <i class="fas fa-ellipsis-h"></i>
+  </button>
+  <div class="comment-reaction-menu">
+    <button data-emoji="fire" title="Fire" class="${c.reactions?.myReaction === 'fire' ? 'active' : ''}">🔥</button>
+    <button data-emoji="love" title="Love" class="${c.reactions?.myReaction === 'love' ? 'active' : ''}">❤️</button>
+    <button data-emoji="thanks" title="Thanks" class="${c.reactions?.myReaction === 'thanks' ? 'active' : ''}">🙏</button>
+  </div>
+  <div class="comment-reaction-counts">
+    <span data-type="fire" class="${(c.reactions?.fire || 0) > 0 ? 'has-count' : ''}">
+      <span class="reaction-count">${c.reactions?.fire || 0}</span> 🔥
+    </span>
+    <span data-type="love" class="${(c.reactions?.love || 0) > 0 ? 'has-count' : ''}">
+      <span class="reaction-count">${c.reactions?.love || 0}</span> ❤️
+    </span>
+    <span data-type="thanks" class="${(c.reactions?.thanks || 0) > 0 ? 'has-count' : ''}">
+      <span class="reaction-count">${c.reactions?.thanks || 0}</span> 🙏
+    </span>
+  </div>
+</div>
+
+    </div>
+  `;
+  container.appendChild(msg);
+
+  // Reaction menu toggle + selection
+const reactionToggle = msg.querySelector('.comment-reaction-toggle');
+const reactionMenu = msg.querySelector('.comment-reaction-menu');
+
+if (reactionToggle && reactionMenu) {
+  reactionToggle.onclick = (e) => {
+    e.stopPropagation();
+    // Close all other menus
+    document.querySelectorAll('.comment-reaction-menu').forEach(m => {
+      if (m !== reactionMenu) m.style.display = 'none';
+    });
+    reactionMenu.style.display = reactionMenu.style.display === 'block' ? 'none' : 'block';
+  };
+
+  reactionMenu.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => {
+      const type = btn.dataset.emoji;
+      toggleCommentReaction(c.id, postId, type);
+      reactionMenu.style.display = 'none';
+    };
+  });
+}
+});
+  } catch (err) {
+    container.innerHTML = '<div style="color:#f87171; padding:16px;">Could not load comments</div>';
+  }
+}
+
+async function loadCommentCount(postId, countElement) {
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getChannelCommentCount&postId=${postId}`);
+    const data = await r.json();
+    
+    if (data.status === "success") {
+      const count = data.count || 0;
+      countElement.textContent = count;
+      
+      // Optional: change icon style when there are comments
+      const icon = countElement.parentElement.querySelector('i');
+      if (count > 0) {
+        icon.className = 'fas fa-comment';
+      }
+    } else {
+      countElement.textContent = "?";
+    }
+  } catch (err) {
+    countElement.textContent = "—";
+  }
+}
+
+function toggleComments(postId) {
+  const section = document.querySelector(`.comment-section[data-postid="${postId}"]`);
+  const countBtn = document.querySelector(`.comment-count[data-postid="${postId}"]`);
+  
+  if (!section || !countBtn) return;
+
+  const willBeOpen = !section.classList.contains('open');
+
+  section.classList.toggle('open');
+  countBtn.classList.toggle('open');
+
+  if (willBeOpen) {
+    // Load comments only when opening
+    const container = document.getElementById(`comments-${postId}`);
+    if (container && container.children.length === 0) {
+      loadComments(postId, container);
+    }
+  }
+}
+
+// 2. Submit comment (rename from postComment → submitChannelComment)
+async function submitChannelComment(postId) {
+  const input = document.getElementById(`comment-input-${postId}`);
+  const content = input.value.trim();
+  if (!content) return;
+
+  // ← Critical safety checks
+  if (!currentChannelId) {
+    showToast("No channel selected", "error");
+    return;
+  }
+  if (!postId) {
+    showToast("Cannot comment — invalid post", "error");
+    return;
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "createChannelComment",
+        postId,
+        channelId: currentChannelId,
+        author: currentUserName,
+        content
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      input.value = "";
+      const container = document.getElementById(`comments-${postId}`);
+      loadComments(postId, container);
+    } else {
+      showToast("Failed: " + (data.message || "Unknown"), "error");
+    }
+  } catch (err) {
+    showToast("Network error", "error");
+  }
+}
+
+window.addEventListener("load", async () => {
+  await checkCreateChannelPermission();   // ← changed name
+  await loadAllChannels();
+});
+
+// Add this once — preferably near the end of your <script>, after all functions
+document.querySelector('.feed-wrapper')?.addEventListener('scroll', function() {
+  if (this.scrollTop > 300) {
+    this.classList.add('scrolled-far');
+  } else {
+    this.classList.remove('scrolled-far');
+  }
+});
+
+async function deleteMyChannelComment(commentId, postId, event) {
+  event.stopPropagation();
+  event.preventDefault();
+
+  const messageEl = event.target.closest('.message');
+  if (!messageEl) return;
+
+  const confirmed = await showConfirmToast(
+    "Delete this comment?",
+    "This cannot be undone.",
+    "Delete",
+    "Cancel"
+  );
+
+  if (!confirmed) return;
+
+  const deleteBtn = messageEl.querySelector('.delete-comment-btn');
+  if (deleteBtn) {
+    deleteBtn.disabled = true;
+    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    deleteBtn.style.opacity = '0.5';
+    deleteBtn.style.cursor = 'not-allowed';
+  }
+
+  messageEl.classList.add('deleting');
+  messageEl.style.opacity = '0.6';
+  messageEl.style.pointerEvents = 'none';
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "deleteChannelComment",
+        commentId: commentId,
+        postId: postId,
+        username: currentUserName
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success" || data.message?.includes("not found") || data.message?.includes("not the owner")) {
+      // ── SUCCESS or already gone ───────────────────────────────────────
+      // Remove from DOM immediately
+      messageEl.remove();
+
+      showToast(
+        data.status === "success" ? "Comment deleted" : "Comment was already deleted",
+        "success"
+      );
+
+      // Update count optimistically (and prevent re-adding)
+      const countEl = document.querySelector(`.comment-count[data-postid="${postId}"] .count`);
+      if (countEl) {
+        let count = parseInt(countEl.textContent.trim()) || 1;
+        countEl.textContent = Math.max(0, count - 1);
+      }
+
+      // ── CRITICAL: Mark this post's comments container as "freshly deleted" ──
+      const commentsList = document.getElementById(`comments-${postId}`);
+      if (commentsList) {
+        // Add a temporary flag so polling skips re-adding this comment for ~30s
+        commentsList.dataset.lastDeleteTime = Date.now();
+      }
+
+      // Optional: Pause polling briefly for this post (aggressive fix)
+      // You can also just rely on the flag below
+    } else {
+      showToast(data.message || "Could not delete comment", "error");
+      restoreUI(messageEl, deleteBtn);
+    }
+  } catch (err) {
+    console.error("Delete failed:", err);
+    if (document.body.contains(messageEl)) {
+      showToast("Connection issue — try again", "error");
+      restoreUI(messageEl, deleteBtn);
+    }
+  }
+}
+
+
+async function deleteMyChannelPost(postId, event) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const postEl = event.target.closest('.post');
+    if (!postEl) return;
+
+    const confirmed = await showConfirmToast(
+        "Delete Post?",
+        "This will permanently remove the post and all its comments.",
+        "Delete",
+        "Cancel"
+    );
+
+    if (!confirmed) return;
+
+    const btn = postEl.querySelector('.delete-post-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
+    postEl.classList.add('deleting');
+
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                operation: "deleteChannelPost",
+                postId,
+                username: currentUserName,
+                channelId: currentChannelId
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.status === "success") {
+            showToast("Post deleted", "success");
+
+            // ── Immediate removal ───────────────────────────────────────
+            postEl.remove();
+
+            // Show empty state if this was the last post
+            if (!document.querySelector('.post')) {
+                feed.innerHTML = `
+                    <div class="empty">
+                        <i class="far fa-comment-dots" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
+                        No posts yet<br>
+                        <small>Be the first to share something!</small>
+                    </div>
+                `;
+            }
+
+            // ── Mark this postId as "locally deleted" for the next poll ──
+            // We store it in a data attribute on the feed-wrapper
+            const wrapper = document.querySelector('.feed-wrapper');
+            if (wrapper) {
+                let deletedIds = wrapper.dataset.deletedPostIds 
+                    ? JSON.parse(wrapper.dataset.deletedPostIds) 
+                    : [];
+                
+                if (!deletedIds.includes(postId)) {
+                    deletedIds.push(postId);
+                    // Keep only last 50 to prevent growing forever
+                    if (deletedIds.length > 50) deletedIds = deletedIds.slice(-50);
+                    wrapper.dataset.deletedPostIds = JSON.stringify(deletedIds);
+                }
+            }
+
+        } else {
+            showToast(data.message || "Failed to delete post", "error");
+            restorePostUI(postEl, btn);
+        }
+    } catch (err) {
+        console.error("Delete post failed:", err);
+        showToast("Network error – try again", "error");
+        restorePostUI(postEl, btn);
+    }
+}
+
+// Helper to restore UI on failure
+function restorePostUI(postEl, btn) {
+    postEl.classList.remove('deleting');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="far fa-trash-alt"></i>';
+    }
+}
+// ── Nice toast-like confirmation with Yes/No buttons ─────────────────────────
+function showConfirmToast(title, message, confirmText = "Delete", cancelText = "Cancel") {
+  return new Promise((resolve) => {
+    const toast = document.createElement('div');
+    toast.className = 'toast confirm-toast';
+    toast.style.position = 'fixed';
+    toast.style.top = '80px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.zIndex = '10001';
+    toast.style.maxWidth = '420px';
+    toast.style.width = '90%';
+    toast.style.background = '#1e293b';
+    toast.style.padding = '16px 20px';
+    toast.style.borderRadius = '14px';
+    toast.style.boxShadow = '0 12px 32px rgba(0,0,0,0.6)';
+    toast.style.borderLeft = '5px solid #ef4444';
+    toast.style.color = '#e2e8f0';
+    toast.style.animation = 'slideDown 0.35s ease';
+
+    toast.innerHTML = `
+      <div style="font-weight:600; margin-bottom:8px;">${title}</div>
+      <div style="color:#cbd5e1; margin-bottom:16px;">${message}</div>
+      <div style="display:flex; gap:12px; justify-content:flex-end;">
+        <button class="cancel-btn" style="
+          padding:8px 16px;
+          background:transparent;
+          border:1px solid #64748b;
+          color:#94a3b8;
+          border-radius:999px;
+          cursor:pointer;
+          font-weight:600;
+        ">${cancelText}</button>
+        <button class="confirm-btn" style="
+          padding:8px 20px;
+          background:linear-gradient(135deg,#ef4444,#f87171);
+          color:white;
+          border:none;
+          border-radius:999px;
+          cursor:pointer;
+          font-weight:600;
+        ">${confirmText}</button>
+      </div>
+    `;
+
+    document.getElementById('toast-container').appendChild(toast);
+
+    toast.querySelector('.confirm-btn').onclick = () => {
+      toast.remove();
+      resolve(true);
+    };
+
+    toast.querySelector('.cancel-btn').onclick = () => {
+      toast.remove();
+      resolve(false);
+    };
+  });
+}
+let pollingInterval = null;
+
+function startChannelPolling() {
+  if (pollingInterval) clearInterval(pollingInterval);
+
+  pollingInterval = setInterval(async () => {
+    if (!currentChannelId || document.hidden) return;
+
+    try {
+      // 1. Lightweight check for new posts
+      const resp = await fetch(`${SCRIPT_URL}?operation=getChannelPostsLight&channelId=${encodeURIComponent(currentChannelId)}`);
+      if (!resp.ok) return;
+
+      const { posts: serverPosts = [] } = await resp.json();
+
+      // 2. Get currently shown post IDs
+      const currentPostElements = document.querySelectorAll('.post');
+      const currentIds = new Set(
+        Array.from(currentPostElements)
+          .map(el => el.dataset.postId)
+          .filter(id => id)   // skip undefined/null
+      );
+
+      // 3. Check if there's anything new (by postId)
+      const hasNewPosts = serverPosts.some(sp => !currentIds.has(sp.postId));
+
+if (hasNewPosts) {
+  const wrapper = document.querySelector('.feed-wrapper');
+  
+  // Get IDs of posts we recently deleted ourselves (stored during deleteMyChannelPost)
+  let localDeletedIds = [];
+  if (wrapper && wrapper.dataset.deletedPostIds) {
+    try {
+      localDeletedIds = JSON.parse(wrapper.dataset.deletedPostIds);
+    } catch (e) {
+      console.warn("Invalid deletedPostIds data", e);
+    }
+  }
+  const deletedSet = new Set(localDeletedIds);
+
+  // Current visible post IDs in DOM
+  const currentVisibleIds = new Set(
+    Array.from(document.querySelectorAll('.post[data-post-id]'))
+      .map(el => el.dataset.postId)
+  );
+
+  // Check if there are any posts on server that we don't have yet (real new posts)
+  const hasRealNewPosts = serverPosts.some(sp => 
+    !currentVisibleIds.has(sp.postId) && !deletedSet.has(sp.postId)
+  );
+
+  if (hasRealNewPosts) {
+    // ── Only full refresh when there are actually new posts ─────────────
+    await loadPosts(currentChannelId);
+    showToast("New posts loaded ↑", "success");
+
+    const w = document.querySelector('.feed-wrapper');
+    if (w && w.scrollTop < 500) {
+      w.scrollTop = 0;
+    }
+  } 
+  else {
+    // ── Only deletions happened (or nothing relevant) ───────────────────
+    // 1. Remove any remaining ghost posts that were locally deleted
+    document.querySelectorAll('.post[data-post-id]').forEach(el => {
+      if (deletedSet.has(el.dataset.postId)) {
+        el.remove();
+      }
+    });
+
+    // 2. Clean up the deleted list — remove IDs that no longer exist on server
+    const currentServerIds = new Set(serverPosts.map(p => p.postId));
+    const stillRelevantDeleted = localDeletedIds.filter(id => !currentServerIds.has(id));
+
+    if (wrapper) {
+      wrapper.dataset.deletedPostIds = JSON.stringify(stillRelevantDeleted);
+    }
+
+    // Optional: small silent toast or nothing at all
+    // showToast("Feed updated (deletions processed)", "info"); // ← remove or keep quiet
+  }
+}
+
+      // 4. Always refresh comments (low cost, good UX)
+      document.querySelectorAll('.comments-list').forEach(cont => {
+        const postId = cont.id.replace('comments-', '');
+        loadComments(postId, cont);
+      });
+
+    } catch (err) {
+      // Silent fail — don't disturb user on background poll error
+      console.warn("[polling] failed:", err);
+    }
+
+  }, 12000);   // 12seconds — feels fresh without being too aggressive
+}
+// Stop when leaving / page hidden
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (pollingInterval) clearInterval(pollingInterval);
+  } else if (currentChannelId) {
+    startChannelPolling();
+  }
+});
+
+
+// Channels panel toggle
+const channelsToggle = document.getElementById('channelsToggle');
+const channelsPanel = document.getElementById('channelsPanel');
+const closeChannels = document.getElementById('closeChannels');
+
+channelsToggle?.addEventListener('click', () => {
+  channelsPanel.classList.add('open');
+});
+
+closeChannels?.addEventListener('click', () => {
+  channelsPanel.classList.remove('open');
+});
+
+// Optional: close when clicking outside
+channelsPanel?.addEventListener('click', (e) => {
+  if (e.target === channelsPanel) {
+    channelsPanel.classList.remove('open');
+  }
+});
+
+document.getElementById('viewersModal')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('viewersModal')) {
+    closeViewersModal();
+  }
+});
+
+
+// ── Calendar toggle: show/hide event inputs ────────────────────────────────
+document.getElementById('calendarToggle')?.addEventListener('click', function() {
+  const container = document.getElementById('eventsContainer');
+  const addBtn = document.getElementById('addEventBtn');
+
+  // Safety: make sure elements exist
+  if (!container || !addBtn) {
+    console.warn("Calendar elements not found in DOM");
+    return;
+  }
+
+  const isCurrentlyHidden = container.style.display === 'none' || !container.style.display;
+
+  if (isCurrentlyHidden) {
+    // Show calendar section
+    container.style.display = 'block';
+    addBtn.style.display = 'block';
+
+    // Add first event row if empty
+    if (container.children.length === 0) {
+      addEventInput();
+    }
+
+    // Optional: visual feedback
+    this.style.color = '#3b82f6';           // make icon active/blue
+    this.style.transform = 'scale(1.15)';   // slight zoom
+  } else {
+    // Hide calendar section
+    container.style.display = 'none';
+    addBtn.style.display = 'none';
+
+    // Optional: reset icon style
+    this.style.color = '#60a5fa';
+    this.style.transform = 'scale(1)';
+  }
+});
+
+
+// Handle all calendar date clicks via delegation
+document.addEventListener('click', function(e) {
+  const day = e.target.closest('.highlighted');
+  if (!day) return;
+
+  const container = day.closest('.calendar-container');
+  if (!container) return;
+
+  const postId = container.dataset.postId;
+  const dateStr = day.dataset.date;
+
+  if (!postId || !dateStr) return;
+
+  const allEvents = postEventsMap.get(postId);
+  if (!allEvents) return;
+
+  const dayEvents = allEvents.filter(ev => ev.date === dateStr);
+
+  showEventsForDate(dateStr, dayEvents);
+});
+
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+  // Use './' to stay inside the /The-Riverside-Connect/ subfolder
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .then(reg => console.log('✅ SW registered in subfolder scope'))
+    .catch(err => console.error('❌ SW registration failed:', err));
+}
+</script>
+</body>
+</html>

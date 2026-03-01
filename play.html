@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Play Q&A Game · Riverside</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      min-height: 100dvh;
+      padding: 16px;
+    }
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      padding: 16px 0 20px;
+      position: relative;
+    }
+    .back-btn {
+      position: absolute;
+      left: 8px;
+      top: 16px;
+      font-size: 1.6rem;
+      color: #60a5fa;
+      background: rgba(96,165,250,0.15);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    h1 {
+      color: #60a5fa;
+      font-size: 1.9rem;
+      margin-bottom: 8px;
+    }
+    .header-actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .leaderboard-btn {
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .leaderboard-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(139,92,246,0.3);
+    }
+   /* Add this to <style> if not already present */
+#timerDisplay.warning {
+  color: #f59e0b;      /* yellow/orange near end */
+}
+#timerDisplay.danger {
+  color: #ef4444;      /* red in last 10 seconds */
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+    .question-slide {
+      background: rgba(30,41,59,0.88);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(96,165,250,0.2);
+    }
+    .question-text {
+      font-size: 1.28rem;
+      line-height: 1.45;
+      margin-bottom: 20px;
+    }
+    .question-image {
+      max-width: 100%;
+      border-radius: 12px;
+      margin: 16px 0;
+      display: block;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .choice-btn {
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(96,165,250,0.35);
+      color: white;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1.05rem;
+      text-align: left;
+      transition: all 0.18s;
+    }
+    .choice-btn:hover:not(:disabled) {
+      background: rgba(96,165,250,0.18);
+      border-color: #60a5fa;
+    }
+    .choice-btn:disabled {
+      opacity: 0.7;
+    }
+   /* Quiz correct (green) */
+.choice-btn.correct {
+  background: #10b981 !important;
+  border-color: #34d399 !important;
+  color: white !important;
+}
+
+/* Quiz incorrect (red) */
+.choice-btn.incorrect {
+  background: #ef4444 !important;
+  border-color: #f87171 !important;
+  color: white !important;
+}
+
+/* Survey selected choice - different color (e.g. blue-ish) */
+.choice-btn.selected {
+  background: #3b82f6 !important;       /* blue - you can change this color */
+  border-color: #60a5fa !important;
+  color: white !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.4);
+}
+    .reason {
+      margin-top: 20px;
+      padding: 14px;
+      background: rgba(30,41,59,0.6);
+      border-radius: 12px;
+      line-height: 1.5;
+      display: none;
+    }
+    .next-btn {
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin: 16px auto 0;
+      display: none;
+      width: fit-content;
+    }
+    .score-final {
+      text-align: center;
+      font-size: 2.2rem;
+      margin: 32px 0;
+      color: #60a5fa;
+    }
+    .empty, .loading {
+      text-align: center;
+      padding: 120px 24px;
+      color: #94a3b8;
+    }
+
+    /* Leaderboard styles */
+    #leaderboardSection {
+      margin-top: 32px;
+      display: none;           /* hidden by default */
+    }
+    .leaderboard-list {
+      background: rgba(15,23,42,0.7);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(96,165,250,0.25);
+    }
+    .leader-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .leader-item:hover {
+      background: rgba(96,165,250,0.12);
+    }
+    .leader-rank {
+      font-size: 1.4rem;
+      font-weight: bold;
+      min-width: 40px;
+      text-align: center;
+      color: #94a3b8;
+    }
+    .leader-rank.top-1 { color: #ffd700; }
+    .leader-rank.top-2 { color: #c0c0c0; }
+    .leader-rank.top-3 { color: #cd7f32; }
+    .leader-name {
+      flex: 1;
+      font-weight: 600;
+    }
+    .leader-score {
+      font-size: 1.1rem;
+      color: #60a5fa;
+    }
+    .no-leaders {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 500px) {
+      .question-slide { padding: 18px; }
+      .question-text { font-size: 1.18rem; }
+      .choice-btn { font-size: 1rem; padding: 12px 16px; }
+      .header-actions { flex-direction: column; gap: 12px; }
+    }
+
+    /* Question image - make it smaller and centered */
+.question-image {
+  max-width: 280px;          /* ← smaller than full width */
+  max-height: 180px;         /* prevents very tall images */
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 16px auto;         /* centered with breathing room */
+  border-radius: 10px;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  object-fit: contain;       /* keeps aspect ratio, no cropping */
+}
+
+/* Choice images - even smaller, inline-friendly */
+.choice-btn img {
+  max-width: 140px;          /* ← noticeably smaller than question image */
+  max-height: 100px;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 10px auto 4px;     /* centered inside button + small spacing */
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  object-fit: contain;
+}
+
+/* Make sure the choice button adapts nicely when it has an image */
+.choice-btn {
+  padding: 14px 18px;
+  min-height: 48px;          /* prevents squashing when no image */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+}
+
+/* Optional: smaller on mobile */
+@media (max-width: 500px) {
+  .question-image {
+    max-width: 240px;
+    max-height: 160px;
+  }
+  
+  .choice-btn img {
+    max-width: 120px;
+    max-height: 90px;
+  }
+}
+
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <a href="Q&A.html" class="back-btn" title="Back to games"><i class="fas fa-arrow-left"></i></a>
+    <h1 id="gameTitle">Loading game...</h1>
+    <div class="header-actions" id="headerActions">
+  <!-- Buttons will be injected here by JS -->
+</div>
+
+    <!-- Leaderboard area – hidden until button clicked -->
+  <div id="leaderboardSection">
+    <h2 style="text-align:center; color:#60a5fa; margin-bottom:20px;">Leaderboard</h2>
+    <div id="leaderboardList" class="leaderboard-list">
+      <div class="no-leaders">Click "Leaderboard" to load rankings</div>
+    </div>
+  </div>
+
+<div id="timerDisplay" style="
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #60a5fa;
+  background: rgba(15,23,42,0.6);
+  padding: 8px 16px;
+  border-radius: 12px;
+  min-width: 90px;
+  text-align: center;
+  margin: 12px auto 20px;
+">
+  --:--
+</div>
+
+  </header>
+
+  <div id="currentQuestion" class="question-slide"></div>
+
+  <div id="finalScreen" style="display:none;">
+    <div class="score-final">Game Over!</div>
+    <p id="scoreText" style="text-align:center; font-size:1.4rem; margin:16px 0;"></p>
+  </div>
+
+  
+
+ <button id="backButton" class="next-btn" style="background: linear-gradient(135deg, #6b7280, #9ca3af); margin-right: 12px; display: none;">
+  Back
+</button>
+<button id="nextButton" class="next-btn">Next</button>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsUojWQz4SE_84AWazYtVQMAa5oFy5MdZnC2kursSNhVg6GJVmCY9wrlEyP1ZxrMWV/exec';
+
+const urlParams = new URLSearchParams(window.location.search);
+const gameId = urlParams.get('gameId');
+const username = localStorage.getItem("userName") || "";
+
+let currentGame = null;
+let currentQuestionIndex = 0;
+let score = 0;
+let timerInterval = null;
+let leaderboardLoaded = false;
+let surveyResponses = {};  // { questionIndex: chosenChoiceIndex }
+let hasAlreadySubmitted = false;  // Will be set after checking on load
+let quizResponses = {};   // { questionIndex: chosenChoiceIndex }
+
+document.getElementById("backButton").addEventListener("click", () => {
+  if (currentQuestionIndex > 0) {
+    showQuestion(currentQuestionIndex - 1);
+  }
+});
+
+if (!gameId || !username) {
+  document.getElementById("currentQuestion").innerHTML = '<div class="empty">Invalid game or not logged in</div>';
+} else {
+  loadGame();
+}
+
+// Toggle leaderboard visibility
+document.getElementById("showLeaderboardBtn").addEventListener("click", () => {
+  const section = document.getElementById("leaderboardSection");
+  if (section.style.display === "block") {
+    section.style.display = "none";
+  } else {
+    section.style.display = "block";
+    if (!leaderboardLoaded) {
+      loadLeaderboard();
+      leaderboardLoaded = true;
+    }
+  }
+});
+
+function getLh3Link(url) {
+  if (!url) return '';
+  const id = url.match(/[-\w]{25,}/)?.[0];
+  return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
+}
+
+async function loadGame() {
+  try {
+    // Step 1: Get game metadata (name, timer, etc.)
+    const gameRes = await fetch(`${SCRIPT_URL}?operation=getQnAGame&gameId=${gameId}&username=${encodeURIComponent(username)}`);
+    const gameData = await gameRes.json();
+    if (gameData.status !== "success") {
+      document.getElementById("currentQuestion").innerHTML = '<div class="empty">Failed to load game</div>';
+      return;
+    }
+    currentGame = gameData.game;
+
+    // ── Check if user already submitted this survey ────────────────────────
+if (currentGame.mode === "survey") {
+  try {
+    const checkRes = await fetch(
+      `${SCRIPT_URL}?operation=hasUserSubmittedSurvey&gameId=${gameId}&username=${encodeURIComponent(username)}`
+    );
+    const checkData = await checkRes.json();
+
+    if (checkData.status === "success") {
+      hasAlreadySubmitted = !!checkData.submitted;  // true/false from backend
+    } else {
+      console.warn("Submission check failed:", checkData.message);
+    }
+  } catch (err) {
+    console.warn("Could not check if already submitted:", err);
+    // Assume not submitted if check fails (safer default)
+    hasAlreadySubmitted = false;
+  }
+}
+// Dynamically create the correct button
+const actionsDiv = document.getElementById("headerActions");
+actionsDiv.innerHTML = ""; // clear
+
+if (currentGame.mode === "survey") {
+  const resultsBtn = document.createElement("button");
+  resultsBtn.className = "leaderboard-btn"; // reuse style, or make new class
+  resultsBtn.innerHTML = '<i class="fas fa-chart-bar"></i> View Results';
+  resultsBtn.onclick = () => showSurveyResults();
+  actionsDiv.appendChild(resultsBtn);
+} else {
+  const lbBtn = document.createElement("button");
+  lbBtn.id = "showLeaderboardBtn";
+  lbBtn.className = "leaderboard-btn";
+  lbBtn.innerHTML = '<i class="fas fa-trophy"></i> Leaderboard';
+  lbBtn.onclick = () => {
+    const section = document.getElementById("leaderboardSection");
+    section.style.display = section.style.display === "block" ? "none" : "block";
+    if (section.style.display === "block" && !leaderboardLoaded) {
+      loadLeaderboard();
+      leaderboardLoaded = true;
+    }
+  };
+  actionsDiv.appendChild(lbBtn);
+}
+
+    // Step 2: Get ALL questions + choices for this game (you'll need a new backend function)
+    const qRes = await fetch(`${SCRIPT_URL}?operation=getQnAQuestionsAndChoices&gameId=${gameId}`);
+    const qData = await qRes.json();
+    if (qData.status !== "success") {
+      document.getElementById("currentQuestion").innerHTML = '<div class="empty">Failed to load questions</div>';
+      return;
+    }
+
+    // Combine: attach questions with their choices
+    currentGame.questions = qData.questions.map(q => ({
+      ...q,
+      choices: q.choices || []   // already array from backend
+    }));
+
+    document.getElementById("gameTitle").textContent = currentGame.name;
+
+    // Show timer only if it exists
+    const timerEl = document.getElementById("timerDisplay");
+    if (currentGame.timer && currentGame.timer > 0) {
+      timerEl.style.display = "block";
+      startTimer(currentGame.timer);
+    } else {
+      timerEl.style.display = "none";
+    }
+
+    showQuestion(0);
+  } catch (err) {
+    console.error(err);
+    document.getElementById("currentQuestion").innerHTML = '<div class="empty">Network error</div>';
+  }
+}
+
+function showQuestion(index) {
+  currentQuestionIndex = index;
+  const q = currentGame.questions[index];
+  const container = document.getElementById("currentQuestion");
+
+  let questionHTML = `<div class="question-text">${q.text || "Question missing"}</div>`;
+
+  if (q.imageLink) {
+    const safeUrl = getLh3Link(q.imageLink);
+    questionHTML += `
+      <img class="question-image"
+           src="${safeUrl}"
+           onerror="this.src='https://via.placeholder.com/320?text=Image+Not+Available'; this.style.opacity=0.7;"
+           alt="Question image">
+    `;
+  }
+
+  questionHTML += `
+    <div class="choices" id="choices"></div>
+    <div class="reason" id="reason">${q.reason || ''}</div>
+  `;
+  container.innerHTML = questionHTML;
+
+  const choicesDiv = document.getElementById("choices");
+
+  (q.choices || []).forEach((choice, i) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    let html = choice.text || "";
+    if (choice.imageLink) {
+      const safeChoiceUrl = getLh3Link(choice.imageLink);
+      html += `
+        <br>
+        <img src="${safeChoiceUrl}"
+             style="max-width:100%; margin-top:8px; border-radius:8px;"
+             onerror="this.src='https://via.placeholder.com/200?text=Choice+Failed'; this.style.opacity=0.7;"
+             alt="Choice image">
+      `;
+    }
+    btn.innerHTML = html;
+    btn.onclick = () => selectChoice(i);
+    choicesDiv.appendChild(btn);
+  });
+
+  // ────────────────────────────────────────────────────────────────
+  // Navigation: Back & Next
+  // ────────────────────────────────────────────────────────────────
+  const nextBtn = document.getElementById("nextButton");
+  const backBtn = document.getElementById("backButton");
+
+  // Back: always visible when not on first question
+  backBtn.style.display = currentQuestionIndex > 0 ? "inline-block" : "none";
+
+  // Default: Next button is visible in survey always, in quiz only if answered
+  let showNext = currentGame.mode === "survey" || quizResponses[index] !== undefined;
+  nextBtn.style.display = showNext ? "inline-block" : "none";
+
+  // ────────────────────────────────────────────────────────────────
+  // IMPORTANT: Button text & behavior depends on whether this is the last question
+  // ────────────────────────────────────────────────────────────────
+  const isLastQuestion = currentQuestionIndex === currentGame.questions.length - 1;
+
+  if (isLastQuestion) {
+    // Last question → special text & action
+    if (currentGame.mode === "survey") {
+      if (hasAlreadySubmitted) {
+        nextBtn.textContent = "Already Submitted";
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = "0.6";
+        nextBtn.onclick = () => showToast("You have already completed this survey", "info");
+      } else {
+        nextBtn.textContent = "Submit Responses";
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = "1";
+        nextBtn.onclick = finishGame;
+      }
+    } else {
+      // Quiz
+      nextBtn.textContent = "Complete Game";
+      nextBtn.disabled = false;
+      nextBtn.onclick = finishGame;
+    }
+  } else {
+    // Not last question → always "Next" when visible
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = false;
+    nextBtn.onclick = () => {
+      if (currentQuestionIndex + 1 < currentGame.questions.length) {
+        showQuestion(currentQuestionIndex + 1);
+      }
+    };
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Restore previous answer & visual state
+  // ────────────────────────────────────────────────────────────────
+  document.getElementById("reason").style.display = "none";
+
+  const previousChoice = currentGame.mode === "survey"
+    ? surveyResponses[index]
+    : quizResponses[index];
+
+  if (previousChoice !== undefined) {
+    const buttons = document.querySelectorAll("#choices .choice-btn");
+
+    buttons.forEach((btn, i) => {
+      btn.classList.remove("correct", "incorrect", "selected");
+
+      if (i === previousChoice) {
+        btn.classList.add("selected");
+      }
+
+      if (currentGame.mode === "survey") {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+        if (i === q.correctIndex) {
+          btn.classList.add("correct");
+        }
+        if (i === previousChoice && q.correctIndex !== previousChoice) {
+          btn.classList.add("incorrect");
+        }
+        document.getElementById("reason").style.display = "block";
+      }
+    });
+  }
+
+  // Optional survey hint
+  /*
+  if (currentGame.mode === "survey") {
+    const hint = document.createElement("p");
+    hint.style.cssText = "margin-top:16px; color:#94a3b8; font-size:0.95rem; text-align:center;";
+    hint.textContent = "You can change your answer anytime before submitting";
+    choicesDiv.after(hint);
+  }
+  */
+}
+function selectChoice(choiceIndex) {
+  const q = currentGame.questions[currentQuestionIndex];
+
+  // ── Remember the choice in BOTH modes ─────────────────────────────
+  // We need this so we can restore the selection when going back
+  if (currentGame.mode === "survey") {
+    surveyResponses[currentQuestionIndex] = choiceIndex;
+  } else {
+    // Quiz: remember what was chosen (for restore), but score only once
+    if (quizResponses[currentQuestionIndex] === undefined) {  // only first time
+      quizResponses[currentQuestionIndex] = choiceIndex;
+      const correct = q.correctIndex === choiceIndex;
+      if (correct) score++;
+    }
+    // Note: after first answer, further clicks do nothing to score
+  }
+
+  // ── Visual update ─────────────────────────────────────────────────
+  const buttons = document.querySelectorAll("#choices .choice-btn");
+
+  buttons.forEach((btn, i) => {
+    // Clear previous visual states
+    btn.classList.remove("correct", "incorrect", "selected");
+
+    if (currentGame.mode === "survey") {
+      // Survey: highlight current selection, buttons stay clickable
+      if (i === surveyResponses[currentQuestionIndex]) {
+        btn.classList.add("selected");
+      }
+      btn.disabled = false;
+    } else {
+      // Quiz: show feedback, disable buttons, but keep selected visible
+      btn.disabled = true;
+
+      const chosen = quizResponses[currentQuestionIndex];
+
+      if (chosen !== undefined) {
+        // Show what was actually chosen
+        if (i === chosen) {
+          btn.classList.add("selected");
+        }
+        // Show correct answer
+        if (i === q.correctIndex) {
+          btn.classList.add("correct");
+        }
+        // Mark incorrect if wrong choice was made
+        if (i === chosen && q.correctIndex !== chosen) {
+          btn.classList.add("incorrect");
+        }
+      }
+    }
+  });
+
+  // Reason only for quiz
+  document.getElementById("reason").style.display = 
+    currentGame.mode === "survey" ? "none" : "block";
+
+  // Always show Next / Submit button in survey (even if changed many times)
+  const nextBtn = document.getElementById("nextButton");
+  nextBtn.style.display = "block";
+
+  // ── Last question logic ───────────────────────────────────────────
+  if (currentQuestionIndex === currentGame.questions.length - 1) {
+    if (currentGame.mode === "survey") {
+      if (hasAlreadySubmitted) {
+        nextBtn.textContent = "Already Submitted";
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = "0.6";
+        nextBtn.onclick = () => showToast("You have already completed this survey", "info");
+      } else {
+        nextBtn.textContent = "Submit Responses";
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = "1";
+        nextBtn.onclick = finishGame;
+      }
+    } else {
+      // Quiz
+      nextBtn.textContent = "Complete Game";
+      nextBtn.disabled = false;
+      nextBtn.onclick = finishGame;
+    }
+  } else {
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = false;
+    nextBtn.onclick = () => {
+      if (currentQuestionIndex + 1 < currentGame.questions.length) {
+        showQuestion(currentQuestionIndex + 1);
+      }
+    };
+  }
+}
+async function finishGame() {
+  clearInterval(timerInterval);
+
+  const nextBtn = document.getElementById("nextButton");
+  const originalText = nextBtn.textContent;
+
+  nextBtn.disabled = true;
+  nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+  // Prevent infinite loading — timeout after 12 seconds
+  const TIMEOUT_MS = 12000;
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS)
+  );
+
+  try {
+    if (currentGame.mode === "survey") {
+      await Promise.race([submitSurveyResponses(), timeoutPromise]);
+
+      showToast("Responses submitted successfully!", "success");
+
+      document.getElementById("scoreText").innerHTML = `
+        <div style="color:#10b981; font-size:1.4rem; margin:16px 0;">
+          <i class="fas fa-check-circle"></i> Thank you!
+        </div>
+        Your responses have been recorded.<br>
+        <small style="color:#94a3b8;">You can now view the aggregated results.</small>
+      `;
+    } else {
+      await Promise.race([submitScore(), timeoutPromise]);
+
+      document.getElementById("scoreText").innerHTML = 
+        `Game completed!<br>Your score: <b>${score} / ${currentGame.questions.length}</b>`;
+    }
+
+    document.getElementById("currentQuestion").style.display = "none";
+    nextBtn.style.display = "none";
+    document.getElementById("finalScreen").style.display = "block";
+
+  } catch (err) {
+    console.error("Finish failed:", err);
+
+    let toastMsg = "Failed to submit – please try again";
+    let finalMsg = "";
+
+    if (err.message === "timeout") {
+      toastMsg = "Submission timed out. Check your connection.";
+    } else if (err.message.includes("already_submitted")) {
+      toastMsg = "You have already submitted this survey.";
+      finalMsg = `
+        <div style="color:#10b981; font-size:1.3rem; margin:16px 0;">
+          <i class="fas fa-check-circle"></i> Already submitted
+        </div>
+        You completed this survey earlier.<br>
+        Feel free to view the results.
+      `;
+      hasAlreadySubmitted = true; // Remember for next time
+    }
+
+    showToast(toastMsg, err.message.includes("already") ? "info" : "error");
+
+    if (finalMsg) {
+      document.getElementById("scoreText").innerHTML = finalMsg;
+      document.getElementById("finalScreen").style.display = "block";
+      nextBtn.style.display = "none";
+    } else {
+      // Allow retry
+      nextBtn.disabled = false;
+      nextBtn.innerHTML = originalText;
+    }
+  }
+}
+async function submitScore() {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "submitQnAScore",
+        gameId,
+        username,
+        score
+      })
+    });
+  } catch {}
+}
+
+function startTimer(seconds) {
+  let remaining = seconds;
+  const display = document.getElementById("timerDisplay");
+
+  // Initial display
+  updateTimerDisplay(remaining);
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    updateTimerDisplay(remaining);
+
+    if (remaining <= 10) {
+      display.classList.add("danger");
+    } else if (remaining <= 30) {
+      display.classList.add("warning");
+    }
+
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      display.textContent = "Time's up!";
+      finishGame();
+    }
+  }, 1000);
+}
+
+async function submitSurveyResponses() {
+  if (Object.keys(surveyResponses).length === 0) {
+    console.warn("No responses to submit");
+    return;
+  }
+
+  console.log(`Submitting ${Object.keys(surveyResponses).length} survey answers...`);
+
+  for (const [qIdxStr, cIdx] of Object.entries(surveyResponses)) {
+    const qIndex = Number(qIdxStr);
+    const question = currentGame.questions[qIndex];
+    const questionId = question.questionId || `${gameId}-q${qIndex + 1}`;
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          operation: "recordSurveyResponses",
+          gameId,
+          username,
+          questionId,
+          choiceIndex: Number(cIdx)
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} – server error`);
+      }
+
+      const data = await res.json();
+
+      if (data.status !== "success") {
+        // Very important: check if backend says "already submitted"
+        if (data.message?.toLowerCase().includes("already submitted") ||
+            data.message?.toLowerCase().includes("duplicate")) {
+          throw new Error("already_submitted");
+        }
+        throw new Error(data.message || "Backend rejected submission");
+      }
+
+      console.log(`Q${qIndex + 1} submitted OK`);
+    } catch (err) {
+      console.error(`Failed Q${qIndex + 1}:`, err);
+      throw err; // Stop on first real error
+    }
+  }
+
+  console.log("All responses submitted successfully");
+}
+
+function updateTimerDisplay(seconds) {
+  const display = document.getElementById("timerDisplay");
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  display.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+}
+async function loadLeaderboard() {
+  const list = document.getElementById("leaderboardList");
+  list.innerHTML = '<div class="no-leaders">Loading leaderboard...</div>';
+
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getQnALeaderboard&gameId=${gameId}`);
+    const data = await r.json();
+
+    if (data.status !== "success") {
+      list.innerHTML = '<div class="no-leaders">Could not load leaderboard</div>';
+      return;
+    }
+
+    const leaders = data.leaders || [];
+    if (leaders.length === 0) {
+      list.innerHTML = '<div class="no-leaders">No scores yet — be the first!</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    leaders.forEach((l, index) => {
+      const item = document.createElement('div');
+      item.className = 'leader-item';
+
+      const rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+
+      item.innerHTML = `
+        <div class="leader-rank ${rankClass}">${index + 1}</div>
+        <div class="leader-name">${l.username}</div>
+        <div class="leader-score">${l.score}</div>
+      `;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    list.innerHTML = '<div class="no-leaders">Error loading leaderboard</div>';
+  }
+}
+
+function showSurveyResults() {
+  // Create or reuse modal
+  let modal = document.getElementById("surveyResultsModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "surveyResultsModal";
+    modal.style.cssText = `
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.85); display: none;
+      overflow: hidden; touch-action: pan-x;
+    `;
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div style="height:100%; width:100%; position:relative;">
+      <button onclick="document.getElementById('surveyResultsModal').style.display='none'" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#60a5fa; font-size:2.2rem; cursor:pointer; z-index:10;">×</button>
+      
+      <div id="resultsCarousel" style="
+        display:flex; height:100%; transition: transform 0.4s ease;
+        touch-action: pan-x; user-select: none;
+      "></div>
+
+      <div id="carouselDots" style="
+        position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+        display:flex; gap:12px; z-index:10;
+      "></div>
+    </div>
+  `;
+  modal.style.display = "block";
+
+  // Loading
+  document.getElementById("resultsCarousel").innerHTML = `
+    <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem;">
+      Loading Survey Results...
+    </div>
+  `;
+
+  // Fetch results + participants
+  Promise.all([
+    fetch(`${SCRIPT_URL}?operation=getSurveyResults&gameId=${gameId}`).then(r => r.json()),
+    fetch(`${SCRIPT_URL}?operation=getSurveyParticipants&gameId=${gameId}`).then(r => r.json())
+  ])
+  .then(([resultsData, participantsData]) => {
+    const results = resultsData.results || [];
+    const participants = participantsData.participants || [];
+
+    if (resultsData.status !== "success") {
+      document.getElementById("resultsCarousel").innerHTML = `
+        <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1.3rem; text-align:center; padding:20px;">
+          ${resultsData.message || "Failed to load results"}
+        </div>
+      `;
+      return;
+    }
+
+    let slidesHTML = "";
+    let dotsHTML = "";
+
+    // Questions slides
+    results.forEach((q, qIndex) => {
+      let choicesHTML = "";
+      q.choices.forEach(c => {
+        const percent = c.percent;
+        choicesHTML += `
+          <div style="margin:12px 0;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:1.1rem;">
+              <span>${c.text}</span>
+              <span style="color:#60a5fa; font-weight:600;">${percent}% (${c.count})</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.1); border-radius:8px; height:14px; overflow:hidden;">
+              <div style="background:#3b82f6; height:100%; width:${percent}%; transition:width 0.6s;"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      slidesHTML += `
+        <div style="flex:0 0 100%; padding:60px 20px 100px; overflow-y:auto; color:white;">
+          <h2 style="margin:0 0 20px; color:#60a5fa; font-size:1.6rem; text-align:center;">${q.questionText}</h2>
+          ${q.questionImage ? `<img src="${getLh3Link(q.questionImage)}" style="max-width:100%; border-radius:12px; margin:0 auto 24px; display:block; max-height:260px;">` : ''}
+          <p style="text-align:center; font-weight:600; margin-bottom:24px; font-size:1.1rem;">Total responses: ${q.totalResponses}</p>
+          <div style="max-width:520px; margin:0 auto;">${choicesHTML}</div>
+        </div>
+      `;
+      dotsHTML += `<div style="width:12px; height:12px; border-radius:50%; background:${qIndex===0?'#60a5fa':'rgba(255,255,255,0.3)'}; transition:all 0.3s;"></div>`;
+    });
+
+    // Participants slide (last one)
+    let participantsHTML = `
+      <div style="flex:0 0 100%; padding:60px 20px 100px; overflow-y:auto; color:white; text-align:center;">
+        <h2 style="margin:0 0 32px; color:#60a5fa; font-size:1.6rem;">Participants (${participants.length})</h2>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:24px; max-width:600px; margin:0 auto;">
+    `;
+    if (participants.length === 0) {
+      participantsHTML += `<p style="color:#94a3b8; font-size:1.2rem;">No participants yet.</p>`;
+    } else {
+      participants.forEach(p => {
+        const pic = p.picLink ? getLh3Link(p.picLink) : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username)}&background=60a5fa&color=fff&size=128`;
+        participantsHTML += `
+          <div style="text-align:center;">
+            <img src="${pic}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid #60a5fa; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+            <div style="margin-top:8px; font-size:1rem; color:#e2e8f0;">${p.username}</div>
+          </div>
+        `;
+      });
+    }
+    participantsHTML += `</div></div>`;
+
+    slidesHTML += participantsHTML;
+    dotsHTML += `<div style="width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.3); transition:all 0.3s;"></div>`;
+
+    document.getElementById("resultsCarousel").innerHTML = slidesHTML;
+    document.getElementById("carouselDots").innerHTML = dotsHTML;
+
+    // Swipe logic (touch + mouse)
+    const carousel = document.getElementById("resultsCarousel");
+    let isDragging = false, startX = 0, currentTranslate = 0, prevTranslate = 0, currentIndex = 0;
+    const totalSlides = results.length + 1;
+
+    const updateDots = (index) => {
+      document.querySelectorAll("#carouselDots > div").forEach((dot, i) => {
+        dot.style.background = i === index ? "#60a5fa" : "rgba(255,255,255,0.3)";
+      });
+    };
+
+    const setPositionByIndex = () => {
+      currentTranslate = currentIndex * -100;
+      prevTranslate = currentTranslate;
+      carousel.style.transform = `translateX(${currentTranslate}%)`;
+      updateDots(currentIndex);
+    };
+
+    // Mouse + touch events
+    const pointerDown = (e) => {
+      isDragging = true;
+      startX = e.type.includes("mouse") ? e.pageX : e.touches[0].clientX;
+      carousel.style.transition = "none";
+    };
+
+    const pointerMove = (e) => {
+      if (!isDragging) return;
+      const currentPosition = e.type.includes("mouse") ? e.pageX : e.touches[0].clientX;
+      const diff = currentPosition - startX;
+      currentTranslate = prevTranslate + diff;
+      carousel.style.transform = `translateX(${currentTranslate}%)`;
+    };
+
+    const pointerUp = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      carousel.style.transition = "transform 0.4s ease";
+
+      const movedBy = currentTranslate - prevTranslate;
+      if (movedBy < -60 && currentIndex < totalSlides - 1) currentIndex++;
+      if (movedBy > 60 && currentIndex > 0) currentIndex--;
+
+      setPositionByIndex();
+    };
+
+    carousel.addEventListener("mousedown", pointerDown);
+    carousel.addEventListener("mousemove", pointerMove);
+    carousel.addEventListener("mouseup", pointerUp);
+    carousel.addEventListener("mouseleave", pointerUp);
+
+    carousel.addEventListener("touchstart", pointerDown);
+    carousel.addEventListener("touchmove", pointerMove);
+    carousel.addEventListener("touchend", pointerUp);
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById("resultsCarousel").innerHTML = `
+      <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1.3rem;">
+        Network error — try again
+      </div>
+    `;
+  });
+}
+</script>
+</body>
+</html>

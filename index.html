@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Riverside Connect – Welcome</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- iOS support -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Riverside Connect">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="maskable_icon_x192.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Riverside Connect">
+  <meta property="og:description" content="Join the conversation – real-time Christian community">
+  <meta property="og:image" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/maskable_icon_x192.png">
+  <meta property="og:url" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100dvh;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: -webkit-fill-available;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(10px);
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(96, 165, 250, 0.18);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-content {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      gap: 24px;
+      overflow-y: auto;
+    }
+
+    .welcome {
+      text-align: center;
+      max-width: 480px;
+    }
+
+    .welcome h2 {
+      font-size: 1.9rem;
+      margin-bottom: 12px;
+      color: #60a5fa;
+    }
+
+    .welcome p {
+      font-size: 1.05rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      width: 100%;
+      max-width: 420px;
+      padding: 0 12px;
+    }
+
+    .big-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 18px 24px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      border: none;
+      border-radius: 16px;
+      text-decoration: none;
+      transition: all 0.22s ease;
+      box-shadow: 0 6px 20px rgba(59,130,246,0.35);
+      cursor: pointer;
+    }
+
+    .big-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(59,130,246,0.5);
+    }
+
+    .big-btn.outline {
+      background: transparent;
+      border: 1.5px solid rgba(96,165,250,0.5);
+      color: #60a5fa;
+      box-shadow: none;
+    }
+
+    .big-btn.outline:hover {
+      background: rgba(96,165,250,0.08);
+    }
+
+    .big-btn i {
+      font-size: 1.4rem;
+    }
+
+    .install-area {
+      padding: 20px 24px;
+      background: rgba(15,23,42,0.6);
+      border-top: 1px solid rgba(96,165,250,0.15);
+      text-align: center;
+    }
+
+    #installAppBtn {
+      padding: 14px 28px;
+      font-size: 1.05rem;
+      background: rgba(96,165,250,0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(96,165,250,0.4);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #installAppBtn:hover {
+      background: rgba(96,165,250,0.25);
+    }
+
+    #installAppBtn.hidden {
+      display: none;
+    }
+
+    .status-pending {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+
+    @media (max-width: 500px) {
+      .welcome h2 { font-size: 1.7rem; }
+      .big-btn { font-size: 1.05rem; padding: 16px 20px; }
+    }
+
+    /* Safe area insets – iOS */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      header { padding-top: calc(16px + env(safe-area-inset-top)); }
+      .install-area { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <h1>Riverside Connect</h1>
+    <div>
+      <img id="user-avatar" class="avatar" src="" alt="Profile"
+           style="width:44px;height:44px;border-radius:50%;border:2px solid #60a5fa;object-fit:cover;"
+           onerror="this.src='https://via.placeholder.com/44?text=@'">
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="welcome" id="welcome-message">
+    <h2>Welcome!</h2>
+    <p>Loading your status...</p>
+  </div>
+
+  <div class="button-grid" id="button-container">
+    <!-- Buttons will be injected here by JS -->
+  </div>
+
+</main>
+
+<div class="install-area">
+  <button id="installAppBtn">
+    <i class="fas fa-download"></i> Install App
+  </button>
+</div>
+
+<!-- Minimal Install Modal / Toast support -->
+<div id="installModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:rgba(30,41,59,0.95); padding:28px; border-radius:16px; max-width:340px; text-align:center; border:1px solid rgba(96,165,250,0.25);">
+    <h3 style="color:#60a5fa; margin-bottom:16px;">Add to Home Screen?</h3>
+    <p style="color:#cbd5e1; margin-bottom:24px; line-height:1.45;">Install Riverside Connect for quicker access and better experience.</p>
+    <div style="display:flex; gap:12px;">
+      <button id="installYes" style="flex:1; padding:14px; background:#3b82f6; color:white; border:none; border-radius:12px; font-weight:600;">Yes</button>
+      <button id="installNo"  style="flex:1; padding:14px; background:transparent; color:white; border:1px solid #60a5fa; border-radius:12px;">Later</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────
+//  BASIC SETUP
+// ────────────────────────────────────────────────
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbxsUojWQz4SE_84AWazYtVQMAa5oFy5MdZnC2kursSNhVg6GJVmCY9wrlEyP1ZxrMWV/exec';
+const userName   = localStorage.getItem('userName');
+
+if (!userName) {
+  window.location.href = 'login.html';
+}
+
+// Avatar
+const avatar = document.getElementById('user-avatar');
+const picLink = localStorage.getItem('userPicLink');
+if (picLink) {
+  const id = picLink.match(/[-\w]{25,}/)?.[0];
+  avatar.src = id ? `https://lh3.googleusercontent.com/d/${id}` : picLink;
+} else {
+  avatar.src = 'https://via.placeholder.com/44?text=@';
+}
+
+// ────────────────────────────────────────────────
+//  INSTALL BUTTON LOGIC
+// ────────────────────────────────────────────────
+let deferredPrompt;
+const installBtn   = document.getElementById('installAppBtn');
+const installModal = document.getElementById('installModal');
+
+// Hide if already installed
+if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true) {
+  installBtn.classList.add('hidden');
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.classList.remove('hidden');
+});
+
+installBtn.addEventListener('click', () => {
+  installModal.style.display = 'flex';
+});
+
+document.getElementById('installYes').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') installBtn.classList.add('hidden');
+    deferredPrompt = null;
+  }
+  installModal.style.display = 'none';
+});
+
+document.getElementById('installNo').addEventListener('click', () => {
+  installModal.style.display = 'none';
+});
+
+window.addEventListener('appinstalled', () => {
+  installBtn.classList.add('hidden');
+  installModal.style.display = 'none';
+});
+
+// ────────────────────────────────────────────────
+//  SHOW CORRECT BUTTONS BASED ON APPROVAL
+// ────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const res = await fetch(`${scriptUrl}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
+    const data = await res.json();
+
+    if (data.status !== 'success') throw new Error();
+
+    const isApproved = data.userStatus?.toLowerCase() === 'approved';
+    const welcomeEl = document.getElementById('welcome-message');
+    const btnContainer = document.getElementById('button-container');
+
+    if (isApproved) {
+      welcomeEl.innerHTML = `
+        <h2>Hello, ${userName}!</h2>
+        <p>Choose where you'd like to go</p>
+      `;
+
+      btnContainer.innerHTML = `
+        <a href="home.html"     class="big-btn"><i class="fas fa-home"></i> Home</a>
+        <a href="announce.html"  class="big-btn"><i class="fas fa-bullhorn"></i> Announcements</a>
+        <a href="Q&A.html"       class="big-btn outline"><i class="fas fa-question-circle"></i> Q & A</a>
+        <a href="channel.html"   class="big-btn outline"><i class="fas fa-users"></i> Channels</a>
+      `;
+    } else {
+      const statusText = data.userStatus?.toLowerCase() === 'pending' ? 'pending approval' : 'not active';
+
+      welcomeEl.innerHTML = `
+        <h2>Welcome, ${userName}</h2>
+        <p>Your account is currently <span class="status-pending">${statusText}</span></p>
+      `;
+
+      btnContainer.innerHTML = `
+        <a href="Q&A.html"     class="big-btn"><i class="fas fa-question-circle"></i> Q & A</a>
+        <a href="channel.html" class="big-btn"><i class="fas fa-users"></i> Channels</a>
+      `;
+    }
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('welcome-message').innerHTML = `
+      <h2 style="color:#f87171;">Connection issue</h2>
+      <p>Please check your internet and try again.</p>
+    `;
+  }
+}
+
+// Load immediately
+loadDashboard();
+
+</script>
+
+</body>
+</html>
