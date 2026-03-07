@@ -1174,16 +1174,49 @@ async function loadAllQnAChannels() {
       tab.onclick = () => openQnAChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
       channelList.appendChild(tab);
     });
+     // ── Decide which Q&A channel to open automatically ───────────────────────────────
     let channelToOpen = null;
-    const lastId = localStorage.getItem("lastQnAChannelId");
-    if (lastId) {
-      channelToOpen = allQnAChannels.find(ch => ch.id === lastId);
+
+    // 1. Highest priority: ?channelId= from URL (from dashboard click)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlChannelId = urlParams.get('channelId');
+
+    if (urlChannelId) {
+      channelToOpen = allQnAChannels.find(ch => ch.id === urlChannelId);
+      if (channelToOpen) {
+        console.log("Opening specific Q&A channel from URL:", urlChannelId);
+      } else {
+        console.warn("Channel ID from URL not found:", urlChannelId);
+      }
     }
+
+    // 2. Fallback: only use last viewed if no URL parameter was provided
+    if (!channelToOpen) {
+      const lastId = localStorage.getItem("lastQnAChannelId");
+      if (lastId) {
+        channelToOpen = allQnAChannels.find(ch => ch.id === lastId);
+      }
+    }
+
+    // 3. Last resort: open the first channel if nothing else matches
     if (!channelToOpen && allQnAChannels.length > 0) {
       channelToOpen = allQnAChannels[0];
     }
+
+    // 4. Open it and remember as last viewed
     if (channelToOpen) {
-      openQnAChannelTab(channelToOpen.id, channelToOpen.name, channelToOpen.description, channelToOpen.creator, channelToOpen.created, channelToOpen.picLink);
+      openQnAChannelTab(
+        channelToOpen.id,
+        channelToOpen.name,
+        channelToOpen.description,
+        channelToOpen.creator,
+        channelToOpen.created,
+        channelToOpen.picLink
+      );
+      // Save as last viewed (so next time without ?channelId it remembers this one)
+      localStorage.setItem("lastQnAChannelId", channelToOpen.id);
+    } else {
+      console.log("No Q&A channels available");
     }
   } catch (err) {
     channelList.innerHTML = '<div class="empty">Failed to load Q&A channels</div>';
@@ -1916,3 +1949,4 @@ document.getElementById('closeChannels')?.addEventListener('click', () => {
 </body>
 
 </html>
+
