@@ -335,7 +335,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG18AvucL_ckaUQr6V-nzBtwxi21TEOL_096iArq8RXC-Z6xAQotZwtFU7WiYOl8xG/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaUlYkUCWykKqmOauBR8dMi8IfpwJoF8ioKK5wMIiMDPkJdRKJ_xuycnEnigs2jVoa/exec';
 
 const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('gameId');
@@ -375,6 +375,29 @@ document.getElementById("showLeaderboardBtn").addEventListener("click", () => {
     }
   }
 });
+
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    padding: 12px 24px; border-radius: 8px; color: white; font-weight: 500;
+    z-index: 9999; min-width: 240px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  `;
+
+  if (type === "success") toast.style.background = "#10b981";
+  else if (type === "error")   toast.style.background = "#ef4444";
+  else if (type === "info")    toast.style.background = "#3b82f6";
+  else                         toast.style.background = "#6b7280";
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transition = "opacity 0.6s";
+    setTimeout(() => toast.remove(), 600);
+  }, 2800);
+}
 
 function getLh3Link(url) {
   if (!url) return '';
@@ -822,6 +845,16 @@ async function submitSurveyResponses() {
     const question = currentGame.questions[qIndex];
     const questionId = question.questionId || `${gameId}-q${qIndex + 1}`;
 
+    // ── NEW: Get the actual text of the chosen answer ───────────────────────
+    let choiceText = "";
+    const selectedChoice = question.choices[Number(cIdx)];
+    if (selectedChoice && selectedChoice.text) {
+      choiceText = selectedChoice.text.trim();
+    } else {
+      console.warn(`No text found for choice ${cIdx} on question ${qIndex + 1}`);
+      // Optional: fallback or skip — but better to send empty string
+    }
+
     try {
       const res = await fetch(SCRIPT_URL, {
         method: "POST",
@@ -830,7 +863,8 @@ async function submitSurveyResponses() {
           gameId,
           username,
           questionId,
-          choiceIndex: Number(cIdx)
+          choiceIndex: Number(cIdx),
+          choiceText: choiceText   // ← ADD THIS LINE
         })
       });
 
@@ -841,9 +875,9 @@ async function submitSurveyResponses() {
       const data = await res.json();
 
       if (data.status !== "success") {
-        // Very important: check if backend says "already submitted"
         if (data.message?.toLowerCase().includes("already submitted") ||
-            data.message?.toLowerCase().includes("duplicate")) {
+            data.message?.toLowerCase().includes("duplicate") ||
+            data.message?.toLowerCase().includes("already answered")) {
           throw new Error("already_submitted");
         }
         throw new Error(data.message || "Backend rejected submission");
@@ -858,7 +892,6 @@ async function submitSurveyResponses() {
 
   console.log("All responses submitted successfully");
 }
-
 function updateTimerDisplay(seconds) {
   const display = document.getElementById("timerDisplay");
   const mins = Math.floor(seconds / 60);
