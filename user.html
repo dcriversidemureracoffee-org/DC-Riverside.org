@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riverside Connect – Profile</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body {font-family:system-ui; background:linear-gradient(135deg,#0f172a,#1e293b); color:#e2e8f0; min-height:100dvh; margin:0; display:flex; flex-direction:column;}
+    header {background:rgba(15,23,42,0.9); padding:16px 20px; text-align:center;}
+    main {flex:1; padding:24px; overflow-y:auto;}
+    .big-avatar {width:140px; height:140px; border-radius:50%; border:5px solid #60a5fa; margin:0 auto 16px; display:block; object-fit:cover;}
+    h2 {text-align:center; color:#60a5fa; margin-bottom:32px;}
+    .section {margin-bottom:40px;}
+    .card {background:rgba(30,41,59,0.7); border-radius:16px; padding:16px; margin-bottom:16px; display:flex; gap:16px; align-items:center; cursor:pointer; transition:all 0.2s;}
+    .card:hover {transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+    .card img {width:64px; height:64px; border-radius:12px; object-fit:cover;}
+    .modal {display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; z-index:9999;}
+    .modal-content {background:#1e293b; width:92%; max-width:560px; max-height:90vh; overflow-y:auto; border-radius:16px; padding:24px;}
+    table {width:100%; border-collapse:collapse; margin:16px 0;}
+    th, td {padding:10px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:left;}
+    th {background:rgba(96,165,250,0.12);}
+    .total-row {font-weight:bold; background:rgba(34,197,94,0.15);}
+    .btn {padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.9rem;}
+    .btn-primary {background:#3b82f6; color:white;}
+    .btn-add {background:#22c55e; color:white; padding:8px 12px;}
+    .btn-edit {background:#f59e0b; color:white;}
+    .btn-del {background:#ef4444; color:white;}
+    .btn-save {background:#10b981; color:white;}
+    input, textarea {width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #60a5fa44; background:#1e293b; color:#e2e8f0; font-size:0.95rem;}
+    .form-group {margin-bottom:16px;}
+    .toast {position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#22c55e; color:white; padding:12px 24px; border-radius:999px; box-shadow:0 8px 32px rgba(0,0,0,0.5); z-index:10000; min-width:220px; text-align:center; display:none;}
+    .toast.error {background:#ef4444;}
+    .preview-img {width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #60a5fa; margin:8px auto; display:block;}
+    .loading {opacity:0.6; pointer-events:none;}
+    .loading::after {content:""; display:inline-block; width:16px; height:16px; border:2px solid #fff; border-radius:50%; border-top-color:transparent; animation:spin 1s linear infinite; margin-left:8px;}
+    @keyframes spin {to {transform:rotate(360deg);}}
+    .new-row input {background:#2d3748;}
+    .confirm-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  border: 1px solid #ef444488;
+  color: #e2e8f0;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 320px;
+}
+.confirm-toast button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.confirm-toast .yes { background: #ef4444; color: white; }
+.confirm-toast .no  { background: #4b5563; color: white; }
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;   /* pushes content left + buttons right */
+  gap: 12px;
+  padding: 16px;
+}
+
+/* Main content (image + text) takes available space */
+.card .card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Buttons container - stays on the far right */
+.card .actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Small, circular, subtle buttons */
+.card .actions button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 0.9rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.card .actions button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1);
+}
+
+/* Button-specific colors */
+.card .btn-edit {
+  color: #f59e0b;     /* amber/orange */
+}
+
+.card .btn-del {
+  color: #ef4444;     /* red */
+}
+
+/* Slightly cleaner icons */
+.card .actions i {
+  font-size: 0.95rem;
+}
+
+/* ─── Modern toggle button (no visible checkbox) ──────────────────────── */
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.list-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.toggle-label {
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 54px;
+  height: 28px;
+  background: #4b5563;           /* off = gray */
+  border-radius: 999px;
+  transition: background 0.35s ease;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-knob {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#toggle-contrib:checked + .toggle-track {
+  background: #22c55e;           /* on = green */
+}
+
+#toggle-contrib:checked + .toggle-track .toggle-knob {
+  transform: translateX(26px);
+}
+
+/* Optional: tiny icons or text inside knob/track for clarity */
+.toggle-track::before {
+  content: "Hide";
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+  opacity: 0.9;
+  transition: opacity 0.4s;
+}
+
+#toggle-contrib:checked + .toggle-track::before {
+  content: "Show";
+  right: auto;
+  left: 8px;
+}
+
+/* ─── Smooth show/hide animation for the list ──────────────────────────── */
+.contrib-container {
+  transition: all 0.38s ease;
+  transform-origin: top;
+}
+
+.contrib-container.hidden {
+  opacity: 0;
+  transform: translateY(-12px);
+  height: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#roleActions .btn-primary {
+    font-size:          0.78rem;
+    letter-spacing:     -0.5px;            /* aggressive squeeze */
+    font-weight:        500;
+    padding:            6px 16px;
+    min-width:          210px;
+    line-height:        1.15;
+    white-space:        nowrap;
+    border-radius:      999px;
+    display:            inline-flex;
+    align-items:        center;
+    gap:                6px;
+    text-transform:     none;              /* remove uppercase if you had it */
+}
+
+/* Optional: allow slight wrapping only as last resort */
+@media (max-width: 480px) {
+    #roleActions .btn-primary {
+        font-size:      0.76rem;
+        padding:        6px 12px;
+        letter-spacing: -0.4px;
+        line-height:    1.18;
+    }
+}
+  </style>
+</head>
+<body>
+
+<header>
+    
+   
+     <a href="index.html" class="back-btn-top" title="Back to main page">
+    <i class="fas fa-arrow-left"></i>
+  </a>
+
+  <div style="display: flex; align-items: center; gap: 10px; color: #e2e8f0;">
+    <img id="smallAvatar" 
+         style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #60a5fa;"
+         src="" alt="Profile">
+    <span id="smallUserName" style="font-size: 1rem; font-weight: 500;"></span>
+  </div>
+</header>
+
+<main>
+  
+
+  <div id="roleActions" class="section" style="display:none; text-align:center;">
+    <button class="btn btn-primary" style="padding:14px 28px; font-size:1.1rem;" onclick="openCreateSetModal()">
+      <i class="fas fa-heart me-1 text-danger"></i> Create New Contribution Set
+    </button>
+  </div>
+
+  <div class="section">
+  <div class="list-header">
+    <h3>All Contribution Sets</h3>
+    
+    <label class="toggle-label" for="toggle-contrib">
+      <!-- Remove checked attribute so it starts OFF (hidden) -->
+      <input type="checkbox" id="toggle-contrib" hidden>
+      <span class="toggle-track">
+        <span class="toggle-knob"></span>
+      </span>
+    </label>
+  </div>
+
+  <!-- Add class="hidden" here so it starts collapsed -->
+  <div id="contribList" class="contrib-container hidden"></div>
+</div>
+</main>
+
+<!-- Modal: View/Edit Contribution Set -->
+<div id="contribModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle"></h3>
+    <div id="tableContainer"></div>
+    <div style="margin-top:20px; text-align:right;">
+      <button class="btn" onclick="document.getElementById('contribModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Create Contribution Set -->
+<div id="createSetModal" class="modal">
+  <div class="modal-content">
+    <h3>Create New Contribution Set</h3>
+    <form id="createSetForm">
+      <div class="form-group">
+        <label>Set Name</label>
+        <input type="text" id="setName" required placeholder="e.g. Church Building Fund">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="setDesc" rows="3" placeholder="Purpose and details..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Profile Picture (optional)</label>
+        <input type="file" id="setImage" accept="image/*" onchange="previewImage(event)">
+        <img id="imagePreview" class="preview-img" src="" style="display:none;" alt="Preview">
+      </div>
+      <div style="margin-top:24px; text-align:right;">
+        <button type="button" class="btn" onclick="document.getElementById('createSetModal').style.display='none'">Cancel</button>
+        <button type="button" class="btn btn-primary" id="createBtn" onclick="submitNewSet()">Create Set</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="editSetModal" class="modal">
+  <div class="modal-content">
+    <h3>Edit Contribution Set</h3>
+    <form id="editSetForm">
+      <input type="hidden" id="editSetId">
+      <div class="form-group">
+        <label>Set Name</label>
+        <input type="text" id="editSetName" required placeholder="e.g. Church Building Fund">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="editSetDesc" rows="3" placeholder="Purpose and details..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Profile Picture (leave blank to keep current)</label>
+        <input type="file" id="editSetImage" accept="image/*" onchange="previewEditImage(event)">
+        <img id="editImagePreview" class="preview-img" src="" style="display:none;" alt="Preview">
+        <small id="currentPicNote" style="color:#94a3b8; display:block; margin-top:8px;"></small>
+      </div>
+      <div style="margin-top:24px; text-align:right;">
+        <button type="button" class="btn" onclick="document.getElementById('editSetModal').style.display='none'">Cancel</button>
+        <button type="button" class="btn btn-save" id="saveSetBtn" onclick="saveEditedSet()">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast"></div>
+<script>
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbwrYr_XkVS5ZS0B_QAFFjOpF8GSKYR0GTOZM1WnpLPcO2JpArBxmg5wMhdItGn1fk82/exec';
+const currentUser = localStorage.getItem('userName');
+
+let currentOpenSet = null; // ← NEW: store current set for easy refresh
+let userRole = "unknown";  // Will be updated after fetching status
+
+function showToast(message, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast' + (isError ? ' error' : '');
+  toast.style.display = 'block';
+  setTimeout(() => toast.style.display = 'none', 3000);
+}
+
+function previewImage(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const preview = document.getElementById('imagePreview');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// ─── CUSTOM DELETE CONFIRMATION (nice toast, no browser prompt) ───────────────
+function customConfirm(message, onConfirm) {
+  const existing = document.querySelector('.confirm-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'confirm-toast';
+  toast.innerHTML = `
+    <span>${message}</span>
+    <button class="yes">Yes, delete</button>
+    <button class="no">Cancel</button>
+  `;
+  document.body.appendChild(toast);
+
+  toast.querySelector('.yes').onclick = () => {
+    onConfirm();
+    toast.remove();
+  };
+  toast.querySelector('.no').onclick = () => toast.remove();
+
+  // Auto-dismiss after 12 seconds
+  setTimeout(() => toast.remove(), 12000);
+}
+
+async function loadUserPage() {
+  const picLink = localStorage.getItem('userPicLink');
+
+  // Small avatar + name in the HEADER (top nav bar)
+  const smallAvatar = document.getElementById('smallAvatar');
+  if (smallAvatar) {
+    smallAvatar.src = picLink 
+      ? `https://lh3.googleusercontent.com/d/${picLink.match(/[-\w]{25,}/)?.[0] || ''}` 
+      : 'https://via.placeholder.com/36?text=@';
+  }
+
+  const smallUserName = document.getElementById('smallUserName');
+  if (smallUserName) {
+    smallUserName.textContent = currentUser;
+  }
+
+  // Fetch user status (including role)
+  const statusRes = await fetch(`${scriptUrl}?operation=getUserStatus&name=${encodeURIComponent(currentUser)}`);
+  const statusData = await statusRes.json();
+
+  userRole = (statusData.role || "").trim().toLowerCase();   // ← Save globally
+
+  // Only show "Create New Contribution Set" button to treasurers
+  if (userRole === "treasurer") {
+    document.getElementById('roleActions').style.display = 'block';
+  }
+
+  // Load contribution sets
+  const setsRes = await fetch(`${scriptUrl}?operation=getContributionSets`);
+  const { sets } = await setsRes.json();
+
+  const list = document.getElementById('contribList');
+  list.innerHTML = '';
+
+  if (!sets || sets.length === 0) {
+    list.innerHTML = '<p style="color:#94a3b8; text-align:center; padding:40px;">No contribution sets yet</p>';
+    return;
+  }
+
+  sets.forEach(set => {
+    const isCreator = currentUser === set.creator;
+    
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div style="position:relative; flex-shrink:0;">
+        <img src="${set.picLink ? 'https://lh3.googleusercontent.com/d/' + (set.picLink.match(/[-\w]{25,}/)?.[0] || '') : 'https://via.placeholder.com/64?text=💰'}" 
+             alt="${set.name}">
+        ${isCreator ? `
+          <div class="actions">
+            <button class="btn btn-edit" onclick="event.stopPropagation(); openEditSetModal('${set.id}', '${set.name.replace(/'/g,"\\'")}', '${(set.description||"").replace(/'/g,"\\'")}', '${set.picLink || ''}')">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-del" onclick="event.stopPropagation(); deleteContributionSet('${set.id}', '${set.name.replace(/'/g,"\\'")}')">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        ` : ''}
+      </div>
+      <div>
+        <strong>${set.name}</strong><br>
+        <small style="color:#94a3b8;">${set.description || 'No description'}</small><br>
+        <small>By ${set.creator} • ${new Date(set.created).toLocaleDateString()}</small>
+      </div>
+    `;
+    card.onclick = () => openContributionModal(set);
+    list.appendChild(card);
+  });
+}
+// ─── Edit Modal ───────────────────────────────────────────────────────────────
+
+function openEditSetModal(id, name, desc, currentPic) {
+  document.getElementById('editSetId').value = id;
+  document.getElementById('editSetName').value = name;
+  document.getElementById('editSetDesc').value = desc || '';
+  
+  const preview = document.getElementById('editImagePreview');
+  const note    = document.getElementById('currentPicNote');
+  
+  if (currentPic) {
+    preview.src = 'https://lh3.googleusercontent.com/d/' + (currentPic.match(/[-\w]{25,}/)?.[0] || '');
+    preview.style.display = 'block';
+    note.textContent = 'Current picture shown above. Upload new one to replace.';
+  } else {
+    preview.style.display = 'none';
+    note.textContent = 'No picture set yet.';
+  }
+
+  document.getElementById('editSetModal').style.display = 'flex';
+}
+
+function previewEditImage(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('editImagePreview');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+async function saveEditedSet() {
+  const btn = document.getElementById('saveSetBtn');
+  const id   = document.getElementById('editSetId').value;
+  const name = document.getElementById('editSetName').value.trim();
+  const desc = document.getElementById('editSetDesc').value.trim();
+  const fileInput = document.getElementById('editSetImage');
+
+  if (!name) {
+    showToast("Set name is required", true);
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  let imageData = null, imageName = null;
+  if (fileInput.files[0]) {
+    const file = fileInput.files[0];
+    imageName = file.name;
+    const reader = new FileReader();
+    reader.onload = async e => {
+      imageData = e.target.result.split(',')[1];
+      await sendUpdateSetRequest(id, name, desc, imageData, imageName, btn);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    await sendUpdateSetRequest(id, name, desc, null, null, btn);
+  }
+}
+
+async function sendUpdateSetRequest(id, name, desc, imageData, imageName, btn) {
+  try {
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        operation: 'updateContributionSet',
+        contributionId: id,
+        name,
+        description: desc,
+        imageData,
+        imageName,
+        user: currentUser   // for ownership check
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      showToast('Contribution Set updated');
+      document.getElementById('editSetModal').style.display = 'none';
+      loadUserPage(); // refresh list
+    } else {
+      showToast('Error: ' + (data.message || 'Failed'), true);
+    }
+  } catch (err) {
+    showToast('Network error', true);
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+  }
+}
+
+// ─── Delete Set ───────────────────────────────────────────────────────────────
+
+function deleteContributionSet(setId, setName) {
+  customConfirm(
+    `Delete contribution set "${setName}" and ALL its entries permanently?`,
+    async () => {
+      try {
+        const res = await fetch(scriptUrl, {
+          method: 'POST',
+          body: JSON.stringify({
+            operation: 'deleteContributionSet',
+            contributionId: setId,
+            user: currentUser
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          showToast('Contribution Set deleted');
+          loadUserPage();
+        } else {
+          showToast('Error: ' + (data.message || 'Could not delete'), true);
+        }
+      } catch (err) {
+        showToast('Network error', true);
+      }
+    }
+  );
+}
+
+function openCreateSetModal() {
+  document.getElementById('createSetModal').style.display = 'flex';
+  document.getElementById('createSetForm').reset();
+  document.getElementById('imagePreview').style.display = 'none';
+}
+
+async function submitNewSet() {
+  const btn = document.getElementById('createBtn');
+  const name = document.getElementById('setName').value.trim();
+  const desc = document.getElementById('setDesc').value.trim();
+  const fileInput = document.getElementById('setImage');
+
+  if (!name) {
+    showToast("Set Name is required!", true);
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  let imageData = null, imageName = null;
+  if (fileInput.files[0]) {
+    const file = fileInput.files[0];
+    imageName = file.name;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      imageData = e.target.result.split(',')[1];
+      await sendCreateRequest(name, desc, imageData, imageName, btn);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    await sendCreateRequest(name, desc, null, null, btn);
+  }
+}
+
+
+async function sendCreateRequest(name, desc, imageData, imageName, btn) {
+  const payload = {
+    operation: 'createContributionSet',
+    creator: currentUser,
+    name,
+    description: desc,
+    imageData,
+    imageName
+  };
+
+  try {
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      showToast('Contribution Set created');
+      document.getElementById('createSetModal').style.display = 'none';
+      loadUserPage();
+    } else {
+      showToast('Error: ' + (data.message || 'Failed'), true);
+    }
+  } catch (err) {
+    showToast('Network error', true);
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.textContent = 'Create Set';
+  }
+}
+
+
+// ─── NEW ROW + BULK SAVE (unchanged from your last version) ──────────────────
+function addNewBlankRow(contribId) {
+  const tbody = document.getElementById('entriesBody');
+  const totalRow = tbody.querySelector('.total-row');
+
+  const tr = document.createElement('tr');
+  tr.className = 'new-row pending';
+  tr.innerHTML = `
+    <td><input type="text"     class="pending-participant" placeholder="Participant name" required autofocus></td>
+    <td><input type="number"   class="pending-pledged"     step="0.01" min="0" placeholder="0.00"></td>
+    <td><input type="number"   class="pending-contributed" step="0.01" min="0" placeholder="0.00"></td>
+    <td class="pending-remaining">—</td>
+    <td><input type="text"     class="pending-notes"       placeholder="Notes (optional)"></td>
+    <td>
+      <button class="btn btn-del" onclick="this.closest('tr').remove(); updatePendingUI()">Remove</button>
+    </td>
+  `;
+
+  tbody.insertBefore(tr, totalRow);
+
+  document.getElementById('bulkSaveBtn').style.display = 'inline-flex';
+  document.getElementById('pendingNotice').style.display = 'block';
+
+  tr.querySelector('input').focus();
+}
+
+function updatePendingUI() {
+  const pendingRows = document.querySelectorAll('tr.pending');
+  const saveBtn = document.getElementById('bulkSaveBtn');
+  const notice  = document.getElementById('pendingNotice');
+
+  if (pendingRows.length === 0) {
+    saveBtn.style.display = 'none';
+    notice.style.display  = 'none';
+  }
+}
+
+async function saveAllPendingEntries(contribId) {
+  const rows = document.querySelectorAll('tr.pending');
+  if (rows.length === 0) return;
+
+  const btn = document.getElementById('bulkSaveBtn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = 'Saving...';
+
+  const entriesToSave = [];
+
+  rows.forEach(row => {
+    const participant = row.querySelector('.pending-participant').value.trim();
+    if (!participant) return;
+
+    entriesToSave.push({
+      participantName: participant,
+      pledged:     parseFloat(row.querySelector('.pending-pledged').value)     || 0,
+      contributed: parseFloat(row.querySelector('.pending-contributed').value) || 0,
+      notes:       row.querySelector('.pending-notes').value.trim()
+    });
+  });
+
+  if (entriesToSave.length === 0) {
+    showToast("No valid entries to save", true);
+    resetSaveButton(btn);
+    return;
+  }
+
+  try {
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        operation: 'addMultipleContributionEntries',
+        contributionId: contribId,
+        entries: entriesToSave
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      showToast(data.message || `Added ${entriesToSave.length} entr${entriesToSave.length === 1 ? 'y' : 'ies'}`);
+      openContributionModal(currentOpenSet);
+    } else {
+      showToast('Error: ' + (data.message || 'Failed'), true);
+      resetSaveButton(btn);
+    }
+  } catch (err) {
+    showToast('Network error', true);
+    resetSaveButton(btn);
+  }
+}
+
+function resetSaveButton(btn) {
+  btn.disabled = false;
+  btn.classList.remove('loading');
+  btn.textContent = 'Add Entries';
+}
+
+// ─── DELETE ENTRY (custom toast confirmation) ────────────────────────────────
+function deleteEntry(entryId) {
+  customConfirm(
+    "Delete this entry permanently?",
+    async () => {
+      try {
+        const res = await fetch(scriptUrl, {
+          method: 'POST',
+          body: JSON.stringify({
+            operation: 'deleteContributionEntry',
+            entryId
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          showToast('Entry deleted');
+          openContributionModal(currentOpenSet);
+        } else {
+          showToast('Error: ' + (data.message || 'Could not delete'), true);
+        }
+      } catch (err) {
+        showToast('Network error – try again', true);
+      }
+    }
+  );
+}
+
+async function openContributionModal(set) {
+  currentOpenSet = set;
+
+  const modal = document.getElementById('contribModal');
+  const title = document.getElementById('modalTitle');
+  const container = document.getElementById('tableContainer');
+
+  // IMPORTANT: Only the creator of the SET gets edit permissions
+  const isSetCreator = currentUser === set.creator;
+  const isTreasurer = userRole === "treasurer";
+
+  // Title shows edit status only if you're the set creator
+  title.textContent = set.name + (isSetCreator ? ' (Editable)' : ' (View only)');
+
+  const entriesRes = await fetch(`${scriptUrl}?operation=getContributionEntries&contributionId=${set.id}`);
+  const { entries } = await entriesRes.json();
+
+  window.originalEntries = {};
+
+  let html = '<table id="entriesTable"><thead><tr>';
+  html += '<th>Name</th><th>Pledged</th><th>Contributed</th><th>Remaining</th><th>Notes</th>';
+
+  // Actions column ONLY for the set creator
+  if (isSetCreator) html += '<th style="width:160px">Actions</th>';
+
+  html += '</tr></thead><tbody id="entriesBody">';
+
+  let totalPledged = 0, totalContributed = 0;
+
+  entries.forEach(e => {
+    const pledged     = Number(e.pledged) || 0;
+    const contributed = Number(e.contributed) || 0;
+    const remaining   = pledged - contributed;
+
+    totalPledged     += pledged;
+    totalContributed += contributed;
+
+    window.originalEntries[e.id] = {
+      participant: e.participant,
+      pledged,
+      contributed,
+      notes: e.notes || ''
+    };
+
+    html += `
+      <tr data-id="${e.id}" class="entry-row">
+        <td>${e.participant}</td>
+        <td>${pledged.toFixed(2)}</td>
+        <td>${contributed.toFixed(2)}</td>
+        <td style="color:${remaining > 0 ? '#ef4444' : '#22c55e'}">${remaining.toFixed(2)}</td>
+        <td>${e.notes || '—'}</td>`;
+
+    // Individual Delete/Edit buttons ONLY visible to set creator
+    if (isSetCreator) {
+      html += `<td><button class="btn btn-del" onclick="deleteEntry('${e.id}')">Delete</button></td>`;
+    }
+
+    html += '</tr>';
+  });
+
+  html += `
+    <tr class="total-row">
+      <td><strong>Totals</strong></td>
+      <td>${totalPledged.toFixed(2)}</td>
+      <td>${totalContributed.toFixed(2)}</td>
+      <td>${(totalPledged - totalContributed).toFixed(2)}</td>
+      ${isSetCreator ? '<td></td>' : ''}
+    </tr>
+  </tbody></table>`;
+
+  // Bulk controls (New Row, Edit All, Save All, etc.) ONLY for set creator
+  if (isSetCreator) {
+    html += `
+      <div style="margin: 24px 0; text-align: center; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-add" onclick="addNewBlankRow('${set.id}')">
+          <i class="fas fa-plus"></i> New Row
+        </button>
+        <button class="btn btn-save" id="bulkSaveBtn" style="display:none;" onclick="saveAllPendingEntries('${set.id}')">
+          <i class="fas fa-save"></i> Add Entries
+        </button>
+        <button class="btn btn-primary" id="editModeBtn" onclick="toggleEditMode()">
+          <i class="fas fa-edit"></i> Edit All
+        </button>
+        <button class="btn btn-save" id="bulkUpdateBtn" style="display:none;" onclick="saveAllEditedEntries('${set.id}')">
+          <i class="fas fa-save"></i> Save All Changes
+        </button>
+      </div>
+
+      <div id="pendingNotice" style="color:#f59e0b; text-align:center; font-size:0.9rem; display:none; margin-top:8px;">
+        You have unsaved rows — click "Add Entries" to save them
+      </div>`;
+  }
+
+  container.innerHTML = html;
+  modal.style.display = 'flex';
+}
+// ─── Toggle Edit Mode ────────────────────────────────────────────────────────
+function toggleEditMode() {
+  const editBtn = document.getElementById('editModeBtn');
+  const bulkUpdateBtn = document.getElementById('bulkUpdateBtn');
+  const isEditMode = editBtn.innerHTML.includes('Exit');
+
+  if (isEditMode) {
+    // Exit → cancel all edits
+    document.querySelectorAll('.entry-row.editing').forEach(row => {
+      cancelEdit(row.getAttribute('data-id'));
+    });
+    editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit All';
+    editBtn.classList.remove('btn-save');
+    bulkUpdateBtn.style.display = 'none';
+  } else {
+    // Enter edit mode
+    document.querySelectorAll('.entry-row:not(.editing)').forEach(row => {
+      editEntry(row.getAttribute('data-id'));
+    });
+    editBtn.innerHTML = '<i class="fas fa-times"></i> Exit Edit Mode';
+    editBtn.classList.add('btn-save');
+    bulkUpdateBtn.style.display = 'inline-flex';
+  }
+}
+
+// ─── Edit single row (no btn needed) ─────────────────────────────────────────
+function editEntry(entryId) {
+  const row = document.querySelector(`tr[data-id="${entryId}"]`);
+  if (!row || row.classList.contains('editing')) return;
+
+  const cells = row.cells;
+  const orig = window.originalEntries[entryId];
+
+  row.classList.add('editing');
+
+  cells[0].innerHTML = `<input type="text" class="edit-participant" value="${orig.participant}" required autofocus>`;
+  cells[1].innerHTML = `<input type="number" class="edit-pledged" step="0.01" min="0" value="${orig.pledged}">`;
+  cells[2].innerHTML = `<input type="number" class="edit-contributed" step="0.01" min="0" value="${orig.contributed}">`;
+  cells[3].innerHTML = '—';
+  cells[4].innerHTML = `<input type="text" class="edit-notes" value="${orig.notes}" placeholder="Notes (optional)">`;
+
+  // Live remaining
+  const pledgedEl   = row.querySelector('.edit-pledged');
+  const contribEl   = row.querySelector('.edit-contributed');
+  const remainingEl = cells[3];
+
+  const updateRemaining = () => {
+    const p = parseFloat(pledgedEl.value) || 0;
+    const c = parseFloat(contribEl.value) || 0;
+    const rem = p - c;
+    remainingEl.textContent = rem.toFixed(2);
+    remainingEl.style.color = rem > 0 ? '#ef4444' : (rem < 0 ? '#f87171' : '#22c55e');
+  };
+
+  pledgedEl.addEventListener('input', updateRemaining);
+  contribEl.addEventListener('input', updateRemaining);
+  updateRemaining();
+}
+
+// ─── Cancel single row ───────────────────────────────────────────────────────
+function cancelEdit(entryId) {
+  const row = document.querySelector(`tr[data-id="${entryId}"]`);
+  if (!row) return;
+
+  row.classList.remove('editing');
+
+  const cells = row.cells;
+  const orig = window.originalEntries[entryId];
+
+  cells[0].textContent = orig.participant;
+  cells[1].textContent = Number(orig.pledged).toFixed(2);
+  cells[2].textContent = Number(orig.contributed).toFixed(2);
+  const rem = orig.pledged - orig.contributed;
+  cells[3].textContent = rem.toFixed(2);
+  cells[3].style.color = rem > 0 ? '#ef4444' : '#22c55e';
+  cells[4].textContent = orig.notes || '—';
+}
+
+// ─── NEW: Global Save All Edited Rows ────────────────────────────────────────
+async function saveAllEditedEntries(contribId) {
+  const editedRows = document.querySelectorAll('.entry-row.editing');
+  if (editedRows.length === 0) {
+    showToast("No changes to save", true);
+    return;
+  }
+
+  const updates = [];
+
+  editedRows.forEach(row => {
+    const entryId = row.getAttribute('data-id');
+    const participant = row.querySelector('.edit-participant')?.value.trim();
+    const pledged     = parseFloat(row.querySelector('.edit-pledged')?.value)     || 0;
+    const contributed = parseFloat(row.querySelector('.edit-contributed')?.value) || 0;
+    const notes       = row.querySelector('.edit-notes')?.value.trim() || '';
+
+    if (!participant) {
+      showToast("All participants must have a name", true);
+      return;
+    }
+
+    updates.push({
+      entryId,
+      participantName: participant,
+      pledged,
+      contributed,
+      notes
+    });
+  });
+
+  if (updates.length === 0) return;
+
+  const btn = document.getElementById('bulkUpdateBtn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        operation: 'bulkUpdateContributionEntries',  // ← new operation!
+        contributionId: contribId,
+        updates: updates
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      showToast(`Saved ${updates.length} changes`);
+      openContributionModal(currentOpenSet); // refresh
+    } else {
+      showToast('Error: ' + (data.message || 'Failed'), true);
+    }
+  } catch (err) {
+    showToast('Network error', true);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.textContent = 'Save All Changes';
+  }
+}
+
+// Smooth toggle for contribution sets list
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('toggle-contrib');
+  const container = document.getElementById('contribList');
+
+  if (!toggle || !container) return;
+
+  // Make sure it starts hidden (just in case CSS class was missed)
+  if (!toggle.checked) {
+    container.classList.add('hidden');
+  }
+
+  toggle.addEventListener('change', () => {
+    if (toggle.checked) {
+      // Show
+      container.classList.remove('hidden');
+      // Trigger reflow
+      container.offsetHeight;
+      container.style.opacity = '0';
+      container.style.transform = 'translateY(-12px)';
+      // Animate in
+      requestAnimationFrame(() => {
+        container.style.opacity = '1';
+        container.style.transform = 'translateY(0)';
+      });
+    } else {
+      // Hide
+      container.style.opacity = '0';
+      container.style.transform = 'translateY(-12px)';
+      setTimeout(() => {
+        container.classList.add('hidden');
+      }, 380);
+    }
+  });
+});
+// ─── LOAD PAGE ────────────────────────────────────────────────────────────────
+loadUserPage();
+</script>
+</body>
+</html>
