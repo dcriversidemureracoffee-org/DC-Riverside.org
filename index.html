@@ -274,11 +274,26 @@
 <header>
   <div class="header-content">
     <h1>Riverside Connect</h1>
-    <div>
-      <img id="user-avatar" class="avatar" src="" alt="Profile"
-           style="width:44px;height:44px;border-radius:50%;border:2px solid #60a5fa;object-fit:cover;"
-           onerror="this.src='https://via.placeholder.com/44?text=@'">
-    </div>
+   <div>
+  <img 
+    id="user-avatar" 
+    class="avatar" 
+    src="" 
+    alt="Profile" 
+    loading="lazy"
+    onclick="window.location.href='user.html'"
+    style="
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid #60a5fa;
+      object-fit: cover;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    "
+    onerror="this.src='https://via.placeholder.com/44?text=@'"
+  >
+</div>
   </div>
 </header>
 
@@ -317,7 +332,7 @@
 // ────────────────────────────────────────────────
 //  BASIC SETUP
 // ────────────────────────────────────────────────
-const scriptUrl = 'https://script.google.com/macros/s/AKfycbyG18AvucL_ckaUQr6V-nzBtwxi21TEOL_096iArq8RXC-Z6xAQotZwtFU7WiYOl8xG/exec';
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbzvBB7FAG2DXmWJAimPlAGk0a6fO08mdSjpgmyGrV8gM_MNqe_G0l037TyktbVqnrcG/exec';
 const userName   = localStorage.getItem('userName');
 
 if (!userName) {
@@ -387,6 +402,7 @@ async function loadDashboard() {
     if (data.status !== 'success') throw new Error("User status failed");
 
     const isApproved = data.userStatus?.toLowerCase() === 'approved';
+    const userRole = data.role || "";
     const welcomeEl = document.getElementById('welcome-message');
     const btnContainer = document.getElementById('button-container');
 
@@ -396,15 +412,16 @@ async function loadDashboard() {
         <p>Choose where you'd like to go</p>
       `;
 
-      btnContainer.innerHTML = `
+           btnContainer.innerHTML = `
   <div style="width:100%; max-width:420px; margin:0 auto 32px auto;">
     <div class="button-grid">
       <a href="home.html" class="big-btn"><i class="fas fa-home"></i> Home</a>
       <a href="announce.html" class="big-btn"><i class="fas fa-bullhorn"></i> Announcements</a>
+      
     </div>
   </div>
 
-  <h3 class="section-title" style="margin-top:40px;">Channels</h3>
+<h3 class="section-title" style="margin-top:40px;">Channels</h3>
   <div class="circle-scroll-container">
     <div id="channels-grid" class="circle-grid"></div>
   </div>
@@ -413,8 +430,7 @@ async function loadDashboard() {
   <div class="circle-scroll-container">
     <div id="qna-spaces-grid" class="circle-grid"></div>
   </div>
-
-
+  
 `;
 
       // Fetch Q&A channels
@@ -471,22 +487,22 @@ async function loadDashboard() {
             `;
           }).join('');
 
-    } else {
-      const statusText = data.userStatus?.toLowerCase() === 'pending' ? 'pending approval' : 'not active';
+   } else {
+  const statusText = data.userStatus?.toLowerCase() === 'pending' 
+    ? 'pending approval' 
+    : 'not active';
 
-      welcomeEl.innerHTML = `
-        <h2>Welcome, ${userName}</h2>
-        <p>Your account is currently <span class="status-pending">${statusText}</span></p>
-      `;
+  welcomeEl.innerHTML = `
+    <h2>Welcome, ${userName}</h2>
+    <p>Your account is currently <span class="status-pending">${statusText}</span>.</p>
+    <p style="margin-top: 1.2rem; color: #94a3b8; font-size: 1.05rem;">
+      Full access (Home, Announcements, Channels, Q&A) will be available once approved.
+    </p>
+  `;
 
-      btnContainer.innerHTML = `
-        <div class="button-grid">
-          <a href="Q&A.html" class="big-btn"><i class="fas fa-question-circle"></i> Q & A</a>
-          <a href="channel.html" class="big-btn"><i class="fas fa-users"></i> Channels</a>
-        </div>
-      `;
-    }
-
+  // ─── Most important line ───
+  btnContainer.innerHTML = '';   // ← removes all buttons / content
+}
   } catch (err) {
     console.error("Dashboard load failed:", err);
     document.getElementById('welcome-message').innerHTML = `
@@ -510,5 +526,3 @@ loadDashboard();
 
 </body>
 </html>
-
-
