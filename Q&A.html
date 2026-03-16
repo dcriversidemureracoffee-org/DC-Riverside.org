@@ -988,6 +988,16 @@ html, body {
   from { opacity: 0; transform: translate(-50%, -60%); }
   to   { opacity: 1; transform: translate(-50%, -50%); }
 }
+
+.delete-channel-btn {
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+.delete-channel-btn:hover {
+  opacity: 1;
+  transform: scale(1.15);
+  background: #dc2626 !important;
+}
     
   </style>
 </head>
@@ -1020,15 +1030,19 @@ html, body {
     <h2 class="channel-title" id="channelTitle"></h2>
     <div class="channel-meta" id="channelMeta"></div>
   </header>
-  <div class="feed-wrapper">
-    <div class="feed" id="feed">
-      <div class="empty" id="emptyState">
-        <i class="fas fa-question-circle" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
-        No games yet<br>
-        <small>Click the + button to create one</small>
+ <div class="feed-wrapper">
+  <div class="feed" id="feed">
+    <div class="empty initial-state" id="emptyState">
+      <i class="fas fa-dice" style="font-size:5.5rem; opacity:0.45; margin-bottom:28px; color:#60a5fa;"></i><br>
+      <div style="font-size:1.3rem; color:#cbd5e1; margin:12px 0;">
+        Preparing games list...
       </div>
+      <small style="color:#94a3b8; font-size:1rem; opacity:0.85;">
+        Loading available games — one moment please
+      </small>
     </div>
   </div>
+</div>
 </main>
 <!-- Floating + Button -->
 <div class="fab" id="fabGame" onclick="openGamePanel()" style="display:none;">
@@ -1099,7 +1113,7 @@ html, body {
 </div>
 <div id="toast-container"></div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG18AvucL_ckaUQr6V-nzBtwxi21TEOL_096iArq8RXC-Z6xAQotZwtFU7WiYOl8xG/exec'; 
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx93cPY6uVImvVNeOUTEe_NDQeDzicmI6GJpCJDaHgPrXZX9migro00spd_hWyTeV8a/exec'; 
 let currentUserName = localStorage.getItem("userName") || "";
 let currentQnAChannelId = null;
 let allQnAChannels = [];
@@ -1162,19 +1176,29 @@ async function loadAllQnAChannels() {
       const tab = document.createElement("div");
       tab.className = "channel-tab";
       const avatarSrc = ch.picLink ? getLh3Link(ch.picLink) : 'https://via.placeholder.com/48?text=' + ch.name.charAt(0).toUpperCase();
-      tab.innerHTML = `
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="${avatarSrc}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4); flex-shrink:0;" onerror="this.src='https://via.placeholder.com/48?text=@'">
-          <div>
-            <div class="channel-tab-name">${ch.name}</div>
-            <div class="channel-tab-desc">${ch.description || "No description"}</div>
-          </div>
-        </div>
-      `;
+     tab.innerHTML = `
+  <div style="display:flex; align-items:center; gap:12px; flex:1;">
+    <img src="${avatarSrc}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4); flex-shrink:0;" onerror="this.src='https://via.placeholder.com/48?text=@'">
+    <div style="flex:1;">
+      <div class="channel-tab-name">${ch.name}</div>
+      <div class="channel-tab-desc">${ch.description || "No description"}</div>
+    </div>
+  </div>
+  <button class="delete-channel-btn" style="display:none; background:#ef4444aa; color:white; border:none; padding:6px 10px; border-radius:50%; cursor:pointer;" 
+          onclick="event.stopPropagation(); confirmDeleteQnAChannel('${ch.id}', '${ch.name.replace(/'/g,"\\'")}')">
+    <i class="fas fa-trash-alt"></i>
+  </button>
+`;
+
+// Show delete button only to creator
+const normalizedCreator = (ch.creator || '').trim().toLowerCase();
+const normalizedUser    = currentUserName.trim().toLowerCase();
+const isCreator = normalizedCreator === normalizedUser && normalizedUser !== '';
+tab.querySelector('.delete-channel-btn').style.display = isCreator ? 'block' : 'none';
       tab.onclick = () => openQnAChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
       channelList.appendChild(tab);
     });
-     // ── Decide which Q&A channel to open automatically ───────────────────────────────
+       // ── Decide which Q&A channel to open automatically ───────────────────────────────
     let channelToOpen = null;
 
     // 1. Highest priority: ?channelId= from URL (from dashboard click)
@@ -1926,6 +1950,84 @@ async function performDelete(gameId, gameName) {
   }
 }
 
+function confirmDeleteQnAChannel(channelId, channelName) {
+  const existing = document.querySelector('.delete-confirm-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'delete-confirm-toast';
+  toast.innerHTML = `
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <i class="fas fa-exclamation-triangle" style="font-size:1.6rem; color:#fbbf24;"></i>
+      <strong style="font-size:1.2rem; color:#ef4444;">Delete "${channelName}"?</strong>
+    </div>
+    <p style="margin-bottom:20px; color:#cbd5e1; line-height:1.5;">
+      This will permanently delete the channel, all games, questions, responses and results.<br>
+      <strong>This cannot be undone.</strong>
+    </p>
+    <div style="display:flex; gap:12px; justify-content:flex-end;">
+      <button class="cancel-btn" style="padding:10px 20px; background:rgba(148,163,184,0.25); color:#cbd5e1; border:none; border-radius:999px; font-weight:600; cursor:pointer;">
+        Cancel
+      </button>
+      <button class="confirm-delete-btn" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#f87171); color:white; border:none; border-radius:999px; font-weight:600; cursor:pointer;">
+        Delete Channel
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(toast);
+
+  toast.querySelector('.cancel-btn').onclick = () => {
+    toast.remove();
+    showToast("Cancelled", "info");
+  };
+
+  toast.querySelector('.confirm-delete-btn').onclick = async () => {
+    toast.remove();
+    showToast("Deleting channel...", "info");
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          operation: "deleteQnAChannel",
+          channelId: channelId,
+          username: currentUserName
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.status === "success") {
+        showToast(`"${channelName}" and all contents deleted`, "success");
+        
+        // Remove the tab from UI
+        const tab = [...document.querySelectorAll('.channel-tab')].find(t => 
+          t.querySelector('.channel-tab-name')?.textContent === channelName
+        );
+        if (tab) tab.remove();
+
+        // If this was the active channel → clear view or redirect
+        if (currentQnAChannelId === channelId) {
+          currentQnAChannelId = null;
+          channelHeader.style.display = 'none';
+          feed.innerHTML = '<div class="empty">Select or create a Q&A channel</div>';
+          fabGame.style.display = 'none';
+        }
+
+        // Refresh channel list
+        loadAllQnAChannels();
+
+      } else {
+        showToast(data.message || "Failed to delete channel", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Network error – try again", "error");
+    }
+  };
+}
+
 
 window.addEventListener("load", async () => {
   await checkCreateQnAChannelPermission();
@@ -1947,6 +2049,4 @@ document.getElementById('closeChannels')?.addEventListener('click', () => {
   }
 </script>
 </body>
-
 </html>
-
