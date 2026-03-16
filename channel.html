@@ -1407,14 +1407,18 @@ main.main {
   </header>
 
   <div class="feed-wrapper">
-    <div class="feed" id="feed">
-      <div class="empty" id="emptyState">
-        <i class="fas fa-layer-group" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
-        No posts yet<br>
-        <small>Click the + button to share something</small>
+  <div class="feed" id="feed">
+    <div class="empty initial-state" id="emptyState">
+      <i class="fas fa-layer-group" style="font-size:5.2rem; opacity:0.45; margin-bottom:28px; color:#60a5fa;"></i><br>
+      <div style="font-size:1.3rem; color:#cbd5e1; margin:12px 0;">
+        Preparing channel...
       </div>
+      <small style="color:#94a3b8; font-size:1rem;">
+        Opening channel posts — one moment
+      </small>
     </div>
   </div>
+</div>
 </main>
 
 <!-- Floating + Button -->
@@ -1528,7 +1532,7 @@ main.main {
 <div id="toast-container"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG18AvucL_ckaUQr6V-nzBtwxi21TEOL_096iArq8RXC-Z6xAQotZwtFU7WiYOl8xG/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx93cPY6uVImvVNeOUTEe_NDQeDzicmI6GJpCJDaHgPrXZX9migro00spd_hWyTeV8a/exec';
 
 // Store events per post for quick lookup when clicking dates
 const postEventsMap = new Map(); // postId → array of events
@@ -1627,7 +1631,8 @@ async function loadAllChannels() {
       channelList.appendChild(tab);
     });
 
-    // ── Decide which regular channel to open automatically ───────────────────────────────
+   
+       // ── Decide which regular channel to open automatically ───────────────────────────────
     let channelToOpen = null;
 
     // 1. Highest priority: ?channelId= from URL (from dashboard click)
@@ -1918,6 +1923,7 @@ async function openChannelTab(channelId, name, description, creator, created, pi
              "
              onerror="this.src='https://via.placeholder.com/64?text=@'"
              alt="${name} icon">
+             
 
         ${isCreator ? `
           <div id="avatarEditOverlay" style="
@@ -1931,6 +1937,8 @@ async function openChannelTab(channelId, name, description, creator, created, pi
             <i class="fas fa-camera" style="font-size: 1.8rem; color: white;"></i>
           </div>
         ` : ''}
+        
+        
       </div>
 
       <div style="flex: 1; min-width: 0;">
@@ -1945,6 +1953,8 @@ async function openChannelTab(channelId, name, description, creator, created, pi
               text-overflow: ellipsis;
               transition: opacity 0.4s ease;
             ">${shortDesc}</span>
+
+            
 
             ${needsToggle ? `
               <span class="desc-toggle" style="
@@ -1967,6 +1977,8 @@ async function openChannelTab(channelId, name, description, creator, created, pi
             ">
               By ${creator} • ${dateStr}
             </span>
+
+            
           </div>
 
           <div class="desc-full-container" style="
@@ -1981,6 +1993,8 @@ async function openChannelTab(channelId, name, description, creator, created, pi
               padding-bottom: 4px;
             ">${descText}</div>
 
+            
+
             <div style="
               color: #94a3b8;
               font-size: 0.92rem;
@@ -1989,6 +2003,7 @@ async function openChannelTab(channelId, name, description, creator, created, pi
               By ${creator} • ${dateStr}
             </div>
 
+           
             ${needsToggle ? `
               <span class="desc-toggle-less" style="
                 color: #f87171;
@@ -1999,10 +2014,36 @@ async function openChannelTab(channelId, name, description, creator, created, pi
                 user-select: none;
               ">less</span>
             ` : ''}
+
+            
+            
           </div>
         </div>
       </div>
     </div>
+     ${isCreator ? `
+  <button id="deleteChannelBtn"
+          title="Delete this channel (permanent)"
+          style="
+            margin-left: auto;
+            background: rgba(239,68,68,0.15);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+          "
+          onmouseover="this.style.background='rgba(239,68,68,0.3)'; this.style.transform='scale(1.05)'"
+          onmouseout="this.style.background='rgba(239,68,68,0.15)'; this.style.transform='scale(1)'">
+    <i class="far fa-trash-alt"></i> Delete Channel
+  </button>
+` : ''}
+
   `;
 
   channelHeader.style.display = 'block';
@@ -2048,6 +2089,12 @@ async function openChannelTab(channelId, name, description, creator, created, pi
     toggleMore.addEventListener('click', toggleClick);
     if (toggleLess) toggleLess.addEventListener('click', toggleClick);
   }
+  if (isCreator) {
+  const deleteBtn = document.getElementById("deleteChannelBtn");
+  if (deleteBtn) {
+    deleteBtn.onclick = () => deleteCurrentChannel();
+  }
+}
 
     await checkChannelAuthorisation(channelId);
   await loadPosts(channelId);
@@ -3406,6 +3453,119 @@ function showConfirmToast(title, message, confirmText = "Delete", cancelText = "
 }
 let pollingInterval = null;
 
+async function deleteCurrentChannel() {
+  if (!currentChannelId) {
+    showToast("No channel selected", "error");
+    return;
+  }
+
+  // ── Clearer, more standard confirmation dialog ────────────────────────
+  const userWantsToDelete = await showConfirmToast(
+    "Delete this channel?",
+    "Yes, Delete Everything",     // ← confirm button (dangerous action)
+    "delete"                      // ← safe button (default / left side)
+  );
+
+  // If user clicked "Cancel" → stop immediately
+  if (!userWantsToDelete) {
+    // Optional: light feedback so user knows action was cancelled
+    // showToast("Channel deletion cancelled", "info");
+    return;
+  }
+
+  // ── Proceed with deletion ─────────────────────────────────────────────
+  const deleteBtn = document.getElementById("deleteChannelBtn");
+  if (deleteBtn) {
+    deleteBtn.disabled = true;
+    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+    deleteBtn.style.opacity = "0.6";
+    deleteBtn.style.cursor = "not-allowed";
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "deleteChannel",
+        channelId: currentChannelId,
+        username: currentUserName
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      showToast("Channel and all content permanently deleted", "success");
+
+      // Update local channel list
+      allChannels = allChannels.filter(ch => ch.id !== currentChannelId);
+
+      // Rebuild channel tabs
+      const channelListEl = document.getElementById("channelList");
+      if (channelListEl) {
+        channelListEl.innerHTML = allChannels.length === 0
+          ? '<div class="empty" style="padding:32px;text-align:center;">No channels yet</div>'
+          : '';
+
+        allChannels.forEach(ch => {
+          const tab = document.createElement("div");
+          tab.className = "channel-tab";
+
+          const avatarSrc = ch.picLink
+            ? getLh3Link(ch.picLink)
+            : `https://via.placeholder.com/48?text=${ch.name.charAt(0).toUpperCase()}`;
+
+          tab.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px;">
+              <img src="${avatarSrc}"
+                   style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4);"
+                   onerror="this.src='https://via.placeholder.com/48?text=@'">
+              <div>
+                <div class="channel-tab-name">${ch.name}</div>
+                <div class="channel-tab-desc">${ch.description || "No description"}</div>
+              </div>
+            </div>
+          `;
+
+          tab.onclick = () => openChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
+          channelListEl.appendChild(tab);
+        });
+      }
+
+      // Reset current view (no page reload)
+      currentChannelId = null;
+      if (channelHeader) channelHeader.style.display = "none";
+      if (feed) {
+        feed.innerHTML = `
+          <div class="empty">
+            <i class="fas fa-layer-group" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
+            Select or create a channel
+          </div>
+        `;
+      }
+      if (fabPost) fabPost.style.display = "none";
+
+      // Optional: close sidebar if open
+      document.getElementById("channelsPanel")?.classList.remove("open");
+    } 
+    else {
+      showToast(data.message || "Failed to delete channel", "error");
+    }
+  } 
+  catch (err) {
+    showToast("Network error – try again", "error");
+    console.error("Channel deletion failed:", err);
+  } 
+  finally {
+    // Always restore button (success or failure)
+    if (deleteBtn) {
+      deleteBtn.disabled = false;
+      deleteBtn.innerHTML = '<i class="far fa-trash-alt"></i> Delete Channel';
+      deleteBtn.style.opacity = "1";
+      deleteBtn.style.cursor = "pointer";
+    }
+  }
+}
 function startChannelPolling() {
   if (pollingInterval) clearInterval(pollingInterval);
 
@@ -3607,6 +3767,4 @@ document.addEventListener('click', function(e) {
 }
 </script>
 </body>
-
 </html>
-
