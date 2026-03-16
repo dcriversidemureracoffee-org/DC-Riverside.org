@@ -1190,6 +1190,17 @@ main.main {
   color: #cbd5e1;
 }
 
+.skeleton {
+  height: 72px;
+  background: rgba(96,165,250,0.12);
+  border-radius: 12px;
+  animation: pulse 1.6s infinite ease-in-out;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.15; }
+}
+
 
 /* ── Calendar Post Display ──────────────────────────────────────────────── */
 .calendar-container {
@@ -1393,7 +1404,12 @@ main.main {
     <button id="closeChannels" class="close-btn">×</button>
   </div>
   <div class="channel-list" id="channelList">
-    <div class="loading">Loading channels...</div>
+    <div class="channel-list" id="channelList">
+  <!-- 3 pulsing skeleton cards – feels alive immediately -->
+  <div class="channel-tab skeleton"></div>
+  <div class="channel-tab skeleton" style="animation-delay:0.15s"></div>
+  <div class="channel-tab skeleton" style="animation-delay:0.3s"></div>
+</div>
   </div>
 
   <button id="createChannelBtn" style="display:none; width:100%; margin:16px 0; padding:12px; background:#60a5fa; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer;">
@@ -1556,6 +1572,47 @@ const mediaInput     = document.getElementById("mediaInput");
 const mediaPreview   = document.getElementById("mediaPreview");
 const createBtn      = document.getElementById("createChannelBtn");
 
+// ── Channel caching helpers ────────────────────────────────────────────────
+const CHANNELS_CACHE_KEY = "riverside_channels_cache";
+const CHANNELS_CACHE_TTL = 10 * 60 * 1000; // 10 minutes in ms
+
+function getCachedChannels() {
+  try {
+    const json = localStorage.getItem(CHANNELS_CACHE_KEY);
+    if (!json) return null;
+
+    const data = JSON.parse(json);
+    const now = Date.now();
+
+    // Expired?
+    if (now - data.timestamp > CHANNELS_CACHE_TTL) {
+      localStorage.removeItem(CHANNELS_CACHE_KEY);
+      return null;
+    }
+
+    return data.channels || [];
+  } catch (err) {
+    console.warn("Invalid channels cache", err);
+    localStorage.removeItem(CHANNELS_CACHE_KEY);
+    return null;
+  }
+}
+
+function saveChannelsToCache(channels) {
+  try {
+    const data = {
+      timestamp: Date.now(),
+      channels: channels.map(ch => ({ ...ch })) // shallow copy
+    };
+    localStorage.setItem(CHANNELS_CACHE_KEY, JSON.stringify(data));
+  } catch (err) {
+    console.warn("Could not save channels cache", err);
+  }
+}
+
+function clearChannelsCache() {
+  localStorage.removeItem(CHANNELS_CACHE_KEY);
+}
 function getLh3Link(url) {
   if (!url) return '';
   const id = url.match(/[-\w]{25,}/)?.[0];
@@ -1597,87 +1654,117 @@ createBtn.onclick = () => {
   document.getElementById("channelModal").classList.add("active");
 };
 
-async function loadAllChannels() {
+async function loadAllChannels(forceFresh = false) {
+  // ── 1. Try cache first (unless forced refresh) ───────────────────────────
+  let channels = !forceFresh ? getCachedChannels() : null;
+
+  if (channels) {
+    console.log("Loaded channels from cache:", channels.length);
+    renderChannelList(channels);
+    // Still try to refresh in background (optimistic UI + fresh data)
+    refreshChannelsInBackground();
+  } else {
+    // No valid cache → full fetch
+    await fetchAndRenderChannels();
+  }
+
+  // ── Auto-open logic (same as before) ─────────────────────────────────────
+  let channelToOpen = null;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlChannelId = urlParams.get('channelId');
+
+  if (urlChannelId) {
+    channelToOpen = (channels || allChannels).find(ch => ch.id === urlChannelId);
+  }
+
+  if (!channelToOpen) {
+    const lastId = localStorage.getItem("lastChannelId");
+    if (lastId) {
+      channelToOpen = (channels || allChannels).find(ch => ch.id === lastId);
+    }
+  }
+
+  if (!channelToOpen && (channels || allChannels).length > 0) {
+    channelToOpen = (channels || allChannels)[0];
+  }
+
+  if (channelToOpen) {
+    openChannelTab(
+      channelToOpen.id,
+      channelToOpen.name,
+      channelToOpen.description,
+      channelToOpen.creator,
+      channelToOpen.created,
+      channelToOpen.picLink
+    );
+    localStorage.setItem("lastChannelId", channelToOpen.id);
+  }
+}
+
+// ── Extracted rendering logic (used by both cache & fetch) ──────────────────
+function renderChannelList(channels) {
+  allChannels = channels; // keep global in sync
+
+  channelList.innerHTML = channels.length === 0
+    ? '<div class="empty" style="padding:32px;text-align:center;">No channels yet</div>'
+    : '';
+
+  channels.forEach(ch => {
+    const tab = document.createElement("div");
+    tab.className = "channel-tab";
+
+    const avatarSrc = ch.picLink
+      ? getLh3Link(ch.picLink)
+      : 'https://via.placeholder.com/48?text=' + ch.name.charAt(0).toUpperCase();
+
+    tab.innerHTML = `
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img src="${avatarSrc}"
+             style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4); flex-shrink:0;"
+             onerror="this.src='https://via.placeholder.com/48?text=@'">
+        <div>
+          <div class="channel-tab-name">${ch.name}</div>
+          <div class="channel-tab-desc">${ch.description || "No description"}</div>
+        </div>
+      </div>
+    `;
+
+    tab.onclick = () => openChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
+    channelList.appendChild(tab);
+  });
+}
+
+// ── Full fetch + cache update ──────────────────────────────────────────────
+async function fetchAndRenderChannels() {
   try {
     const r = await fetch(`${SCRIPT_URL}?operation=getAllChannels`);
+    if (!r.ok) throw new Error("Network response was not ok");
+
     const resp = await r.json();
-    allChannels = resp.channels || [];
+    const freshChannels = resp.channels || [];
 
-    channelList.innerHTML = allChannels.length === 0
-      ? '<div class="empty" style="padding:32px;text-align:center;">No channels yet</div>'
-      : '';
-
-    allChannels.forEach(ch => {
-      const tab = document.createElement("div");
-      tab.className = "channel-tab";
-      
-      const avatarSrc = ch.picLink
-        ? getLh3Link(ch.picLink)
-        : 'https://via.placeholder.com/48?text=' + ch.name.charAt(0).toUpperCase();
-
-      tab.innerHTML = `
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="${avatarSrc}"
-               style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4); flex-shrink:0;"
-               onerror="this.src='https://via.placeholder.com/48?text=@'">
-          <div>
-            <div class="channel-tab-name">${ch.name}</div>
-            <div class="channel-tab-desc">${ch.description || "No description"}</div>
-          </div>
-        </div>
-      `;
-      
-      tab.onclick = () => openChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
-      channelList.appendChild(tab);
-    });
-
-   
-       // ── Decide which regular channel to open automatically ───────────────────────────────
-    let channelToOpen = null;
-
-    // 1. Highest priority: ?channelId= from URL (from dashboard click)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlChannelId = urlParams.get('channelId');
-
-    if (urlChannelId) {
-      channelToOpen = allChannels.find(ch => ch.id === urlChannelId);
-      if (channelToOpen) {
-        console.log("Opening specific channel from URL:", urlChannelId);
-      } else {
-        console.warn("Channel ID from URL not found:", urlChannelId);
-      }
-    }
-
-    // 2. Fallback: only use last viewed if no URL parameter
-    if (!channelToOpen) {
-      const lastId = localStorage.getItem("lastChannelId");
-      if (lastId) {
-        channelToOpen = allChannels.find(ch => ch.id === lastId);
-      }
-    }
-
-    // 3. Last resort: first channel
-    if (!channelToOpen && allChannels.length > 0) {
-      channelToOpen = allChannels[0];
-    }
-
-    // 4. Open and remember
-    if (channelToOpen) {
-      openChannelTab(
-        channelToOpen.id,
-        channelToOpen.name,
-        channelToOpen.description,
-        channelToOpen.creator,
-        channelToOpen.created,
-        channelToOpen.picLink
-      );
-      localStorage.setItem("lastChannelId", channelToOpen.id);
-    } else {
-      console.log("No channels available");
-    }
+    allChannels = freshChannels;
+    saveChannelsToCache(freshChannels);
+    renderChannelList(freshChannels);
   } catch (err) {
+    console.error("Failed to load channels", err);
     channelList.innerHTML = '<div class="empty">Failed to load channels</div>';
+
+    // Fallback: show cache even if stale (better than nothing)
+    const stale = getCachedChannels(true); // true = ignore TTL
+    if (stale) {
+      renderChannelList(stale);
+      showToast("Using old channel list (offline?)", "warning");
+    }
   }
+}
+
+// ── Background refresh (fire-and-forget) ───────────────────────────────────
+function refreshChannelsInBackground() {
+  fetchAndRenderChannels().catch(() => {
+    // silent fail — user already has cache
+  });
 }
 function closeChannelModal() {
   const modal = document.getElementById("channelModal");
