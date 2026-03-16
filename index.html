@@ -267,6 +267,30 @@
       header { padding-top: calc(16px + env(safe-area-inset-top)); }
       .install-area { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
     }
+
+    .badge {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.6);
+  pointer-events: none;           /* doesn't block button click */
+  transform: translate(50%, -50%); /* fine-tune position */
+}
+
+.big-btn {
+  position: relative;              /* ← important! makes badge position relative to button */
+}
   </style>
 </head>
 <body>
@@ -389,6 +413,34 @@ window.addEventListener('appinstalled', () => {
   installModal.style.display = 'none';
 });
 
+async function updateAnnBadge() {
+  const badge = document.getElementById('ann-badge');
+  if (!badge) return;  // page not fully loaded yet or user not approved
+
+  try {
+    const res = await fetch(`${scriptUrl}?operation=getUnseenAnnCount&name=${encodeURIComponent(userName)}`);
+    const data = await res.json();
+
+    if (data.status === 'error') throw new Error();
+
+    const unseen = data.unseenCount || 0;
+
+    if (unseen > 0) {
+      badge.textContent = unseen > 99 ? '99+' : unseen;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+
+    // Optional: keep local fallback
+    localStorage.setItem('lastSeenAnnCount', data.seenUpTo || '0');
+
+  } catch (err) {
+    console.warn("Couldn't get unseen count", err);
+    // Optional simple fallback (less accurate)
+    badge.style.display = 'none';
+  }
+}
 // ────────────────────────────────────────────────
 //  DASHBOARD – NO BADGES, CLEAN CIRCLES
 // ────────────────────────────────────────────────
@@ -416,7 +468,10 @@ async function loadDashboard() {
   <div style="width:100%; max-width:420px; margin:0 auto 32px auto;">
     <div class="button-grid">
       <a href="home.html" class="big-btn"><i class="fas fa-home"></i> Home</a>
-      <a href="announce.html" class="big-btn"><i class="fas fa-bullhorn"></i> Announcements</a>
+     <a href="announce.html" class="big-btn" id="announcements-btn">
+  <i class="fas fa-bullhorn"></i> Announcements
+  <span id="ann-badge" class="badge" style="display:none;">0</span>
+</a>
       
     </div>
   </div>
@@ -521,7 +576,14 @@ function getLh3Link(url) {
 }
 
 // Load immediately
-loadDashboard();
+// Load immediately
+loadDashboard().then(() => {
+  // Only try to show badge if we rendered the buttons (approved user)
+  if (document.getElementById('ann-badge')) {
+    updateAnnBadge();                    // show right away
+    setInterval(updateAnnBadge, 20000);  // refresh every 20 seconds
+  }
+});
 </script>
 
 </body>
