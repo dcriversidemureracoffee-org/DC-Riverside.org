@@ -8,13 +8,16 @@ const STATIC_ASSETS = [
   './login.html',
   './index.html',
   './home.html',
+   './user.html',
   './Q&A.html',
   './play.html',
   './announce.html',
   './channel.html',
   './manifest.json',
   './maskable_icon_x192.png',
-  './maskable_icon_x512.png'
+  './maskable_icon_x512.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2'
 ];
 
 const API_CACHE_PATTERNS = [
