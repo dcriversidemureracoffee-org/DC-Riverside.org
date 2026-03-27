@@ -1548,7 +1548,7 @@ main.main {
 <div id="toast-container"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx93cPY6uVImvVNeOUTEe_NDQeDzicmI6GJpCJDaHgPrXZX9migro00spd_hWyTeV8a/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyxj3iVLXJuDUfl_cujrba_8vyp1KjEnN-__MWUa-uepw5l-BEsJx0UqGQsMJwPmD4N/exec';
 
 // Store events per post for quick lookup when clicking dates
 const postEventsMap = new Map(); // postId → array of events
@@ -1557,6 +1557,7 @@ let currentUserName = localStorage.getItem("userName") || "";
 let currentChannelId = null;
 let allChannels      = [];
 let isUserApproved   = false;
+let targetPostId = null;   // ← ADD THIS
 
 if (!currentUserName) window.location.href = "index.html";
 
@@ -1668,14 +1669,16 @@ async function loadAllChannels(forceFresh = false) {
     await fetchAndRenderChannels();
   }
 
-  // ── Auto-open logic (same as before) ─────────────────────────────────────
+   // ── Auto-open logic with deep link support from notifications ─────────────
   let channelToOpen = null;
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlChannelId = urlParams.get('channelId');
+  const urlPostId = urlParams.get('postId');        // ← NEW: Support post deep link
 
   if (urlChannelId) {
     channelToOpen = (channels || allChannels).find(ch => ch.id === urlChannelId);
+    if (urlPostId) targetPostId = urlPostId;        // ← NEW: Save postId for scrolling
   }
 
   if (!channelToOpen) {
@@ -1699,6 +1702,11 @@ async function loadAllChannels(forceFresh = false) {
       channelToOpen.picLink
     );
     localStorage.setItem("lastChannelId", channelToOpen.id);
+
+    // Scroll to specific post if notification had postId
+    if (targetPostId) {
+      setTimeout(() => scrollToPost(targetPostId), 800);
+    }
   }
 }
 
@@ -1722,7 +1730,7 @@ function renderChannelList(channels) {
       <div style="display:flex; align-items:center; gap:12px;">
         <img src="${avatarSrc}"
              style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4); flex-shrink:0;"
-             onerror="this.src='https://via.placeholder.com/48?text=@'">
+            onerror="this.src='https://picsum.photos/id/64/48/48'"
         <div>
           <div class="channel-tab-name">${ch.name}</div>
           <div class="channel-tab-desc">${ch.description || "No description"}</div>
@@ -1950,6 +1958,35 @@ function closeChannelModal() {
   document.getElementById('channelAvatarPreview').src = "https://via.placeholder.com/110?text=Icon";
 }
 
+
+// Scroll to and highlight specific post from notification
+function scrollToPost(postId) {
+  if (!postId) return;
+
+  const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
+  
+  if (postElement) {
+    postElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // Temporary highlight
+    postElement.style.transition = "background 2s";
+    postElement.style.background = "rgba(59, 130, 246, 0.3)";
+    
+    setTimeout(() => {
+      postElement.style.background = "";
+    }, 2800);
+
+    console.log("✅ Scrolled to post from notification:", postId);
+  } else {
+    console.warn("Post not found yet:", postId);
+    // Retry once after more delay
+    setTimeout(() => {
+      const retry = document.querySelector(`.post[data-post-id="${postId}"]`);
+      if (retry) retry.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 1200);
+  }
+}
+
 async function openChannelTab(channelId, name, description, creator, created, picLink) {
   if (!channelId) return;
 
@@ -2008,7 +2045,7 @@ async function openChannelTab(channelId, name, description, creator, created, pi
                position: relative;
                z-index: 2;
              "
-             onerror="this.src='https://via.placeholder.com/64?text=@'"
+             onerror="this.src='https://picsum.photos/id/64/48/48'"
              alt="${name} icon">
              
 
@@ -2287,7 +2324,7 @@ if (post.media?.link) {
   if (post.media.type?.startsWith('image')) {
     mediaHtml = `
       <div class="post-media" style="overflow-x:auto; display:flex; gap:8px; padding:8px 0; scroll-snap-type:x mandatory;">
-        <img src="${mediaSrc}" loading="lazy" style="max-height:500px; border-radius:12px; scroll-snap-align:start;" onerror="this.src='https://via.placeholder.com/400?text=Image'">
+        <img src="${mediaSrc}" loading="lazy" style="max-height:500px; border-radius:12px; scroll-snap-align:start;" onerror="this.src='https://picsum.photos/id/64/48/48'"'">
       </div>`;
   } else {
     mediaHtml = `
@@ -2425,6 +2462,12 @@ if (countSpan) {
   if (viewsElement) {
     viewsElement.onclick = () => openViewersModal(post.postId);
   }
+
+      // ← ADD THIS after the posts.forEach loop ends
+    if (targetPostId) {
+      setTimeout(() => scrollToPost(targetPostId), 400);
+    }
+
 });
 
 
@@ -2487,7 +2530,7 @@ function openViewersModal(postId) {
         const avatarSrc = v.picLink ? getLh3Link(v.picLink) : 'https://via.placeholder.com/44?text=@';
         
         item.innerHTML = `
-          <img class="viewer-avatar" src="${avatarSrc}" onerror="this.src='https://via.placeholder.com/44?text=@'">
+          <img class="viewer-avatar" src="${avatarSrc}" onerror="this.src='https://picsum.photos/id/64/48/48'">
           <div class="viewer-info">
             <div class="viewer-name">${v.username}</div>
             <div class="viewer-time">Viewed ${new Date(v.viewedAt).toLocaleString([], {
@@ -2768,7 +2811,7 @@ function showEventsForDate(dateStr, dayEvents) {
               <img src="https://lh3.googleusercontent.com/d/${id}" 
                    style="width:100%; height:auto; display:block;" 
                    alt="Event image" loading="lazy"
-                   onerror="this.src='https://via.placeholder.com/400x200/1e293b/94a3b8?text=Failed';">
+                   onerror="this.src='https://picsum.photos/id/64/48/48';">
             </div>`;
         }
       }
@@ -2790,14 +2833,19 @@ async function submitPost() {
   const file = mediaInput.files[0];
 
   let fileData = null;
-  const driveRegex = /(?:drive\.google\.com\/(?:file\/d\/|open\?id=))([a-zA-Z0-9_-]+)/;
+
+  // ── Improved Drive Video Link Detection ─────────────────────────────
+  const driveRegex = /https?:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/i;
   const match = content.match(driveRegex);
   const parsedLink = match ? match[1] : null;
 
   if (parsedLink && !file) {
-    content = content.replace(match[0], '').trim();
+    // User pasted a Google Drive video link → send as file.link
+    content = content.replace(driveRegex, '').trim();   // Remove link from visible text
     fileData = { link: parsedLink };
-  } else if (file) {
+  } 
+  else if (file) {
+    // User selected a file (image or video) from device
     fileData = await new Promise(resolve => {
       const reader = new FileReader();
       reader.onload = () => resolve({
@@ -2813,7 +2861,6 @@ async function submitPost() {
   let events = [];
   const eventsContainer = document.getElementById('eventsContainer');
 
-  // Temporarily make visible so querySelectorAll can find elements
   const wasHidden = eventsContainer.style.display === 'none';
   if (wasHidden) eventsContainer.style.display = 'block';
 
@@ -2830,7 +2877,6 @@ async function submitPost() {
         title: titleVal
       };
 
-      // Attach image if present
       if (row.dataset.imageBase64) {
         eventObj.image = {
           base64: row.dataset.imageBase64,
@@ -2843,10 +2889,9 @@ async function submitPost() {
     }
   });
 
-  // Restore original visibility
   if (wasHidden) eventsContainer.style.display = 'none';
 
-  // Clean up empty/invalid rows
+  // Clean up empty rows
   eventsContainer.querySelectorAll('div').forEach(row => {
     const d = row.querySelector('input[type="date"]')?.value?.trim();
     const t = row.querySelector('textarea')?.value?.trim();
@@ -2883,7 +2928,6 @@ async function submitPost() {
     if (data.status === "success") {
       showToast("Posted!", "success");
       closePostPanel();
-      // Clear events after success
       eventsContainer.innerHTML = '';
       loadPosts(currentChannelId);
     } else {
@@ -3138,7 +3182,7 @@ comments.reverse().forEach(c => {
   ` : '';
 
   msg.innerHTML = `
-    <img class="avatar" src="${avatarSrc}" onerror="this.src='https://via.placeholder.com/38?text=@'">
+    <img class="avatar" src="${avatarSrc}" onerror="this.src='https://picsum.photos/id/64/48/48'">
     <div class="message-content">
       <div class="name" style="display: flex; justify-content: space-between; align-items:center;">
         ${c.author}
@@ -3606,7 +3650,7 @@ async function deleteCurrentChannel() {
             <div style="display:flex; align-items:center; gap:12px;">
               <img src="${avatarSrc}"
                    style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4);"
-                   onerror="this.src='https://via.placeholder.com/48?text=@'">
+onerror="this.src='https://picsum.photos/id/64/48/48'">
               <div>
                 <div class="channel-tab-name">${ch.name}</div>
                 <div class="channel-tab-desc">${ch.description || "No description"}</div>
@@ -3843,15 +3887,111 @@ document.addEventListener('click', function(e) {
   showEventsForDate(dateStr, dayEvents);
 });
 
+
+// Handle message from service worker when notification is clicked while app is open
+navigator.serviceWorker?.addEventListener('message', (event) => {
+  if (event.data?.type === "NOTIFICATION_CLICK") {
+    const url = new URL(event.data.url || event.data);
+    const newChannelId = url.searchParams.get('channelId');
+    const newPostId = url.searchParams.get('postId');
+
+    if (newChannelId && newChannelId !== currentChannelId) {
+      const ch = allChannels.find(c => c.id === newChannelId);
+      if (ch) {
+        openChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
+      }
+    }
+
+    if (newPostId) {
+      setTimeout(() => scrollToPost(newPostId), 600);
+    }
+  }
+});
 </script>
 
+
 <script>
-  if ('serviceWorker' in navigator) {
-  // Use './' to stay inside the /The-Riverside-Connect/ subfolder
-  navigator.serviceWorker.register('./sw.js', { scope: './' })
-    .then(reg => console.log('✅ SW registered in subfolder scope'))
-    .catch(err => console.error('❌ SW registration failed:', err));
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      // Register your merged service worker (sw.js) for offline + FCM
+      const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+      console.log('✅ Merged SW registered:', swReg.scope);
+
+      // Now request FCM permission & token
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
+      const { getMessaging, getToken, deleteToken, onMessage } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCuB56TTi5COJnuDmVf6PiGsOjTwvQ0PNo",
+        authDomain: "riverside-connect-a8458.firebaseapp.com",
+        projectId: "riverside-connect-a8458",
+        storageBucket: "riverside-connect-a8458.firebasestorage.app",
+        messagingSenderId: "938830806378",
+        appId: "1:938830806378:web:254ed56cba3dc02290f913"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const messaging = getMessaging(app);
+
+      const VAPID_KEY = "BLqQIS31O_tuw_UMdReBZHTmy_HNXEcwNaPsor8O8dCt-v0XFepSoGPJmw6P6dYBfh1PDtCaMCxLO4-j7KS4yO8";
+
+      // Request notification permission
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") return console.warn("Notification permission denied");
+
+      // Delete old token to avoid SenderId mismatch
+      const oldToken = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+      if (oldToken) await deleteToken(messaging);
+
+      // Get new token
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+      console.log("✅ FCM token obtained:", token?.substring(0, 40) + "...");
+
+      // Send token to backend
+      if (token) {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ operation: "saveFcmToken", username: currentUserName, fcmToken: token })
+        });
+        console.log("✅ FCM token saved to backend");
+      }
+
+      // Foreground messages
+   onMessage(messaging, (payload) => {
+  console.log("Foreground message received:", payload);
+
+  const title = payload.data?.title || "New post in channel!";
+  const body  = payload.data?.body || "";
+
+  showToast(title + " — " + body, "success");
+
+  const url = payload.data?.click_action || "/";
+
+  const notification = new Notification(title, {
+    body: body,
+    icon: payload.data?.icon || "./maskable_icon_x192.png",
+    badge: "./badge.png",     // ← Add this line for foreground too
+    image: payload.data?.image || "",
+  });
+
+  // Make notification clickable
+  notification.onclick = () => {
+    window.open(url, "_blank");
+  };
+
+  // Refresh posts if user is inside channel
+  if (currentChannelId) loadPosts(currentChannelId);
+});
+
+
+    } catch (err) {
+      console.error("❌ FCM/Service Worker registration error:", err);
+    }
+  });
 }
 </script>
+
+
 </body>
 </html>
