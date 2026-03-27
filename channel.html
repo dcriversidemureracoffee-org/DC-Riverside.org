@@ -3697,6 +3697,25 @@ onerror="this.src='https://picsum.photos/id/64/48/48'">
     }
   }
 }
+
+  // Update app badge with unread notification count
+async function updateAppBadge(unreadCount = 0) {
+  if (!('setAppBadge' in navigator)) {
+    console.log("Badging API not supported on this browser");
+    return;
+  }
+
+  try {
+    if (unreadCount > 0) {
+      await navigator.setAppBadge(unreadCount);
+    } else {
+      await navigator.clearAppBadge();
+    }
+  } catch (err) {
+    console.warn("Failed to set app badge:", err);
+  }
+}
+  
 function startChannelPolling() {
   if (pollingInterval) clearInterval(pollingInterval);
 
@@ -3966,6 +3985,12 @@ if ('serviceWorker' in navigator) {
 
   showToast(title + " — " + body, "success");
 
+     // Increment or set badge (you need to track count)
+  let currentUnread = parseInt(localStorage.getItem('unreadCount') || '0') + 1;
+  localStorage.setItem('unreadCount', currentUnread);
+  updateAppBadge(currentUnread);
+});
+
   const url = payload.data?.click_action || "/";
 
   const notification = new Notification(title, {
@@ -3990,6 +4015,8 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
+
+  
 </script>
 
 
