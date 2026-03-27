@@ -1,3 +1,62 @@
+// firebase-messaging-sw.js
+importScripts("https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging-compat.js");
+
+firebase.initializeApp({
+   apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+  projectId: "dc-riverside-murera-coffee",
+  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+  messagingSenderId: "373863707096",
+  appId: "1:373863707096:web:5e3c703655687b96e442ad"
+});
+
+const messaging = firebase.messaging();
+
+// Handle background messages
+// Handle background messages
+messaging.onBackgroundMessage((payload) => {
+  console.log("Background message received:", payload);
+
+  const title = payload.data?.title || "Riverside Connect";
+  const body = payload.data?.body || "New post in a channel";
+  const channelId = payload.data?.channelId || "";
+  const postId = payload.data?.postId || "";        // ← NEW
+
+  // Build URL with both channelId and postId
+  let url = "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/channel.html?channelId=" + channelId;
+  if (postId) url += "&postId=" + postId;
+
+  const icon = payload.data?.icon || "./maskable_icon_x192.png";
+  const badge = "./badge.png";
+
+  self.registration.showNotification(title, {
+    body: body,
+    icon: icon,
+    badge: badge,
+    image: payload.data?.image || "",
+    data: { url, postId }   // ← pass postId in data too
+  });
+});
+
+// Handle notification click
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || 
+                    "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/channel.html";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window" }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes("channel.html") && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(urlToOpen);
+    })
+  );
+});
 // sw.js — Powerful offline-first PWA support for Riverside Connect (WhatsApp-style)
 // Now caches comments, announcements, view counts & approval status
 
