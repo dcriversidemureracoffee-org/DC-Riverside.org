@@ -24,7 +24,7 @@ messaging.onBackgroundMessage((payload) => {
   const postId = payload.data?.postId || "";        // ← NEW
 
   // Build URL with both channelId and postId
-  let url = "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/channel.html?channelId=" + channelId;
+  let url = "https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/channel.html?channelId=" + channelId;
   if (postId) url += "&postId=" + postId;
 
   const icon = payload.data?.icon || "./maskable_icon_x192.png";
@@ -44,7 +44,7 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const urlToOpen = event.notification.data?.url || 
-                    "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/channel.html";
+                    "https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/channel.html";
 
   event.waitUntil(
     clients.matchAll({ type: "window" }).then((clientList) => {
@@ -60,7 +60,7 @@ self.addEventListener("notificationclick", (event) => {
 // sw.js — Powerful offline-first PWA support for Riverside Connect (WhatsApp-style)
 // Now caches comments, announcements, view counts & approval status
 
-const CACHE_NAME = 'Riverside-Connect-v5';   // ← bumped version for announcements + view counts
+const CACHE_NAME = 'Riverside-Connect-v6';   // ← bumped version for announcements + view counts
 
 const STATIC_ASSETS = [
   './',
