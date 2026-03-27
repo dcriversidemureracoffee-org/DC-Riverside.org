@@ -37,9 +37,6 @@ messaging.onBackgroundMessage((payload) => {
     image: payload.data?.image || "",
     data: { url, postId }   // ← pass postId in data too
   });
-if ('setAppBadge' in self.navigator) {
-    self.navigator.setAppBadge(1).catch(() => {});   // Shows red dot/number on Android/Chrome
-  }
 });
 
 // Handle notification click
