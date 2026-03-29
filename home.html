@@ -1825,6 +1825,98 @@ document.getElementById('copy-recovery-btn')?.addEventListener('click', () => {
 </script>
 
 
+  <!-- ==================== FCM PUSH NOTIFICATION REGISTRATION (Home) ==================== -->
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        // Register service worker (same sw.js used by channel)
+        const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        console.log('✅ Service Worker registered for home.html:', swReg.scope);
+
+        // Dynamically import Firebase modular SDK
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
+        const { getMessaging, getToken, onMessage } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
+
+        const firebaseConfig = {
+           apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+  projectId: "dc-riverside-murera-coffee",
+  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+  messagingSenderId: "373863707096",
+  appId: "1:373863707096:web:5e3c703655687b96e442ad"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
+
+        // Request permission
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          console.warn("Notification permission denied");
+          return;
+        }
+
+        // Get FCM Token
+        const token = await getToken(messaging, { 
+          vapidKey: VAPID_KEY,
+          serviceWorkerRegistration: swReg 
+        });
+
+        if (token) {
+          console.log("✅ FCM Token obtained for home:", token.substring(0, 40) + "...");
+
+          // Save token to backend (using correct field name)
+          const payload = {
+            operation: "saveFcmToken",
+            username: userName,
+            fcmToken: token
+          };
+
+          const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json();
+          if (result.status === "success") {
+            console.log("✅ FCM Token saved to backend successfully");
+            localStorage.setItem('fcmTokenSaved', 'true');
+          } else {
+            console.warn("Failed to save token:", result.message);
+          }
+        }
+
+        // Handle foreground messages
+        onMessage(messaging, (payload) => {
+          console.log("Foreground message received (home):", payload);
+
+          const title = payload.data?.title || "Riverside Connect";
+          const body  = payload.data?.body  || "New message";
+
+          // Use your existing toast function
+          showToast(`${title}: ${body}`, "info");
+
+          // Refresh the chat
+          if (isApproved) {
+            loadComments(false);
+          }
+        });
+
+      } catch (err) {
+        console.error("❌ FCM registration error in home.html:", err);
+      }
+    });
+  } else {
+    console.warn("Service Worker not supported in this browser");
+  }
+</script>
+
+
 
 </body>
 </html>
