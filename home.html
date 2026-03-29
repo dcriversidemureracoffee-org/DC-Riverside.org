@@ -889,7 +889,7 @@ html, body {
 </div>
 
  <script>
-  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwQ8jCHWhYO-98TlTKJE5Mz-mjisohtTVZQhYpDY2gREswEIfAzcA0qYueR0KE0b8Br/exec';
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
 
  let userName = localStorage.getItem('userName');
 
@@ -1840,14 +1840,14 @@ document.getElementById('copy-recovery-btn')?.addEventListener('click', () => {
         const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
         const { getMessaging, getToken, onMessage } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
 
-        const firebaseConfig = {
-           apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
-  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
-  projectId: "dc-riverside-murera-coffee",
-  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
-  messagingSenderId: "373863707096",
-  appId: "1:373863707096:web:5e3c703655687b96e442ad"
-        };
+       const firebaseConfig = {
+    apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+    authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+    projectId: "dc-riverside-murera-coffee",
+    storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+    messagingSenderId: "373863707096",
+    appId: "1:373863707096:web:5e3c703655687b96e442ad"
+  };
 
         const app = initializeApp(firebaseConfig);
         const messaging = getMessaging(app);
