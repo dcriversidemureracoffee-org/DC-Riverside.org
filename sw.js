@@ -3,12 +3,12 @@ importScripts("https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging-compat.js");
 
 firebase.initializeApp({
- apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
-  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
-  projectId: "dc-riverside-murera-coffee",
-  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
-  messagingSenderId: "373863707096",
-  appId: "1:373863707096:web:5e3c703655687b96e442ad"
+apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+    authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+    projectId: "dc-riverside-murera-coffee",
+    storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+    messagingSenderId: "373863707096",
+    appId: "1:373863707096:web:5e3c703655687b96e442ad"
 });
 
 const messaging = firebase.messaging();
@@ -22,19 +22,28 @@ messaging.onBackgroundMessage((payload) => {
 
   const channelId = payload.data?.channelId || "";
   const postId    = payload.data?.postId    || "";
+  const gameId    = payload.data?.gameId    || "";
+  const announcement = payload.data?.announcement || "";   // ← NEW for announcements
 
-  // ── SMART URL LOGIC - Supports BOTH home.html and channel.html ─────────────────
-  let url = "https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/home.html";
+  // ── SMART URL LOGIC ─────────────────────────────────────────────────────
+  let url = "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/home.html";
 
-  if (channelId) {
-    // If channelId exists → it's a channel-related notification
-    url = `https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/channel.html?channelId=${encodeURIComponent(channelId)}`;
-    
+  if (gameId) {
+    // Q&A Game
+    url = `https://vibe-ultrafiles04.github.io/The-Riverside-Connect/Q&A.html?gameId=${encodeURIComponent(gameId)}`;
+  } 
+  else if (channelId) {
+    // Channel Post
+    url = `https://vibe-ultrafiles04.github.io/The-Riverside-Connect/channel.html?channelId=${encodeURIComponent(channelId)}`;
     if (postId) {
       url += `&postId=${encodeURIComponent(postId)}`;
     }
   }
-  // If no channelId → default to main home chat (comments)
+  else if (announcement) {
+    // Announcement → opens announce.html (just like comments open home.html)
+    url = "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/announce.html";
+  }
+  // Default falls back to home.html (for normal comments)
 
   const icon = payload.data?.icon || "./maskable_icon_x192.png";
   const badge = "./badge.png";
@@ -47,7 +56,9 @@ messaging.onBackgroundMessage((payload) => {
     data: { 
       url: url,
       channelId: channelId,
-      postId: postId 
+      postId: postId,
+      gameId: gameId,
+      announcement: announcement   // ← NEW
     }
   });
 });
@@ -57,20 +68,22 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const urlToOpen = event.notification.data?.url || 
-                    "https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/home.html";
+                    "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/home.html";
 
   event.waitUntil(
     clients.matchAll({ type: "window" }).then((clientList) => {
-      // Try to focus existing window/tab if it matches the target URL
+      // Try to focus existing window/tab
       for (const client of clientList) {
         if (client.url === urlToOpen || 
-            (channelId && client.url.includes("channel.html")) || 
+            (event.notification.data?.gameId && client.url.includes("Q&A.html")) ||
+            (event.notification.data?.channelId && client.url.includes("channel.html")) ||
+            (event.notification.data?.announcement && client.url.includes("announce.html")) ||
             "focus" in client) {
           return client.focus();
         }
       }
 
-      // Otherwise open the correct URL
+      // Open new window/tab with correct URL
       if (clients.openWindow) {
         return clients.openWindow(urlToOpen);
       }
