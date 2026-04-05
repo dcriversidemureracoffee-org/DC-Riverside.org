@@ -68,7 +68,7 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const urlToOpen = event.notification.data?.url || 
-                    "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/home.html";
+                    "https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/home.html";
 
   event.waitUntil(
     clients.matchAll({ type: "window" }).then((clientList) => {
@@ -123,7 +123,7 @@ const API_CACHE_PATTERNS = [
 
 const EXPECTED_CACHES = [CACHE_NAME];
 
-const API_BASE = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+const API_BASE = 'https://script.google.com/macros/s/AKfycbz7Bav_E5Q5lfUMR5smrFz9EwMFiy_6QNx9gVqDBDcwyEOqrWMyfLQ23SgVw6IxeU-l/exec';
 
 self.addEventListener('install', event => {
   event.waitUntil(
