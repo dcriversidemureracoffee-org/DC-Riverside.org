@@ -233,20 +233,41 @@
 <body>
 
 <header>
-    
-   
-     <a href="index.html" class="back-btn-top" title="Back to main page">
+  <!-- Back button (keep if you want) -->
+  <a href="index.html" class="back-btn-top" title="Back to main page" style="position:absolute; left:16px; top:16px; color:#e2e8f0; font-size:1.4rem;">
     <i class="fas fa-arrow-left"></i>
   </a>
 
-  <div style="display: flex; align-items: center; gap: 10px; color: #e2e8f0;">
+  <!-- New Navigation Dropdown -->
+  <div style="position: absolute; right: 20px; top: 16px;">
+    <button onclick="toggleNavDropdown()" 
+            style="background: rgba(30,41,59,0.9); border: 1px solid #60a5fa; color: #e2e8f0; padding: 10px 16px; border-radius: 999px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+      <i class="fas fa-bars"></i>
+      <span>Menu</span>
+    </button>
+
+    <!-- Dropdown Menu -->
+    <div id="navDropdown" style="display: none; position: absolute; top: 55px; right: 0; background: #1e293b; border: 1px solid #60a5fa44; border-radius: 12px; min-width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; z-index: 1000;">
+      <a href="index.html" style="display: block; padding: 14px 20px; color: #e2e8f0; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <i class="fas fa-home"></i> Home
+      </a>
+      <a href="channel.html" style="display: block; padding: 14px 20px; color: #e2e8f0; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <i class="fas fa-users"></i> Channels
+      </a>
+      <a href="Q&A.html" style="display: block; padding: 14px 20px; color: #e2e8f0; text-decoration: none;">
+        <i class="fas fa-question-circle"></i> Q&A
+      </a>
+    </div>
+  </div>
+
+  <!-- User info (existing) -->
+  <div style="display: flex; align-items: center; gap: 10px; color: #e2e8f0; justify-content: center;">
     <img id="smallAvatar" 
          style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #60a5fa;"
          src="" alt="Profile">
     <span id="smallUserName" style="font-size: 1rem; font-weight: 500;"></span>
   </div>
 </header>
-
 <main>
   
 
@@ -1061,6 +1082,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 380);
     }
   });
+});
+
+  // Toggle Navigation Dropdown
+function toggleNavDropdown() {
+  const dropdown = document.getElementById('navDropdown');
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('navDropdown');
+  const button = event.target.closest('button');
+  
+  if (!button && dropdown.style.display === 'block') {
+    dropdown.style.display = 'none';
+  }
 });
 // ─── LOAD PAGE ────────────────────────────────────────────────────────────────
 loadUserPage();
