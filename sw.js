@@ -26,22 +26,22 @@ messaging.onBackgroundMessage((payload) => {
   const announcement = payload.data?.announcement || "";   // ← NEW for announcements
 
   // ── SMART URL LOGIC ─────────────────────────────────────────────────────
-  let url = "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/home.html";
+  let url = "https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/home.html";
 
   if (gameId) {
     // Q&A Game
-    url = `https://vibe-ultrafiles04.github.io/The-Riverside-Connect/Q&A.html?gameId=${encodeURIComponent(gameId)}`;
+    url = `https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/Q&A.html?gameId=${encodeURIComponent(gameId)}`;
   } 
   else if (channelId) {
     // Channel Post
-    url = `https://vibe-ultrafiles04.github.io/The-Riverside-Connect/channel.html?channelId=${encodeURIComponent(channelId)}`;
+    url = `https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/channel.html?channelId=${encodeURIComponent(channelId)}`;
     if (postId) {
       url += `&postId=${encodeURIComponent(postId)}`;
     }
   }
   else if (announcement) {
     // Announcement → opens announce.html (just like comments open home.html)
-    url = "https://vibe-ultrafiles04.github.io/The-Riverside-Connect/announce.html";
+    url = "https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/announce.html";
   }
   // Default falls back to home.html (for normal comments)
 
