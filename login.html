@@ -376,11 +376,11 @@
   <button id="recoverBtn">Recover Account</button>
 </div> 
 
-  </div>
+ <canvas id="cropCanvas" style="display:none;"></canvas>
 
   <script>
     // Your existing JavaScript remains 100% unchanged and works perfectly
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwQ8jCHWhYO-98TlTKJE5Mz-mjisohtTVZQhYpDY2gREswEIfAzcA0qYueR0KE0b8Br/exec';
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
 function showToast(message) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
@@ -395,18 +395,57 @@ function showToast(message) {
    const fileInput = document.getElementById('profilePic');
 const preview = document.getElementById('preview');
 const previewEmoji = document.getElementById('previewEmoji');
+const canvas = document.getElementById('cropCanvas');
+const ctx = canvas.getContext('2d');
+let processedBase64 = ""; // This will hold our clean, circular image
 
 fileInput.addEventListener('change', function(e) {
   const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      preview.src = ev.target.result;
-      preview.style.display = 'block';     // show selected image
-      previewEmoji.style.display = 'none'; // hide decorative emoji
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = new Image();
+    img.onload = function() {
+      const size = 300; // Standardize to 300x300 for balance between quality and speed
+      canvas.width = size;
+      canvas.height = size;
+
+      // Create the circular mask
+      ctx.clearRect(0, 0, size, size);
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+
+      // Logic to "Center Crop" the image so it doesn't look stretched
+      let drawW, drawH, dx, dy;
+      if (img.width > img.height) {
+        drawH = size;
+        drawW = img.width * (size / img.height);
+        dx = -(drawW - size) / 2;
+        dy = 0;
+      } else {
+        drawW = size;
+        drawH = img.height * (size / img.width);
+        dx = 0;
+        dy = -(drawH - size) / 2;
+      }
+
+      ctx.drawImage(img, dx, dy, drawW, drawH);
+      
+      // Convert to PNG to preserve transparency in the corners
+      const dataUrl = canvas.toDataURL('image/png');
+      processedBase64 = dataUrl.split(',')[1]; // Strip the header for your backend
+      
+      // Update UI preview
+      preview.src = dataUrl;
+      preview.style.display = 'block';
+      previewEmoji.style.display = 'none';
     };
-    reader.readAsDataURL(file);
-  }
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
 });
 
    const continueBtn = document.getElementById('continueBtn');
@@ -417,69 +456,60 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const name = document.getElementById('name').value.trim();
-  const file = document.getElementById('profilePic').files[0];
 
   if (!name) return showToast('Please enter your name.');
-  if (!file) return showToast('Please select a profile picture.');
+  // Ensure processedBase64 from the canvas logic is available
+  if (!processedBase64) return showToast('Please select a profile picture.');
+
   // Show spinner
   continueBtn.disabled = true;
   btnText.style.display = 'none';
   btnIcon.innerHTML = '<span class="spinner"></span>';
 
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const base64Image = reader.result.split(',')[1];
+  try {
+    const response = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        operation: 'register',
+        name: name,
+        imageData: processedBase64, // The circular-cropped PNG data
+        imageName: `${name.replace(/\s+/g, '_')}_avatar.png` 
+      })
+    });
 
-    try {
-      const response = await fetch(scriptUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-          operation: 'register',
-          name,
-          imageData: base64Image,
-          imageName: file.name
-        })
-      });
+    const result = await response.json();
 
-      const result = await response.json();
+    if (result.status === 'success') {
+      // Replace spinner with checkmark
+      btnIcon.innerHTML = '<span class="checkmark">✔</span>';
 
-      if (result.status === 'success') {
-  // Replace spinner with checkmark
-  btnIcon.innerHTML = '<span class="checkmark">✔</span>';
+      // Small delay to show checkmark
+      setTimeout(() => {
+        localStorage.setItem('userName', name);
+        
+        if (result.picLink) {
+          localStorage.setItem('userPicLink', result.picLink);
+        }
 
-  // Small delay to show checkmark
-  setTimeout(() => {
-    localStorage.setItem('userName', name);
-    
-    // NEW: Save the profile picture link from backend
-    // (Assuming backend returns picLink in result — adjust if different)
-    if (result.picLink) {
-      localStorage.setItem('userPicLink', result.picLink);
-    }
-
-    localStorage.setItem('userIdCode', result.identityCode);
-showToast(`Account created! Your recovery code is: ${result.identityCode}. Save this securely.`);
-    
-    window.location.href = 'index.html';
-  }, 800); // 0.8 seconds
-} else {
-        showToast(result.message || 'Something went wrong');
-        // Restore button
-        continueBtn.disabled = false;
-        btnText.style.display = 'inline';
-        btnIcon.innerHTML = '<i class="fas fa-arrow-right"></i>';
-      }
-    } catch (err) {
-      showToast('Network error: ' + err.message);
+        localStorage.setItem('userIdCode', result.identityCode);
+        showToast(`Account created! Your recovery code is: ${result.identityCode}. Save this securely.`);
+        
+        window.location.href = 'index.html';
+      }, 800);
+    } else {
+      showToast(result.message || 'Something went wrong');
+      // Restore button
       continueBtn.disabled = false;
       btnText.style.display = 'inline';
       btnIcon.innerHTML = '<i class="fas fa-arrow-right"></i>';
     }
-  };
-
-  reader.readAsDataURL(file);
+  } catch (err) {
+    showToast('Network error: ' + err.message);
+    continueBtn.disabled = false;
+    btnText.style.display = 'inline';
+    btnIcon.innerHTML = '<i class="fas fa-arrow-right"></i>';
+  }
 });
-
 document.getElementById('recoverLink').addEventListener('click', () => {
   document.getElementById('recoverForm').style.display = 'block';
   document.getElementById('recoverLink').style.display = 'none';
@@ -523,7 +553,6 @@ document.getElementById('recoverBtn').addEventListener('click', async () => {
 });
 
   </script>
-
 
 <script>
  if ('serviceWorker' in navigator) {
