@@ -888,6 +888,8 @@ html, body {
   </div>
 </div>
 
+<canvas id="cropCanvas" style="display:none;"></canvas>
+
  <script>
   const scriptUrl = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
 
@@ -1010,6 +1012,10 @@ profileModal.addEventListener('click', e => {
 });
 
 // ─── When user selects new image → immediately show it in the circle ─────
+const canvas = document.getElementById('cropCanvas');
+const ctx = canvas.getContext('2d');
+let processedAvatarBase64 = ""; // Holds the clean circular image
+
 modalAvatarInput.addEventListener('change', e => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -1021,45 +1027,72 @@ modalAvatarInput.addEventListener('change', e => {
 
   const reader = new FileReader();
   reader.onload = ev => {
-    selectedAvatarFile = {
-      base64: ev.target.result.split(',')[1],
-      type:   file.type,
-      name:   file.name
-    };
+    const img = new Image();
+    img.onload = function() {
+      const size = 300; // Standard resolution for profile pics
+      canvas.width = size;
+      canvas.height = size;
 
-    // Directly update the circular avatar preview
-    modalAvatar.src = ev.target.result;
-    modalAvatar.style.opacity = '1';
-    modalError.textContent = '';
+      // Create Circular Mask
+      ctx.clearRect(0, 0, size, size);
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+
+      // Center-Crop Logic
+      let drawW, drawH, dx, dy;
+      if (img.width > img.height) {
+        drawH = size;
+        drawW = img.width * (size / img.height);
+        dx = -(drawW - size) / 2;
+        dy = 0;
+      } else {
+        drawW = size;
+        drawH = img.height * (size / img.width);
+        dx = 0;
+        dy = -(drawH - size) / 2;
+      }
+
+      ctx.drawImage(img, dx, dy, drawW, drawH);
+      
+      const dataUrl = canvas.toDataURL('image/png');
+      processedAvatarBase64 = dataUrl.split(',')[1];
+
+      // Update Modal Preview
+      modalAvatar.src = dataUrl;
+      modalAvatar.style.opacity = '1';
+      modalError.textContent = '';
+    };
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 });
-
 // ─── Save name and/or avatar ─────────────────────────────────────────────
 modalSaveBtn.addEventListener('click', async () => {
   const newName = (modalNameInput.value || '').trim();
   const nameChanged = newName && newName !== userName;
-  const avatarChanged = !!selectedAvatarFile;
+  const avatarChanged = !!processedAvatarBase64;
 
   if (!nameChanged && !avatarChanged) {
     closeProfileModal();
     return;
   }
 
-  if (nameChanged && newName.length < 2) {
-    modalError.textContent = "Name must be at least 2 characters";
-    return;
-  }
-
   modalSaveBtn.disabled = true;
-  modalError.textContent = "Saving...";
+  modalSaveBtn.innerHTML = '<span class="spinner"></span> Saving...';
 
   try {
-    const payload = { operation: 'updateProfile', oldName: userName };
+    const payload = { 
+      operation: 'updateProfile', 
+      oldName: userName,
+      identityCode: localStorage.getItem('userIdCode') // Ensure authentication
+    };
+    
     if (nameChanged) payload.newName = newName;
     if (avatarChanged) {
-      payload.imageData = selectedAvatarFile.base64;
-      payload.imageName = selectedAvatarFile.name;
+      payload.imageData = processedAvatarBase64;
+      payload.imageName = `${newName || userName}_avatar.png`;
     }
 
     const res = await fetch(scriptUrl, {
@@ -1077,27 +1110,22 @@ modalSaveBtn.addEventListener('click', async () => {
 
       if (avatarChanged && result.picLink) {
         localStorage.setItem('userPicLink', result.picLink);
-
-        const src = result.picLink.includes('http')
-          ? result.picLink
-          : `https://lh3.googleusercontent.com/d/${extractFileId(result.picLink)}`;
-
-        // Update both the top-right navbar avatar and modal avatar
-        userAvatarImg.src = src;
-        modalAvatar.src = src;
+        userAvatarImg.src = result.picLink;
+        modalAvatar.src = result.picLink;
       }
 
       showToast("Profile updated successfully");
+      processedAvatarBase64 = ""; // Reset for next time
       closeProfileModal();
-      loadComments(false); // Refresh avatars & names in chat
+      loadComments(false); 
     } else {
       modalError.textContent = result.message || "Update failed";
     }
   } catch (err) {
     modalError.textContent = "Connection error – try again";
-    console.error(err);
   } finally {
     modalSaveBtn.disabled = false;
+    modalSaveBtn.innerHTML = "Save Changes";
   }
 });
   function scrollToBottom(force = false) {
