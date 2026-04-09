@@ -856,17 +856,20 @@ async function submitSurveyResponses() {
     }
 
     try {
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          operation: "recordSurveyResponses",
-          gameId,
-          username,
-          questionId,
-          choiceIndex: Number(cIdx),
-          choiceText: choiceText   // ← ADD THIS LINE
-        })
-      });
+    const res = await fetch(SCRIPT_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/plain;charset=utf-8"   // GAS likes this more than application/json
+  },
+  body: JSON.stringify({
+    operation: "recordSurveyResponses",
+    gameId,
+    username,
+    questionId,
+    choiceIndex: Number(cIdx),
+    choiceText: choiceText
+  })
+});
 
       if (!res.ok) {
         throw new Error(`HTTP ${res.status} – server error`);
