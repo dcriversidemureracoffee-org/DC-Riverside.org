@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CashSplit - Money Tracker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/font-awesome.min.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; width: 100%; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header {
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 { font-size: 1.6rem; color: #60a5fa; font-weight: 600; }
+
+    .main-container {
+      flex: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      scrollbar-width: thin;
+      scrollbar-color: #60a5fa rgba(96,165,250,0.1);
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(96, 165, 250, 0.15);
+    }
+    .total-balance {
+      text-align: center;
+      padding: 24px;
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      border-radius: 16px;
+      color: white;
+    }
+    .balance-amount { font-size: 2.4rem; font-weight: 700; }
+    .section-title {
+      font-size: 1.1rem;
+      color: #60a5fa;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input, select, button {
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+    }
+    input, select {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      width: 100%;
+    }
+    input:focus, select:focus { outline: 2px solid #60a5fa; }
+    button {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .split-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .allocation-item {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(96, 165, 250, 0.1);
+    }
+    .allocation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: rgba(96, 165, 250, 0.2);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .progress {
+      height: 100%;
+      background: linear-gradient(90deg, #60a5fa, #3b82f6);
+      transition: width 0.4s ease;
+    }
+
+    .deduction-btn { background: #ef4444; }
+
+    .history { max-height: 420px; overflow-y: auto; }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #1e2937;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 380px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      border: 1px solid rgba(96, 165, 250, 0.2);
+    }
+    .modal-title {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      color: #60a5fa;
+    }
+    .modal input {
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      width: 100%;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    .modal-buttons button {
+      flex: 1;
+      padding: 12px;
+    }
+    .modal-cancel { background: #334155 !important; }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translate(-50%, 50px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    .sub-allocations {
+      margin-top: 12px;
+      padding-left: 12px;
+      border-left: 3px solid #60a5fa;
+    }
+    .sub-item {
+      background: rgba(15, 23, 42, 0.4);
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #64748b;
+    }
+
+    /* New styles for Actual & Unallocated */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      font-size: 1.05rem;
+    }
+    .unallocated {
+      color: #fbbf24;
+      font-weight: 600;
+    }
+
+    /* Improved Dropdown / Select Styles */
+select {
+    background: rgba(255,255,255,0.08);
+    color: #e2e8f0;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    font-size: 1rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23e2e8f0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592c.86 0 1.32 1.013.753 1.658l-4.796 5.482a1 1 0 01-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+    cursor: pointer;
+}
+
+select:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    background-color: rgba(255,255,255,0.12);
+}
+
+select option {
+    background: #1e2937;           /* Dark background for dropdown list */
+    color: #e2e8f0;                /* Light text */
+    padding: 12px 16px;
+    font-size: 1rem;
+}
+
+/* Optional: Better hover effect on options (works in most browsers) */
+select option:hover {
+    background: #334155;
+}
+
+/* Make sure the placeholder option is visible */
+select option[value=""] {
+    color: #94a3b8;
+}
+    .delete-history-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1><i class="fas fa-coins"></i> CashSplit</h1>
+            <button onclick="showResetSettings()" style="background:#334155; font-size:0.9rem;">
+        <i class="fas fa-clock"></i> Reset Mode
+      </button>
+      <button onclick="resetAll()" style="background:#334155; font-size:0.9rem;">
+        <i class="fas fa-trash"></i> Full Reset
+      </button>
+      <button onclick="goBackToMain()" 
+        style="background:#334155; font-size:0.9rem; padding:10px 16px; border-radius:12px;">
+  ← Back to Riverside
+</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div class="card total-balance">
+      <h2>Current Balance</h2>
+      <div class="balance-amount" id="total-balance">KSh 0.00</div>
+    </div>
+
+    <!-- New: Actual Amount and Unallocated -->
+    <div class="card">
+      <div class="section-title"><i class="fas fa-info-circle"></i> Money Overview</div>
+      <div class="info-row">
+        <span>Actual Amount:</span>
+        <span id="actual-amount">KSh 0.00</span>
+      </div>
+      <div class="info-row unallocated">
+        <span>Unallocated Amount:</span>
+        <span id="unallocated-amount">KSh 0.00</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fas fa-plus-circle"></i> Add Money</div>
+      <div style="display:grid; grid-template-columns:1fr auto; gap:12px;">
+        <input type="number" id="new-amount" placeholder="Amount received (KSh)" step="0.01">
+        <button onclick="addMoney()">Add</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fas fa-chart-pie"></i> Allocations & Targets</div>
+      <div id="allocations-list" class="split-grid"></div>
+     <button id="add-allocation-btn" onclick="showAddNewAllocationModal()" style="margin-top:16px; width:100%;">
+  <i class="fas fa-plus"></i> Add New Main Allocation Category
+</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fas fa-minus-circle"></i> Make Deduction</div>
+      <select id="deduct-category" style="margin-bottom:12px;"></select>
+      <div style="display:grid; grid-template-columns:1fr auto; gap:12px;">
+        <input type="number" id="deduct-amount" placeholder="Amount to spend" step="0.01">
+        <button onclick="makeDeduction()" class="deduction-btn">Deduct</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fas fa-history"></i> Today's Activity</div>
+      <div id="history-list" class="history"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title" id="modal-title"></div>
+      <input type="text" id="modal-input" placeholder="Enter value...">
+      <div class="modal-buttons">
+        <button onclick="hideModal()" class="modal-cancel">Cancel</button>
+        <button onclick="confirmModalAction()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let actualAmount = 0;        // The real money we have (this is 100%)
+    let unallocatedAmount = 0;   // What hasn't been assigned to any allocation yet
+    let allocations = [];
+    let history = [];
+    let pendingCallbacks = [];
+        let resetMode = "consistent";   // "consistent", "daily", "weekly", "monthly", "yearly"
+    let lastResetDate = null;
+
+       const STORAGE_KEY = 'cashsplit_data_v12';
+
+        function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        actualAmount = data.actualAmount || 0;
+        unallocatedAmount = data.unallocatedAmount || 0;
+        allocations = data.allocations || [];
+        history = data.history || [];
+        resetMode = data.resetMode || "consistent";
+        lastResetDate = data.lastResetDate || null;
+      }
+      checkAndPerformAutoReset();
+      renderAll();
+    }
+       function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        actualAmount,
+        unallocatedAmount,
+        allocations,
+        history,
+        resetMode,
+        lastResetDate
+      }));
+    }
+
+    function renderAll() {
+      document.getElementById('total-balance').textContent = `KSh ${actualAmount.toFixed(2)}`;
+      document.getElementById('actual-amount').textContent = `KSh ${actualAmount.toFixed(2)}`;
+      document.getElementById('unallocated-amount').textContent = `KSh ${unallocatedAmount.toFixed(2)}`;
+
+      renderAllocations();
+      renderDeductOptions();
+      renderHistory();
+      updateAddButtonState();
+    }
+
+   function updateAddButtonState() {
+  const btn = document.getElementById('add-allocation-btn');
+  if (!btn) return;
+
+  if (!canAddNewAllocation()) {
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'pointer';        // remains clickable
+    btn.disabled = false;                // important: keep enabled
+  } else {
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.disabled = false;
+  }
+}
+    function showModal(title, defaultValue, callback, params = {}) {
+      pendingCallbacks.push(callback);
+      document.getElementById('modal-title').textContent = title;
+      const input = document.getElementById('modal-input');
+      input.value = defaultValue || '';
+      input.type = params.type || 'text';
+      if (params.type === 'number') input.step = "0.01";
+      document.getElementById('modal').style.display = 'flex';
+      setTimeout(() => input.focus(), 100);
+    }
+
+    function hideModal() {
+      document.getElementById('modal').style.display = 'none';
+      pendingCallbacks = [];
+    }
+
+    function confirmModalAction() {
+      const value = document.getElementById('modal-input').value.trim();
+      const callback = pendingCallbacks.pop();
+      if (callback) callback(value);
+      if (pendingCallbacks.length === 0) hideModal();
+    }
+
+    function addMoney() {
+      const amount = parseFloat(document.getElementById('new-amount').value);
+      if (!amount || amount <= 0) return showToast("Please enter a valid amount", "error");
+
+      actualAmount += amount;
+      redistributeAll();   // Recalculate everything based on new actualAmount
+
+      history.unshift({
+        type: "income",
+        amount,
+        timestamp: new Date().toISOString(),
+        note: "Money added"
+      });
+
+      document.getElementById('new-amount').value = '';
+      saveData();
+      renderAll();
+      showToast(`KSh ${amount.toFixed(2)} added and redistributed`);
+    }
+
+    // ====================== FIXED CORE FUNCTIONS ======================
+    function calculateTotalAllocated() {
+      let total = 0;
+      allocations.forEach(alloc => {
+        total += alloc.used || 0;
+        if (alloc.subAllocations) {
+          alloc.subAllocations.forEach(sub => {
+            total += sub.used || 0;
+          });
+        }
+      });
+      return total;
+    }
+
+    function redistributeAll() {
+      if (actualAmount <= 0) {
+        unallocatedAmount = 0;
+        allocations.forEach(alloc => {
+          alloc.used = 0;
+          if (alloc.subAllocations) {
+            alloc.subAllocations.forEach(sub => sub.used = 0);
+          }
+        });
+        return;
+      }
+
+
+      if (allocations.length === 0) {
+        unallocatedAmount = actualAmount;
+        return;
+      }
+
+      // Calculate based on ACTUAL AMOUNT (100%), not unallocated
+      allocations.forEach(alloc => {
+        const idealShare = (alloc.percent / 100) * actualAmount;
+
+        if (alloc.target > 0) {
+          alloc.used = Math.min(idealShare, alloc.target);
+        } else {
+          alloc.used = idealShare;
+        }
+
+        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
+          redistributeToSubs(alloc);
+        }
+      });
+
+      unallocatedAmount = Math.max(0, actualAmount - calculateTotalAllocated());
+    }
+
+    function canAddNewAllocation() {
+  if (actualAmount <= 0) return true; // Allow if no money yet
+
+  let totalPercent = 0;
+  allocations.forEach(alloc => {
+    totalPercent += alloc.percent || 0;
+  });
+
+  return totalPercent < 100;
+}
+
+    function redistributeToSubs(mainAlloc) {
+      if (!mainAlloc.subAllocations || mainAlloc.subAllocations.length === 0) return;
+
+      const mainUsed = mainAlloc.used;
+
+      mainAlloc.subAllocations.forEach(sub => {
+        const idealSubShare = (sub.percent / 100) * mainUsed;
+
+        if (sub.target > 0) {
+          sub.used = Math.min(idealSubShare, sub.target);
+        } else {
+          sub.used = idealSubShare;
+        }
+      });
+    }
+    // ====================== END OF FIXED FUNCTIONS ======================
+
+    function showAddNewAllocationModal() {
+  if (!canAddNewAllocation()) {
+    showToast("Cannot add more allocations. Total percentage is already 100%. Edit existing percentages first.", "error");
+    return;
+  }
+
+  showModal("Main Allocation Name", "", (name) => {
+    if (!name) return;
+
+    showModal(`Percentage for ${name} (%)`, "10", (percentStr) => {
+      const percent = parseFloat(percentStr);
+      
+      if (!percent || percent <= 0 || percent > 100) {
+        showToast("Percentage must be between 0.01 and 100", "error");
+        return;
+      }
+
+      // Double-check total after adding
+      let currentTotal = allocations.reduce((sum, alloc) => sum + (alloc.percent || 0), 0);
+      if (currentTotal + percent > 100) {
+        showToast("Total percentage would exceed 100%. Please use a smaller percentage or edit existing ones.", "error");
+        return;
+      }
+
+      allocations.push({
+        id: Date.now(),
+        name: name,
+        percent: percent,
+        target: 0,
+        used: 0,
+        subAllocations: []
+      });
+
+      redistributeAll();
+      saveData();
+      renderAll();
+      showToast(`"${name}" added (${percent}%)`);
+    }, {type: 'number'});
+  });
+}
+    function renderAllocations() {
+      const container = document.getElementById('allocations-list');
+      container.innerHTML = '';
+
+      if (allocations.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>No allocations yet.</p>
+            <p style="margin-top:12px; font-size:0.95rem;">All money is currently unallocated.</p>
+          </div>
+        `;
+        return;
+      }
+
+      allocations.forEach((alloc, index) => {
+        const progress = alloc.target > 0 ? Math.min((alloc.used / alloc.target) * 100, 100) : 0;
+        
+        let html = `
+          <div class="allocation-item">
+            <div class="allocation-header">
+              <strong>${alloc.name}</strong>
+              <span>${alloc.percent}%</span>
+            </div>
+            <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:8px;">
+              Allocated: KSh ${alloc.used.toFixed(2)} 
+              ${alloc.target > 0 ? `/ Target: KSh ${alloc.target.toFixed(2)}` : ''}
+            </div>
+        `;
+
+        if (alloc.target > 0) {
+          html += `<div class="progress-bar"><div class="progress" style="width: ${progress}%"></div></div>`;
+        }
+
+        html += `
+          <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button onclick="setTarget(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Set Target</button>
+            <button onclick="addSubAllocation(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Add Sub</button>
+            <button onclick="editAllocation(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Edit %</button>
+          </div>
+        `;
+
+        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
+          html += `<div class="sub-allocations">`;
+          alloc.subAllocations.forEach((sub, subIndex) => {
+            const subProgress = sub.target > 0 ? Math.min((sub.used / sub.target) * 100, 100) : 0;
+            html += `
+              <div class="sub-item">
+                <div style="display:flex; justify-content:space-between;">
+                  <strong>${sub.name}</strong>
+                  <span>${sub.percent}%</span>
+                </div>
+                <div style="font-size:0.85rem; color:#94a3b8;">
+                  Allocated: KSh ${sub.used.toFixed(2)} 
+                  ${sub.target > 0 ? `/ Target: KSh ${sub.target.toFixed(2)}` : ''}
+                </div>
+                ${sub.target > 0 ? `<div class="progress-bar" style="margin-top:6px;"><div class="progress" style="width: ${subProgress}%"></div></div>` : ''}
+                <button onclick="setSubTarget(${index}, ${subIndex})" style="margin-top:8px; background:#334155; font-size:0.8rem; padding:6px 10px;">Set Target</button>
+              </div>
+            `;
+          });
+          html += `</div>`;
+        }
+        html += `</div>`;
+        container.innerHTML += html;
+      });
+    }
+
+    function setTarget(index) {
+      const alloc = allocations[index];
+      showModal(`Target for ${alloc.name} (0 = no limit)`, alloc.target || "0", (value) => {
+        const target = parseFloat(value);
+        if (!isNaN(target)) {
+          alloc.target = Math.max(0, target);
+          redistributeAll();   // Important: recalculate after changing target
+          saveData();
+          renderAll();
+        }
+      }, {type: 'number'});
+    }
+
+    function editAllocation(index) {
+      const alloc = allocations[index];
+      showModal(`Edit % for ${alloc.name}`, alloc.percent, (value) => {
+        const percent = parseFloat(value);
+        if (!isNaN(percent) && percent > 0 && percent <= 100) {
+          alloc.percent = percent;
+          redistributeAll();
+          saveData();
+          renderAll();
+        } else {
+          showToast("Percentage must be between 0 and 100", "error");
+        }
+      }, {type: 'number'});
+    }
+
+    function addSubAllocation(mainIndex) {
+      const mainAlloc = allocations[mainIndex];
+      showModal(`Sub-allocation name for ${mainAlloc.name}`, "", (name) => {
+        if (!name) return;
+        showModal(`% of ${mainAlloc.name} for ${name}`, "30", (percentStr) => {
+          const percent = parseFloat(percentStr);
+          if (!percent || percent <= 0 || percent > 100) {
+            showToast("Percentage must be between 0 and 100", "error");
+            return;
+          }
+          if (!mainAlloc.subAllocations) mainAlloc.subAllocations = [];
+          mainAlloc.subAllocations.push({
+            id: Date.now(),
+            name: name,
+            percent: percent,
+            target: 0,
+            used: 0
+          });
+          redistributeAll();
+          saveData();
+          renderAll();
+          showToast(`Sub-allocation "${name}" added`);
+        }, {type: 'number'});
+      });
+    }
+
+    function setSubTarget(mainIndex, subIndex) {
+      const sub = allocations[mainIndex].subAllocations[subIndex];
+      showModal(`Target for ${sub.name} (0 = no limit)`, sub.target || "0", (value) => {
+        const target = parseFloat(value);
+        if (!isNaN(target)) {
+          sub.target = Math.max(0, target);
+          redistributeAll();   // Recalculate after target change
+          saveData();
+          renderAll();
+        }
+      }, {type: 'number'});
+    }
+
+    function renderDeductOptions() {
+      const select = document.getElementById('deduct-category');
+      select.innerHTML = '<option value="">Select Category or Sub-Category</option>';
+
+      allocations.forEach((alloc, mainIndex) => {
+        const mainOption = document.createElement('option');
+        mainOption.value = `main-${mainIndex}`;
+        mainOption.textContent = `${alloc.name} - KSh ${alloc.used.toFixed(2)}`;
+        select.appendChild(mainOption);
+
+        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
+          alloc.subAllocations.forEach((sub, subIndex) => {
+            const subOption = document.createElement('option');
+            subOption.value = `sub-${mainIndex}-${subIndex}`;
+            subOption.textContent = `   └ ${sub.name} - KSh ${sub.used.toFixed(2)}`;
+            select.appendChild(subOption);
+          });
+        }
+      });
+    }
+
+    function makeDeduction() {
+      const select = document.getElementById('deduct-category');
+      const amount = parseFloat(document.getElementById('deduct-amount').value);
+
+      if (!select.value || !amount || amount <= 0) 
+        return showToast("Please select category and enter amount", "error");
+
+      const value = select.value;
+      let categoryName = "";
+
+      if (value.startsWith('main-')) {
+        const idx = parseInt(value.split('-')[1]);
+        const alloc = allocations[idx];
+        if (alloc.used < amount) return showToast(`Not enough in ${alloc.name}`, "error");
+        alloc.used -= amount;
+        categoryName = alloc.name;
+      } else if (value.startsWith('sub-')) {
+        const parts = value.split('-');
+        const mainIdx = parseInt(parts[1]);
+        const subIdx = parseInt(parts[2]);
+        const sub = allocations[mainIdx].subAllocations[subIdx];
+        if (sub.used < amount) return showToast(`Not enough in ${sub.name}`, "error");
+        sub.used -= amount;
+        categoryName = sub.name;
+      }
+
+      actualAmount -= amount;
+      redistributeAll();   // Important: recalculate after deduction
+
+      history.unshift({ 
+        type: "deduction", 
+        amount, 
+        category: categoryName, 
+        timestamp: new Date().toISOString() 
+      });
+
+      saveData();
+      renderAll();
+      showToast(`KSh ${amount.toFixed(2)} deducted from ${categoryName}`);
+    }
+
+        function renderHistory() {
+      const container = document.getElementById('history-list');
+      container.innerHTML = history.length === 0 
+        ? '<p style="text-align:center; color:#64748b; padding:60px 20px;">No transactions yet.<br>Add money to start tracking.</p>' 
+        : '';
+
+      history.slice(0, 30).forEach((item, i) => {
+        const isIncome = item.type === 'income';
+        const isReset = item.type === 'reset';
+
+        const div = document.createElement('div');
+        div.className = 'history-item';
+
+        let label = isReset ? `<strong style="color:#eab308">${item.note}</strong>` :
+                    isIncome ? `<strong>Received</strong>` : `<strong>Spent ${item.category ? `(${item.category})` : ''}</strong>`;
+
+        div.innerHTML = `
+          <div style="flex:1">
+            ${label}<br>
+            <small style="color:#64748b">${new Date(item.timestamp).toLocaleString()}</small>
+          </div>
+          <div style="text-align:right">
+            ${isReset ? '' : `<span style="color:${isIncome ? '#22c55e' : '#ef4444'};font-weight:600">
+              ${isIncome ? '+' : '-'} KSh ${item.amount.toFixed(2)}
+            </span>`}
+            <button onclick="deleteHistoryItem(${i})" class="delete-history-btn" style="margin-left:8px">×</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+        // ====================== RESET SYSTEM ======================
+    function checkAndPerformAutoReset() {
+      if (resetMode === "consistent" || !lastResetDate) return;
+
+      const now = new Date();
+      const last = new Date(lastResetDate);
+      let shouldReset = false;
+
+      switch(resetMode) {
+        case "daily":
+          shouldReset = now.toDateString() !== last.toDateString();
+          break;
+        case "weekly":
+          shouldReset = (now - last) / (1000*60*60*24) >= 7;
+          break;
+        case "monthly":
+          shouldReset = now.getMonth() !== last.getMonth() || now.getFullYear() !== last.getFullYear();
+          break;
+        case "yearly":
+          shouldReset = now.getFullYear() !== last.getFullYear();
+          break;
+      }
+
+      if (shouldReset) {
+        performReset(false); // auto reset, no confirm
+      }
+    }
+
+   function performReset(askConfirm = true) {
+  if (askConfirm) {
+    showConfirm("Confirm Reset", `Reset Actual Amount and Allocations to 0?\nMode: ${resetMode}\nHistory will be kept.`, () => {
+      executeReset();
+    });
+    return;
+  }
+  executeReset();
+}
+
+function executeReset() {
+  actualAmount = 0;
+  unallocatedAmount = 0;
+
+  allocations.forEach(alloc => {
+    alloc.used = 0;
+    if (alloc.subAllocations) {
+      alloc.subAllocations.forEach(sub => sub.used = 0);
+    }
+  });
+
+  lastResetDate = new Date().toISOString();
+
+  history.unshift({
+    type: "reset",
+    amount: 0,
+    note: `${resetMode} Reset`,
+    timestamp: new Date().toISOString()
+  });
+
+  saveData();
+  renderAll();
+  showToast(`Reset done (${resetMode})`, "success");
+}
+                 function showResetSettings() {
+  const options = [
+    { value: "consistent", text: "Keep Consistent (No Auto Reset)" },
+    { value: "daily",      text: "Reset Every Day" },
+    { value: "weekly",     text: "Reset Every Week" },
+    { value: "monthly",    text: "Reset Every Month" },
+    { value: "yearly",     text: "Reset Every Year" }
+  ];
+
+  let html = `<p style="margin-bottom: 12px; color: #94a3b8;">
+                Current mode: <strong>${options.find(o => o.value === resetMode)?.text || resetMode}</strong>
+              </p>`;
+
+  html += `<select id="reset-select" style="width:100%; padding:12px; border-radius:12px; background:rgba(255,255,255,0.08); color:white; border:1px solid rgba(96,165,250,0.3);">`;
+  options.forEach(opt => {
+    html += `<option value="${opt.value}" ${opt.value === resetMode ? 'selected' : ''}>${opt.text}</option>`;
+  });
+  html += `</select>`;
+
+  // Use the existing modal
+  document.getElementById('modal-title').innerHTML = 'Reset Settings';
+  document.getElementById('modal-input').style.display = 'none';
+
+  const modalContent = document.querySelector('.modal-content');
+  // Remove any previous extra select
+  const oldSelect = document.getElementById('reset-select');
+  if (oldSelect) oldSelect.remove();
+
+  modalContent.insertAdjacentHTML('beforeend', html);
+
+  document.getElementById('modal').style.display = 'flex';
+
+  // Override OK button for this modal
+  const okBtn = document.querySelector('.modal-buttons button:last-child');
+  const originalOnClick = okBtn.onclick;
+
+  okBtn.onclick = function() {
+    const select = document.getElementById('reset-select');
+    if (select) {
+      resetMode = select.value;
+      saveData();
+      showToast(`Reset mode changed to: ${options.find(o => o.value === resetMode).text}`, "success");
+    }
+
+    // Cleanup
+    if (select) select.remove();
+    document.getElementById('modal-input').style.display = 'block';
+    okBtn.onclick = originalOnClick || confirmModalAction;
+    hideModal();
+  };
+}
+           function hideModal() {
+      document.getElementById('modal').style.display = 'none';
+      
+      // Clean up any leftover reset elements
+      const extraSelect = document.getElementById('reset-select');
+      if (extraSelect) extraSelect.remove();
+      
+      const input = document.getElementById('modal-input');
+      input.style.display = 'block';
+      input.value = '';
+      
+      pendingCallbacks = [];
+      
+      // Restore OK button
+      const okBtn = document.querySelector('.modal-buttons button:last-child');
+      if (okBtn) okBtn.onclick = confirmModalAction;
+    }
+    
+   function deleteHistoryItem(index) {
+  showConfirm("Delete Record", "Delete this history record? This action cannot be undone.", () => {
+    history.splice(index, 1);
+    saveData();
+    renderHistory();
+    showToast("History item deleted", "success");
+  });
+}
+
+    function showToast(message, type = "success") {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.style.borderLeft = type === "error" ? "4px solid #ef4444" : "4px solid #22c55e";
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 2800);
+    }
+    function showConfirm(title, message, onConfirm) {
+  document.getElementById('modal-title').innerHTML = `<strong>${title}</strong>`;
+  
+  const input = document.getElementById('modal-input');
+  input.style.display = 'none';
+  input.value = '';
+
+  let msgEl = document.getElementById('confirm-message');
+  if (!msgEl) {
+    msgEl = document.createElement('p');
+    msgEl.id = 'confirm-message';
+    msgEl.style.marginBottom = '20px';
+    msgEl.style.color = '#e2e8f0';
+    document.querySelector('.modal-content').insertBefore(msgEl, document.querySelector('.modal-buttons'));
+  }
+  msgEl.textContent = message;
+
+  pendingCallbacks.push(onConfirm);
+
+  document.getElementById('modal').style.display = 'flex';
+
+  const okBtn = document.querySelector('.modal-buttons button:last-child');
+  const originalOk = okBtn.onclick;
+
+  okBtn.onclick = () => {
+    const cb = pendingCallbacks.pop();
+    if (cb) cb();
+    hideModal();
+    okBtn.onclick = originalOk || confirmModalAction;
+    if (msgEl) msgEl.remove();
+  };
+}
+
+   function resetAll() {
+  showConfirm("Full Reset", "Reset ALL data? This cannot be undone.", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+}
+
+   function goBackToMain() {
+  document.documentElement.style.transition = 'transform 0.45s ease';
+  document.documentElement.style.transform = 'translateX(100%)';
+
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 380);
+}
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>
