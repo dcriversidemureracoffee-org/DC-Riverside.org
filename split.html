@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CashSplit - Money Tracker</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/font-awesome.min.css"/>
-  <style>
+<style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; width: 100%; }
     body {
@@ -273,24 +273,260 @@ select option[value=""] {
       font-size: 0.75rem;
       cursor: pointer;
     }
+
+    /* ===== SETTINGS MODAL ===== */
+#settings-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+#settings-modal .modal-content {
+  width: 90%;
+  max-width: 420px;
+}
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(96,165,250,0.1);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-label { font-size: 1rem; color: #e2e8f0; }
+.settings-desc { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+
+/* Toggle switch */
+.toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #334155;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.toggle-slider:before {
+  content: "";
+  position: absolute;
+  width: 20px; height: 20px;
+  left: 3px; bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.toggle input:checked + .toggle-slider { background: #3b82f6; }
+.toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
+
+/* Font size selector */
+.font-select {
+  background: rgba(255,255,255,0.08);
+  color: #e2e8f0;
+  border: 1px solid rgba(96,165,250,0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Light mode overrides */
+body.light-mode {
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+  color: #1e293b;
+}
+body.light-mode header {
+  background: rgba(219, 234, 254, 0.97);
+  border-bottom-color: rgba(59,130,246,0.3);
+}
+body.light-mode h1 { color: #1d4ed8; }
+body.light-mode .card {
+  background: rgba(255,255,255,0.9);
+  border-color: rgba(59,130,246,0.2);
+  color: #1e293b;
+}
+body.light-mode .total-balance {
+  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+  color: white;
+}
+body.light-mode .section-title { color: #1d4ed8; }
+body.light-mode .allocation-item {
+  background: rgba(219,234,254,0.5);
+  border-color: rgba(59,130,246,0.2);
+  color: #1e293b;
+}
+body.light-mode .sub-allocations { border-left-color: #3b82f6; }
+body.light-mode .sub-item {
+  background: rgba(191,219,254,0.4);
+  color: #1e293b;
+}
+body.light-mode .allocation-item strong,
+body.light-mode .sub-item strong { color: #0f172a; }
+body.light-mode .allocation-item span,
+body.light-mode .sub-item span,
+body.light-mode .allocation-item div,
+body.light-mode .sub-item div { color: #334155; }
+body.light-mode input {
+  background: rgba(255,255,255,0.9);
+  color: #1e293b;
+  border: 1px solid rgba(59,130,246,0.3);
+}
+body.light-mode input::placeholder { color: #94a3b8; }
+body.light-mode select {
+  background-color: rgba(255,255,255,0.9);
+  color: #1e293b;
+  border-color: rgba(59,130,246,0.3);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%231e293b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592c.86 0 1.32 1.013.753 1.658l-4.796 5.482a1 1 0 01-1.506 0z'/%3E%3C/svg%3E");
+}
+body.light-mode select option {
+  background: #ffffff;
+  color: #1e293b;
+}
+body.light-mode .font-select {
+  background: rgba(255,255,255,0.9);
+  color: #1e293b;
+  border-color: rgba(59,130,246,0.3);
+}
+
+/* Modal base */
+body.light-mode .modal-content {
+  background: #ffffff;
+  color: #1e293b;
+  border-color: rgba(59,130,246,0.3);
+}
+body.light-mode .modal-title,
+body.light-mode #modal-title { color: #1d4ed8 !important; }
+body.light-mode .modal input,
+body.light-mode #modal-input {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid rgba(59,130,246,0.3) !important;
+}
+body.light-mode #modal-input::placeholder { color: #94a3b8 !important; }
+
+/* Confirm dialog message */
+body.light-mode #confirm-message {
+  color: #1e293b !important;
+}
+
+/* Reset Settings select inside modal */
+body.light-mode #reset-select {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid rgba(59,130,246,0.4) !important;
+}
+body.light-mode #reset-select option {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+/* Any paragraph or strong text inside modals */
+body.light-mode .modal-content p,
+body.light-mode .modal-content strong {
+  color: #1e293b !important;
+}
+
+body.light-mode .modal-cancel { background: #cbd5e1 !important; color: #1e293b !important; }
+body.light-mode .settings-label { color: #1e293b; }
+body.light-mode .settings-desc { color: #475569; }
+body.light-mode .settings-row { border-bottom-color: rgba(59,130,246,0.15); }
+body.light-mode .toggle-slider { background: #94a3b8; }
+body.light-mode .history-item { border-bottom-color: rgba(59,130,246,0.15); }
+body.light-mode .history-item small { color: #475569 !important; }
+body.light-mode .unallocated { color: #b45309; }
+body.light-mode .progress-bar { background: rgba(59,130,246,0.15); }
+body.light-mode .info-row { color: #1e293b; }
+body.light-mode .empty-state { color: #475569; }
+body.light-mode .toast {
+  background: #1e293b;
+  color: white;
+}
+body.light-mode button[style*="background:#334155"] {
+  background: #475569 !important;
+  color: white !important;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Light mode actions menu */
+body.light-mode #actions-menu {
+  background: #ffffff !important;
+  border-color: rgba(59,130,246,0.25) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important;
+}
+body.light-mode #actions-menu button {
+  color: #1e293b !important;
+}
+body.light-mode #actions-menu button:last-child {
+  color: #dc2626 !important;
+}
+body.light-mode #actions-menu div[style*="height:1px"] {
+  background: rgba(59,130,246,0.15) !important;
+}
+
+/* Light mode Actions trigger button */
+body.light-mode #actions-btn {
+  background: #475569 !important;
+  color: #ffffff !important;
+}
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-content">
-      <h1><i class="fas fa-coins"></i> CashSplit</h1>
-            <button onclick="showResetSettings()" style="background:#334155; font-size:0.9rem;">
-        <i class="fas fa-clock"></i> Reset Mode
+ <header>
+  <div class="header-content">
+    <h1><i class="fas fa-coins"></i> CashSplit</h1>
+    <div style="position:relative;">
+      <button onclick="toggleActions()" id="actions-btn" style="background:#334155; font-size:0.9rem;">
+        <i class="fas fa-ellipsis-v"></i> Actions
       </button>
-      <button onclick="resetAll()" style="background:#334155; font-size:0.9rem;">
-        <i class="fas fa-trash"></i> Full Reset
-      </button>
-      <button onclick="goBackToMain()" 
-        style="background:#334155; font-size:0.9rem; padding:10px 16px; border-radius:12px;">
-  ← Back to Riverside
-</button>
+      <div id="actions-menu" style="
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: #1e2937;
+        border: 1px solid rgba(96,165,250,0.2);
+        border-radius: 14px;
+        padding: 8px;
+        min-width: 170px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+        z-index: 200;
+        flex-direction: column;
+        gap: 6px;
+        animation: slideDown 0.2s ease;
+      ">
+        <button onclick="openSettings(); closeActions();" style="
+          width:100%; background:transparent; color:#e2e8f0;
+          text-align:left; padding:10px 14px; border-radius:10px;
+          font-size:0.95rem; display:flex; align-items:center; gap:10px;
+        " onmouseover="this.style.background='rgba(96,165,250,0.12)'" onmouseout="this.style.background='transparent'">
+          <i class="fas fa-cog" style="width:16px; color:#60a5fa;"></i> Settings
+        </button>
+        <button onclick="showResetSettings(); closeActions();" style="
+          width:100%; background:transparent; color:#e2e8f0;
+          text-align:left; padding:10px 14px; border-radius:10px;
+          font-size:0.95rem; display:flex; align-items:center; gap:10px;
+        " onmouseover="this.style.background='rgba(96,165,250,0.12)'" onmouseout="this.style.background='transparent'">
+          <i class="fas fa-clock" style="width:16px; color:#60a5fa;"></i> Reset Mode
+        </button>
+        <div style="height:1px; background:rgba(96,165,250,0.1); margin:2px 6px;"></div>
+        <button onclick="resetAll(); closeActions();" style="
+          width:100%; background:transparent; color:#ef4444;
+          text-align:left; padding:10px 14px; border-radius:10px;
+          font-size:0.95rem; display:flex; align-items:center; gap:10px;
+        " onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">
+          <i class="fas fa-trash" style="width:16px;"></i> Full Reset
+        </button>
+      </div>
     </div>
-  </header>
+  </div>
+</header>
 
   <div class="main-container">
     <div class="card total-balance">
@@ -354,6 +590,56 @@ select option[value=""] {
     </div>
   </div>
 
+  <!-- Settings Modal -->
+<div id="settings-modal">
+  <div class="modal-content">
+    <div class="modal-title" style="font-size:1.2rem; margin-bottom:16px;">
+      <i class="fas fa-cog"></i> Settings
+    </div>
+
+    <!-- Light Mode -->
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Light Mode</div>
+        <div class="settings-desc">Switch to a brighter theme</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="setting-light-mode" onchange="applySetting('lightMode', this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <!-- Font Size -->
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Text Size</div>
+        <div class="settings-desc">Adjust how large text appears</div>
+      </div>
+      <select class="font-select" id="setting-font-size" onchange="applySetting('fontSize', this.value)">
+        <option value="14px">Small</option>
+        <option value="16px" selected>Default</option>
+        <option value="18px">Large</option>
+        <option value="20px">X-Large</option>
+      </select>
+    </div>
+
+    <!-- Compact View -->
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Compact View</div>
+        <div class="settings-desc">Reduce spacing for more content on screen</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="setting-compact" onchange="applySetting('compactView', this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div style="margin-top:20px;">
+      <button onclick="closeSettings()" style="width:100%;">Done</button>
+    </div>
+  </div>
+</div>
   <script>
     let actualAmount = 0;        // The real money we have (this is 100%)
     let unallocatedAmount = 0;   // What hasn't been assigned to any allocation yet
@@ -963,7 +1249,7 @@ function executeReset() {
     msgEl = document.createElement('p');
     msgEl.id = 'confirm-message';
     msgEl.style.marginBottom = '20px';
-    msgEl.style.color = '#e2e8f0';
+   msgEl.style.color = document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0';
     document.querySelector('.modal-content').insertBefore(msgEl, document.querySelector('.modal-buttons'));
   }
   msgEl.textContent = message;
@@ -991,16 +1277,81 @@ function executeReset() {
   });
 }
 
-   function goBackToMain() {
-  document.documentElement.style.transition = 'transform 0.45s ease';
-  document.documentElement.style.transform = 'translateX(100%)';
+  
+// ===== SETTINGS =====
+const SETTINGS_KEY = 'cashsplit_settings_v1';
+let appSettings = { lightMode: false, fontSize: '16px', compactView: false };
 
-  setTimeout(() => {
-    window.location.href = 'index.html';
-  }, 380);
+function loadSettings() {
+  const saved = localStorage.getItem(SETTINGS_KEY);
+  if (saved) appSettings = { ...appSettings, ...JSON.parse(saved) };
+  applyAllSettings();
+  // Sync UI toggles/selects
+  document.getElementById('setting-light-mode').checked = appSettings.lightMode;
+  document.getElementById('setting-font-size').value = appSettings.fontSize;
+  document.getElementById('setting-compact').checked = appSettings.compactView;
 }
 
-    window.onload = loadData;
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings));
+}
+
+function applySetting(key, value) {
+  appSettings[key] = value;
+  saveSettings();
+  applyAllSettings();
+}
+
+function applyAllSettings() {
+  // Light mode
+  document.body.classList.toggle('light-mode', appSettings.lightMode);
+
+  // Font size — apply to root so rem/em cascade correctly
+  document.documentElement.style.fontSize = appSettings.fontSize;
+
+  // Compact view
+  document.querySelectorAll('.card').forEach(card => {
+    card.style.padding = appSettings.compactView ? '12px' : '20px';
+  });
+  document.querySelectorAll('.allocation-item').forEach(el => {
+    el.style.padding = appSettings.compactView ? '8px' : '16px';
+  });
+  document.querySelectorAll('.sub-item').forEach(el => {
+    el.style.padding = appSettings.compactView ? '6px' : '10px';
+  });
+  document.querySelectorAll('.main-container').forEach(el => {
+    el.style.gap = appSettings.compactView ? '12px' : '24px';
+  });
+}
+
+function openSettings() {
+  document.getElementById('settings-modal').style.display = 'flex';
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').style.display = 'none';
+  // Re-apply compact since new cards may have rendered
+  applyAllSettings();
+}
+
+function toggleActions() {
+  const menu = document.getElementById('actions-menu');
+  const isOpen = menu.style.display === 'flex';
+  menu.style.display = isOpen ? 'none' : 'flex';
+}
+
+function closeActions() {
+  document.getElementById('actions-menu').style.display = 'none';
+}
+
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('actions-btn').contains(e.target) &&
+      !document.getElementById('actions-menu').contains(e.target)) {
+    closeActions();
+  }
+});
+
+   window.onload = () => { loadData(); loadSettings(); };
   </script>
 </body>
 </html>
