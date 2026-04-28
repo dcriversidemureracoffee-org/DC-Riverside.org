@@ -475,6 +475,40 @@ body.light-mode #actions-btn {
   background: #475569 !important;
   color: #ffffff !important;
 }
+
+/* Balance History Modal */
+#balance-history-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1002;
+}
+
+#balance-history-modal .modal-content {
+  width: 90%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.balance-history-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(96,165,250,0.15);
+}
+
+body.light-mode .balance-history-item {
+  border-bottom-color: rgba(59,130,246,0.15);
+}
+
+.balance-history-item:last-child {
+  border-bottom: none;
+}
   </style>
 </head>
 <body>
@@ -482,6 +516,9 @@ body.light-mode #actions-btn {
   <div class="header-content">
     <h1><i class="fas fa-coins"></i> CashSplit</h1>
     <div style="position:relative;">
+      <button onclick="showBalanceHistory()" style="background:#334155; font-size:0.9rem;">
+        <i class="fas fa-chart-line"></i> History
+      </button>
       <button onclick="toggleActions()" id="actions-btn" style="background:#334155; font-size:0.9rem;">
         <i class="fas fa-ellipsis-v"></i> Actions
       </button>
@@ -640,6 +677,20 @@ body.light-mode #actions-btn {
     </div>
   </div>
 </div>
+
+<!-- Balance History Modal -->
+<div id="balance-history-modal">
+  <div class="modal-content">
+    <div class="modal-title" style="margin-bottom:20px;">
+      <i class="fas fa-chart-line"></i> Actual Balance History
+    </div>
+    <div id="balance-history-list" style="max-height:60vh; overflow-y:auto;"></div>
+    
+    <div style="margin-top:20px;">
+      <button onclick="hideBalanceHistory()" style="width:100%;">Close</button>
+    </div>
+  </div>
+</div>
   <script>
     let actualAmount = 0;        // The real money we have (this is 100%)
     let unallocatedAmount = 0;   // What hasn't been assigned to any allocation yet
@@ -725,25 +776,34 @@ body.light-mode #actions-btn {
     }
 
     function addMoney() {
-      const amount = parseFloat(document.getElementById('new-amount').value);
-      if (!amount || amount <= 0) return showToast("Please enter a valid amount", "error");
+  const amount = parseFloat(document.getElementById('new-amount').value);
+  if (!amount || amount <= 0) return showToast("Please enter a valid amount", "error");
 
-      actualAmount += amount;
-      redistributeAll();   // Recalculate everything based on new actualAmount
+  actualAmount += amount;
+  redistributeAll();
 
-      history.unshift({
-        type: "income",
-        amount,
-        timestamp: new Date().toISOString(),
-        note: "Money added"
-      });
+  history.unshift({ type: "income", amount, timestamp: new Date().toISOString(), note: "Money added" });
 
-      document.getElementById('new-amount').value = '';
-      saveData();
-      renderAll();
-      showToast(`KSh ${amount.toFixed(2)} added and redistributed`);
-    }
+  saveBalanceHistory();        // ← Added
+  document.getElementById('new-amount').value = '';
+  saveData();
+  renderAll();
+  showToast(`KSh ${amount.toFixed(2)} added`);
+}
 
+function makeDeduction() {
+  // ... your existing code ...
+
+  actualAmount -= amount;
+  redistributeAll();
+
+  history.unshift({ type: "deduction", amount, category: categoryName, timestamp: new Date().toISOString() });
+
+  saveBalanceHistory();        // ← Added
+  saveData();
+  renderAll();
+  showToast(`KSh ${amount.toFixed(2)} deducted from ${categoryName}`);
+}
     // ====================== FIXED CORE FUNCTIONS ======================
     function calculateTotalAllocated() {
       let total = 0;
@@ -1350,6 +1410,105 @@ document.addEventListener('click', (e) => {
     closeActions();
   }
 });
+
+// ====================== DAILY BALANCE HISTORY ======================
+let dailyBalanceHistory = {};   // Format: { "2026-04-28": 12500.50, ... }
+
+function getTodayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function saveBalanceHistory() {
+  const today = getTodayKey();
+  dailyBalanceHistory[today] = actualAmount;
+  saveData(); // reuse your existing saveData()
+}
+
+function loadBalanceHistory() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const data = JSON.parse(saved);
+    if (data.dailyBalanceHistory) {
+      dailyBalanceHistory = data.dailyBalanceHistory;
+    }
+  }
+}
+
+// Update saveData to also save balance history
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    actualAmount,
+    unallocatedAmount,
+    allocations,
+    history,
+    resetMode,
+    lastResetDate,
+    dailyBalanceHistory   // ← Added
+  }));
+}
+
+// Show Balance History Modal
+function showBalanceHistory() {
+  const container = document.getElementById('balance-history-list');
+  container.innerHTML = '';
+
+  const sortedDates = Object.keys(dailyBalanceHistory).sort().reverse();
+
+  if (sortedDates.length === 0) {
+    container.innerHTML = `<p style="text-align:center; color:#64748b; padding:40px 20px;">No balance history yet.<br>Add money to start tracking daily balances.</p>`;
+  } else {
+    sortedDates.forEach(date => {
+      const amount = dailyBalanceHistory[date];
+      const isToday = date === getTodayKey();
+      
+      const div = document.createElement('div');
+      div.className = 'balance-history-item';
+      div.innerHTML = `
+        <div>
+          <strong>${isToday ? 'Today' : new Date(date).toLocaleDateString('en-GB', { 
+            weekday: 'short', 
+            month: 'short', 
+            day: 'numeric' 
+          })}</strong>
+        </div>
+        <div style="text-align:right; font-weight:600; color:#60a5fa;">
+          KSh ${amount.toFixed(2)}
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  document.getElementById('balance-history-modal').style.display = 'flex';
+}
+
+function hideBalanceHistory() {
+  document.getElementById('balance-history-modal').style.display = 'none';
+}
+
+// Update loadData to include balance history
+function loadData() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const data = JSON.parse(saved);
+    actualAmount = data.actualAmount || 0;
+    unallocatedAmount = data.unallocatedAmount || 0;
+    allocations = data.allocations || [];
+    history = data.history || [];
+    resetMode = data.resetMode || "consistent";
+    lastResetDate = data.lastResetDate || null;
+    dailyBalanceHistory = data.dailyBalanceHistory || {};
+  }
+  
+  // Save today's balance on load (in case it changed)
+  saveBalanceHistory();
+  
+  checkAndPerformAutoReset();
+  renderAll();
+}
+
+// Call saveBalanceHistory after every change that affects actualAmount
+
 
    window.onload = () => { loadData(); loadSettings(); };
   </script>
