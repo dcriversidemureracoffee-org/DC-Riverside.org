@@ -684,6 +684,15 @@
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
     transform: translateY(4px);   /* slight extra drop */
 }
+      /* Bottom spacer bar */
+.bottom-bar {
+    height: 30px;
+    flex-shrink: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(96, 165, 250, 0.15);
+}
+
 
     </style>
 </head>
@@ -746,6 +755,8 @@
     
     <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none;">
 
+     <div class="bottom-bar"></div>
+    
     <script>
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbz7Bav_E5Q5lfUMR5smrFz9EwMFiy_6QNx9gVqDBDcwyEOqrWMyfLQ23SgVw6IxeU-l/exec';
       let userName = localStorage.getItem('userName');
