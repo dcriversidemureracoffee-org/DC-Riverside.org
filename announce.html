@@ -882,7 +882,7 @@ async function loadAnnouncements(silent = true) {
         const wasAtBottom = Math.abs(announcementsDiv.scrollHeight - announcementsDiv.clientHeight - announcementsDiv.scrollTop) < 150;
 
         // Render announcements (your existing code, unchanged)
-data.announcements?.reverse().forEach((c, i) => {
+data.announcements?.forEach((c, i) => {
     const isOwn = c.name === userName;
     const viewCount = viewCounts[i] || 0;  // ← CORRECT: i now matches oldest-first order
     const fileLinks = c.fileLink ? c.fileLink.split(',') : [];
