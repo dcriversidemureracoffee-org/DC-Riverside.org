@@ -845,12 +845,12 @@
             selectedFiles = [];
         }
         
-        function scrollToBottom(force = false) {
-            const isNearBottom = Math.abs(announcementsDiv.scrollHeight - announcementsDiv.clientHeight - announcementsDiv.scrollTop) < 150;
-            if (force || isNearBottom) {
-                announcementsDiv.scrollTop = announcementsDiv.scrollHeight;
-            }
-        }
+       function scrollToTop(force = false) {
+    const isNearTop = announcementsDiv.scrollTop < 150;
+    if (force || isNearTop) {
+        announcementsDiv.scrollTop = 0;
+    }
+}
         
         function extractFileId(url) {
             if (!url) return '';
@@ -879,12 +879,12 @@ async function loadAnnouncements(silent = true) {
         // IMPORTANT: Clear all existing cards before rendering new ones
         announcementsDiv.innerHTML = '';
 
-        const wasAtBottom = Math.abs(announcementsDiv.scrollHeight - announcementsDiv.clientHeight - announcementsDiv.scrollTop) < 150;
+       const wasAtTop = announcementsDiv.scrollTop < 150;
 
         // Render announcements (your existing code, unchanged)
 data.announcements?.forEach((c, i) => {
     const isOwn = c.name === userName;
-    const viewCount = viewCounts[i] || 0;  // ← CORRECT: i now matches oldest-first order
+   const viewCount = viewCounts[viewCounts.length - 1 - i] || 0;
     const fileLinks = c.fileLink ? c.fileLink.split(',') : [];
     const fileTypes = c.fileType ? c.fileType.split(',') : [];
     let mediaHtml = '';
@@ -957,7 +957,7 @@ data.announcements?.forEach((c, i) => {
     announcementsDiv.appendChild(ann);
 });
 
-        if (!silent || wasAtBottom) scrollToBottom(true);
+       if (!silent || wasAtTop) scrollToTop(true);
     } catch (err) {
         console.error('Failed to load announcements:', err);
     }
