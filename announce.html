@@ -693,6 +693,12 @@
     border-top: 1px solid rgba(96, 165, 250, 0.15);
 }
 
+      @keyframes shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+
 
     </style>
 </head>
@@ -756,14 +762,16 @@
     <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none;">
 
      <div class="bottom-bar"></div>
+    <div id="announcements"></div>
     
     <script>
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbz7Bav_E5Q5lfUMR5smrFz9EwMFiy_6QNx9gVqDBDcwyEOqrWMyfLQ23SgVw6IxeU-l/exec';
-          let userName = localStorage.getItem('userName');
+         let userName = localStorage.getItem('userName');
 
         if (!userName) {
             window.location.href = 'login.html';
         }
+        const announcementTexts = {};
         const announcementsDiv = document.getElementById('announcements');
         const newAnnBtn = document.getElementById('new-ann-btn');
         const newAnnModal = document.getElementById('new-ann-modal');
@@ -866,6 +874,20 @@
         
 async function loadAnnouncements(silent = true) {
     try {
+        // Show skeleton loaders on first load only
+        if (!silent && announcementsDiv.innerHTML === '') {
+            announcementsDiv.innerHTML = [1,2,3].map(() => `
+                <div class="announcement" style="animation:shimmer 1.5s ease-in-out infinite;">
+                    <div style="width:48px;height:48px;border-radius:50%;background:rgba(96,165,250,0.12);flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+                        <div style="height:12px;width:28%;border-radius:6px;background:rgba(96,165,250,0.12);"></div>
+                        <div style="height:10px;width:80%;border-radius:6px;background:rgba(148,163,184,0.1);"></div>
+                        <div style="height:10px;width:55%;border-radius:6px;background:rgba(148,163,184,0.1);"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         const response = await fetch(`${scriptUrl}?operation=getData`);
         const data = await response.json();
         const viewsResponse = await fetch(`${scriptUrl}?operation=getAnnouncementViewCounts`);
@@ -879,85 +901,103 @@ async function loadAnnouncements(silent = true) {
         // IMPORTANT: Clear all existing cards before rendering new ones
         announcementsDiv.innerHTML = '';
 
-       const wasAtTop = announcementsDiv.scrollTop < 150;
+        const wasAtTop = announcementsDiv.scrollTop < 150;
+
+        // Show empty state if no announcements
+        if (!data.announcements || data.announcements.length === 0) {
+            announcementsDiv.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                            padding:60px 24px;gap:16px;text-align:center;margin-top:40px;">
+                    <div style="width:64px;height:64px;border-radius:50%;background:rgba(96,165,250,0.1);
+                                display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-bullhorn" style="font-size:24px;color:#60a5fa;opacity:0.6;"></i>
+                    </div>
+                    <p style="color:#e2e8f0;font-size:1rem;font-weight:600;margin:0;">No announcements yet</p>
+                    <p style="color:#94a3b8;font-size:0.875rem;margin:0;">Be the first to post something!</p>
+                </div>
+            `;
+            return;
+        }
 
         // Render announcements (your existing code, unchanged)
-data.announcements?.forEach((c, i) => {
-    const isOwn = c.name === userName;
-  const viewCount = viewCounts[i] || 0;
-    const fileLinks = c.fileLink ? c.fileLink.split(',') : [];
-    const fileTypes = c.fileType ? c.fileType.split(',') : [];
-    let mediaHtml = '';
-    if (fileLinks.length > 0) {
-        mediaHtml = '<div class="media-content">';
-        fileLinks.forEach((link, fi) => {  // renamed index to avoid conflict
-            const mediaLink = getLh3Link(link);
-            const type = fileTypes[fi] || '';
-            const isVideo = type.includes('video') || link.match(/\.(mp4|mov|webm)$/i);
+        data.announcements?.forEach((c, i) => {
+            const isOwn = c.name === userName;
+            const viewCount = viewCounts[i] || 0;
+            const fileLinks = c.fileLink ? c.fileLink.split(',') : [];
+            const fileTypes = c.fileType ? c.fileType.split(',') : [];
+            let mediaHtml = '';
+            if (fileLinks.length > 0) {
+                mediaHtml = '<div class="media-content">';
+                fileLinks.forEach((link, fi) => {  // renamed index to avoid conflict
+                    const mediaLink = getLh3Link(link);
+                    const type = fileTypes[fi] || '';
+                    const isVideo = type.includes('video') || link.match(/\.(mp4|mov|webm)$/i);
 
-            const mediaItem = isVideo ? 
-                `<iframe src="${link}" 
-                         width="100%" 
-                         height="400" 
-                         allow="autoplay" 
-                         frameborder="0" 
-                         allowfullscreen></iframe>` :
-                `<img src="${getLh3Link(link)}" loading="lazy">`;
-            mediaHtml += `<div class="media-item">${mediaItem}</div>`;
+                    const mediaItem = isVideo ? 
+                        `<iframe src="${link}" 
+                                 width="100%" 
+                                 height="400" 
+                                 allow="autoplay" 
+                                 frameborder="0" 
+                                 allowfullscreen></iframe>` :
+                        `<img src="${getLh3Link(link)}" loading="lazy">`;
+                    mediaHtml += `<div class="media-item">${mediaItem}</div>`;
+                });
+                mediaHtml += '</div>';
+            }
+            const ann = document.createElement('div');
+            ann.className = `announcement ${isOwn ? 'own' : ''}`;
+           announcementTexts[c.timestamp] = c.comment; // store safely outside HTML
+
+const actionsHtml = isOwn ? `
+    <div class="msg-actions">
+        <button class="action-btn edit-btn" onclick="startEdit('${c.timestamp}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn delete-btn" onclick="deleteMsg('${c.timestamp}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            ` : '';
+
+            ann.innerHTML = `
+                <img src="https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}" class="avatar">
+                
+                <div style="position: relative; width: 100%;">
+                    <div class="announcement-content">
+                        <div class="name">${c.name}</div>
+                        ${mediaHtml}
+                        <div class="text" id="text-${c.timestamp}">${c.comment}</div>
+                    </div>
+
+                    <span class="time" style="
+                        display: block;
+                        margin-top: 12px;
+                        font-size: 0.75rem;
+                        color: #94a3b8;
+                        opacity: 0.8;
+                    ">
+                        ${formatSmartTime(c.timestamp)}
+                    </span>
+
+                    <div style="
+                        position: absolute;
+                        bottom: -20px;
+                        right: 16px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        z-index: 2;
+                    ">
+                        <span class="view-badge">${viewCount}</span>
+                        ${actionsHtml}
+                    </div>
+                </div>
+            `;
+            announcementsDiv.appendChild(ann);
         });
-        mediaHtml += '</div>';
-    }
-    const ann = document.createElement('div');
-    ann.className = `announcement ${isOwn ? 'own' : ''}`;
-    const actionsHtml = isOwn ? `
-        <div class="msg-actions">
-            <button class="action-btn edit-btn" onclick="startEdit('${c.timestamp}', '${c.comment.replace(/'/g, "\\'")}')">
-                <i class="fas fa-edit"></i> Edit
-            </button>
-            <button class="action-btn delete-btn" onclick="deleteMsg('${c.timestamp}')">
-                <i class="fas fa-trash"></i> Delete
-            </button>
-        </div>
-    ` : '';
 
-    ann.innerHTML = `
-        <img src="https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}" class="avatar">
-        
-        <div style="position: relative; width: 100%;">
-            <div class="announcement-content">
-                <div class="name">${c.name}</div>
-                ${mediaHtml}
-                <div class="text" id="text-${c.timestamp}">${c.comment}</div>
-            </div>
-
-            <span class="time" style="
-                display: block;
-                margin-top: 12px;
-                font-size: 0.75rem;
-                color: #94a3b8;
-                opacity: 0.8;
-            ">
-                ${formatSmartTime(c.timestamp)}
-            </span>
-
-            <div style="
-                position: absolute;
-                bottom: -20px;
-                right: 16px;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                z-index: 2;
-            ">
-                <span class="view-badge">${viewCount}</span>
-                ${actionsHtml}
-            </div>
-        </div>
-    `;
-    announcementsDiv.appendChild(ann);
-});
-
-       if (!silent || wasAtTop) scrollToTop(true);
+        if (!silent || wasAtTop) scrollToTop(true);
     } catch (err) {
         console.error('Failed to load announcements:', err);
     }
@@ -1011,21 +1051,32 @@ data.announcements?.forEach((c, i) => {
             };
         }
         
-        function startEdit(timestamp, originalText) {
-            const textElement = document.getElementById(`text-${timestamp}`);
-            // Transform the text bubble into an inline editor
-            textElement.innerHTML = `
-                <textarea class="edit-input" id="edit-field-${timestamp}">${originalText}</textarea>
-                <div class="edit-controls">
-                    <button class="action-btn" style="background:#22c55e; color:white; border-radius:4px; padding:4px 8px;" onclick="saveEdit('${timestamp}')">Save</button>
-                    <button class="action-btn" style="background:#ef4444; color:white; border-radius:4px; padding:4px 8px;" onclick="loadAnnouncements(false)">Cancel</button>
-                </div>
-            `;
-            // Focus the cursor at the end of the text
-            const input = document.getElementById(`edit-field-${timestamp}`);
-            input.focus();
-            input.setSelectionRange(input.value.length, input.value.length);
-        }
+       function startEdit(timestamp) {
+    const originalText = announcementTexts[timestamp] || '';
+    const textElement = document.getElementById(`text-${timestamp}`);
+    if (!textElement) return;
+
+    // Safely set value after creating the element, not via innerHTML
+    const textarea = document.createElement('textarea');
+    textarea.className = 'edit-input';
+    textarea.id = `edit-field-${timestamp}`;
+    textarea.value = originalText;
+
+    const controls = document.createElement('div');
+    controls.className = 'edit-controls';
+    controls.innerHTML = `
+        <button class="action-btn" style="background:#22c55e;color:white;border-radius:4px;padding:4px 8px;" onclick="saveEdit('${timestamp}')">Save</button>
+        <button class="action-btn" style="background:#ef4444;color:white;border-radius:4px;padding:4px 8px;" onclick="loadAnnouncements(false)">Cancel</button>
+    `;
+
+    textElement.innerHTML = '';
+    textElement.appendChild(textarea);
+    textElement.appendChild(controls);
+
+    // Focus cursor at end
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+}
         
         async function saveEdit(timestamp) {
             const newText = document.getElementById(`edit-field-${timestamp}`).value.trim();
