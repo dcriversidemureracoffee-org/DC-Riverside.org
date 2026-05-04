@@ -870,7 +870,7 @@ async function loadAnnouncements(silent = true) {
         const data = await response.json();
         const viewsResponse = await fetch(`${scriptUrl}?operation=getAnnouncementViewCounts`);
         const viewsData = await viewsResponse.json();
-        const viewCounts = viewsData.viewCounts || [];
+        const viewCounts = (viewsData.viewCounts || []).reverse();
 
         if (silent && data.announcements?.length === lastAnnouncementCount) return;
 
@@ -884,7 +884,7 @@ async function loadAnnouncements(silent = true) {
         // Render announcements (your existing code, unchanged)
 data.announcements?.forEach((c, i) => {
     const isOwn = c.name === userName;
-   const viewCount = viewCounts[viewCounts.length - 1 - i] || 0;
+  const viewCount = viewCounts[i] || 0;
     const fileLinks = c.fileLink ? c.fileLink.split(',') : [];
     const fileTypes = c.fileType ? c.fileType.split(',') : [];
     let mediaHtml = '';
