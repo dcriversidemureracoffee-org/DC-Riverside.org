@@ -5,1514 +5,1116 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Play Q&A Game · Riverside</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
- <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; width: 100%; }
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       background: linear-gradient(135deg, #0f172a, #1e293b);
       color: #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      min-height: 100dvh;
+      padding: 16px;
+    }
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
     }
     header {
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(96, 165, 250, 0.2);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-content {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    h1 { font-size: 1.6rem; color: #60a5fa; font-weight: 600; }
-
-    .main-container {
-      flex: 1;
-      max-width: 1000px;
-      margin: 0 auto;
-      width: 100%;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      scrollbar-width: thin;
-      scrollbar-color: #60a5fa rgba(96,165,250,0.1);
-    }
-
-    .card {
-      background: rgba(30, 41, 59, 0.8);
-      backdrop-filter: blur(8px);
-      border-radius: 16px;
-      padding: 20px;
-      border: 1px solid rgba(96, 165, 250, 0.15);
-    }
-    .total-balance {
       text-align: center;
-      padding: 24px;
-      background: linear-gradient(135deg, #1e40af, #3b82f6);
-      border-radius: 16px;
-      color: white;
+      padding: 16px 0 20px;
+      position: relative;
     }
-    .balance-amount { font-size: 2.4rem; font-weight: 700; }
-    .section-title {
-      font-size: 1.1rem;
+    .back-btn {
+      position: absolute;
+      left: 8px;
+      top: 16px;
+      font-size: 1.6rem;
       color: #60a5fa;
-      margin-bottom: 16px;
+      background: rgba(96,165,250,0.15);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    h1 {
+      color: #60a5fa;
+      font-size: 1.9rem;
+      margin-bottom: 8px;
+    }
+    .header-actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .leaderboard-btn {
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
+      transition: all 0.2s;
     }
-
-    input, select, button {
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: none;
-      font-size: 1rem;
+    .leaderboard-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(139,92,246,0.3);
     }
-    input, select {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      width: 100%;
-    }
-    input:focus, select:focus { outline: 2px solid #60a5fa; }
-    button {
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-    }
-
-    .split-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-    }
-    .allocation-item {
-      background: rgba(15, 23, 42, 0.6);
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(96, 165, 250, 0.1);
-    }
-    .allocation-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .progress-bar {
-      height: 6px;
-      background: rgba(96, 165, 250, 0.2);
-      border-radius: 9999px;
-      overflow: hidden;
-      margin: 8px 0;
-    }
-    .progress {
-      height: 100%;
-      background: linear-gradient(90deg, #60a5fa, #3b82f6);
-      transition: width 0.4s ease;
-    }
-
-    .deduction-btn { background: #ef4444; }
-
-    .history { max-height: 420px; overflow-y: auto; }
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(96, 165, 250, 0.1);
-    }
-
-    .modal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: #1e2937;
+   /* Add this to <style> if not already present */
+#timerDisplay.warning {
+  color: #f59e0b;      /* yellow/orange near end */
+}
+#timerDisplay.danger {
+  color: #ef4444;      /* red in last 10 seconds */
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+    .question-slide {
+      background: rgba(30,41,59,0.88);
       border-radius: 16px;
-      width: 90%;
-      max-width: 380px;
       padding: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-      border: 1px solid rgba(96, 165, 250, 0.2);
+      margin-bottom: 24px;
+      border: 1px solid rgba(96,165,250,0.2);
     }
-    .modal-title {
-      font-size: 1.1rem;
-      margin-bottom: 16px;
-      color: #60a5fa;
-    }
-    .modal input {
+    .question-text {
+      font-size: 1.28rem;
+      line-height: 1.45;
       margin-bottom: 20px;
-      font-size: 1.1rem;
-      width: 100%;
     }
-    .modal-buttons {
-      display: flex;
-      gap: 12px;
-    }
-    .modal-buttons button {
-      flex: 1;
-      padding: 12px;
-    }
-    .modal-cancel { background: #334155 !important; }
-
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1e293b;
-      color: white;
-      padding: 12px 24px;
+    .question-image {
+      max-width: 100%;
       border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      z-index: 1000;
-      animation: slideUp 0.3s ease;
+      margin: 16px 0;
+      display: block;
     }
-    @keyframes slideUp {
-      from { transform: translate(-50%, 50px); opacity: 0; }
-      to { transform: translate(-50%, 0); opacity: 1; }
-    }
-
-    .sub-allocations {
-      margin-top: 12px;
-      padding-left: 12px;
-      border-left: 3px solid #60a5fa;
-    }
-    .sub-item {
-      background: rgba(15, 23, 42, 0.4);
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #64748b;
-    }
-
-    /* New styles for Actual & Unallocated */
-    .info-row {
+    .choices {
       display: flex;
-      justify-content: space-between;
-      margin: 8px 0;
-      font-size: 1.05rem;
+      flex-direction: column;
+      gap: 12px;
+      margin: 20px 0;
     }
-    .unallocated {
-      color: #fbbf24;
-      font-weight: 600;
-    }
-
-    /* Improved Dropdown / Select Styles */
-select {
-    background: rgba(255,255,255,0.08);
-    color: #e2e8f0;
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(96, 165, 250, 0.3);
-    font-size: 1rem;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23e2e8f0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592c.86 0 1.32 1.013.753 1.658l-4.796 5.482a1 1 0 01-1.506 0z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-size: 12px;
-    cursor: pointer;
-}
-
-select:focus {
-    outline: none;
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
-    background-color: rgba(255,255,255,0.12);
-}
-
-select option {
-    background: #1e2937;           /* Dark background for dropdown list */
-    color: #e2e8f0;                /* Light text */
-    padding: 12px 16px;
-    font-size: 1rem;
-}
-
-/* Optional: Better hover effect on options (works in most browsers) */
-select option:hover {
-    background: #334155;
-}
-
-/* Make sure the placeholder option is visible */
-select option[value=""] {
-    color: #94a3b8;
-}
-    .delete-history-btn {
-      background: #ef4444;
+    .choice-btn {
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(96,165,250,0.35);
       color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
+      border-radius: 12px;
       cursor: pointer;
+      font-size: 1.05rem;
+      text-align: left;
+      transition: all 0.18s;
     }
-
-    /* ===== SETTINGS MODAL ===== */
-#settings-modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.75);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-}
-#settings-modal .modal-content {
-  width: 90%;
-  max-width: 420px;
-}
-.settings-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(96,165,250,0.1);
-}
-.settings-row:last-child { border-bottom: none; }
-.settings-label { font-size: 1rem; color: #e2e8f0; }
-.settings-desc { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
-
-/* Toggle switch */
-.toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute; inset: 0;
-  background: #334155;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.toggle-slider:before {
-  content: "";
-  position: absolute;
-  width: 20px; height: 20px;
-  left: 3px; bottom: 3px;
-  background: white;
-  border-radius: 50%;
-  transition: 0.3s;
-}
-.toggle input:checked + .toggle-slider { background: #3b82f6; }
-.toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
-
-/* Font size selector */
-.font-select {
-  background: rgba(255,255,255,0.08);
-  color: #e2e8f0;
-  border: 1px solid rgba(96,165,250,0.3);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-/* Light mode overrides */
-body.light-mode {
-  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
-  color: #1e293b;
-}
-body.light-mode header {
-  background: rgba(219, 234, 254, 0.97);
-  border-bottom-color: rgba(59,130,246,0.3);
-}
-body.light-mode h1 { color: #1d4ed8; }
-body.light-mode .card {
-  background: rgba(255,255,255,0.9);
-  border-color: rgba(59,130,246,0.2);
-  color: #1e293b;
-}
-body.light-mode .total-balance {
-  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-  color: white;
-}
-body.light-mode .section-title { color: #1d4ed8; }
-body.light-mode .allocation-item {
-  background: rgba(219,234,254,0.5);
-  border-color: rgba(59,130,246,0.2);
-  color: #1e293b;
-}
-body.light-mode .sub-allocations { border-left-color: #3b82f6; }
-body.light-mode .sub-item {
-  background: rgba(191,219,254,0.4);
-  color: #1e293b;
-}
-body.light-mode .allocation-item strong,
-body.light-mode .sub-item strong { color: #0f172a; }
-body.light-mode .allocation-item span,
-body.light-mode .sub-item span,
-body.light-mode .allocation-item div,
-body.light-mode .sub-item div { color: #334155; }
-body.light-mode input {
-  background: rgba(255,255,255,0.9);
-  color: #1e293b;
-  border: 1px solid rgba(59,130,246,0.3);
-}
-body.light-mode input::placeholder { color: #94a3b8; }
-body.light-mode select {
-  background-color: rgba(255,255,255,0.9);
-  color: #1e293b;
-  border-color: rgba(59,130,246,0.3);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%231e293b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592c.86 0 1.32 1.013.753 1.658l-4.796 5.482a1 1 0 01-1.506 0z'/%3E%3C/svg%3E");
-}
-body.light-mode select option {
-  background: #ffffff;
-  color: #1e293b;
-}
-body.light-mode .font-select {
-  background: rgba(255,255,255,0.9);
-  color: #1e293b;
-  border-color: rgba(59,130,246,0.3);
-}
-
-/* Modal base */
-body.light-mode .modal-content {
-  background: #ffffff;
-  color: #1e293b;
-  border-color: rgba(59,130,246,0.3);
-}
-body.light-mode .modal-title,
-body.light-mode #modal-title { color: #1d4ed8 !important; }
-body.light-mode .modal input,
-body.light-mode #modal-input {
-  background: #ffffff !important;
-  color: #1e293b !important;
-  border: 1px solid rgba(59,130,246,0.3) !important;
-}
-body.light-mode #modal-input::placeholder { color: #94a3b8 !important; }
-
-/* Confirm dialog message */
-body.light-mode #confirm-message {
-  color: #1e293b !important;
-}
-
-/* Reset Settings select inside modal */
-body.light-mode #reset-select {
-  background: #ffffff !important;
-  color: #1e293b !important;
-  border: 1px solid rgba(59,130,246,0.4) !important;
-}
-body.light-mode #reset-select option {
-  background: #ffffff;
-  color: #1e293b;
-}
-
-/* Any paragraph or strong text inside modals */
-body.light-mode .modal-content p,
-body.light-mode .modal-content strong {
-  color: #1e293b !important;
-}
-
-body.light-mode .modal-cancel { background: #cbd5e1 !important; color: #1e293b !important; }
-body.light-mode .settings-label { color: #1e293b; }
-body.light-mode .settings-desc { color: #475569; }
-body.light-mode .settings-row { border-bottom-color: rgba(59,130,246,0.15); }
-body.light-mode .toggle-slider { background: #94a3b8; }
-body.light-mode .history-item { border-bottom-color: rgba(59,130,246,0.15); }
-body.light-mode .history-item small { color: #475569 !important; }
-body.light-mode .unallocated { color: #b45309; }
-body.light-mode .progress-bar { background: rgba(59,130,246,0.15); }
-body.light-mode .info-row { color: #1e293b; }
-body.light-mode .empty-state { color: #475569; }
-body.light-mode .toast {
-  background: #1e293b;
-  color: white;
-}
-body.light-mode button[style*="background:#334155"] {
-  background: #475569 !important;
+    .choice-btn:hover:not(:disabled) {
+      background: rgba(96,165,250,0.18);
+      border-color: #60a5fa;
+    }
+    .choice-btn:disabled {
+      opacity: 0.7;
+    }
+   /* Quiz correct (green) */
+.choice-btn.correct {
+  background: #10b981 !important;
+  border-color: #34d399 !important;
   color: white !important;
 }
 
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Quiz incorrect (red) */
+.choice-btn.incorrect {
+  background: #ef4444 !important;
+  border-color: #f87171 !important;
+  color: white !important;
 }
 
-/* Light mode actions menu */
-body.light-mode #actions-menu {
-  background: #ffffff !important;
-  border-color: rgba(59,130,246,0.25) !important;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important;
+/* Survey selected choice - different color (e.g. blue-ish) */
+.choice-btn.selected {
+  background: #3b82f6 !important;       /* blue - you can change this color */
+  border-color: #60a5fa !important;
+  color: white !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.4);
 }
-body.light-mode #actions-menu button {
-  color: #1e293b !important;
-}
-body.light-mode #actions-menu button:last-child {
-  color: #dc2626 !important;
-}
-body.light-mode #actions-menu div[style*="height:1px"] {
-  background: rgba(59,130,246,0.15) !important;
+    .reason {
+      margin-top: 20px;
+      padding: 14px;
+      background: rgba(30,41,59,0.6);
+      border-radius: 12px;
+      line-height: 1.5;
+      display: none;
+    }
+    .next-btn {
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin: 16px auto 0;
+      display: none;
+      width: fit-content;
+    }
+    .score-final {
+      text-align: center;
+      font-size: 2.2rem;
+      margin: 32px 0;
+      color: #60a5fa;
+    }
+    .empty, .loading {
+      text-align: center;
+      padding: 120px 24px;
+      color: #94a3b8;
+    }
+
+    /* Leaderboard styles */
+    #leaderboardSection {
+      margin-top: 32px;
+      display: none;           /* hidden by default */
+    }
+    .leaderboard-list {
+      background: rgba(15,23,42,0.7);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(96,165,250,0.25);
+    }
+    .leader-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .leader-item:hover {
+      background: rgba(96,165,250,0.12);
+    }
+    .leader-rank {
+      font-size: 1.4rem;
+      font-weight: bold;
+      min-width: 40px;
+      text-align: center;
+      color: #94a3b8;
+    }
+    .leader-rank.top-1 { color: #ffd700; }
+    .leader-rank.top-2 { color: #c0c0c0; }
+    .leader-rank.top-3 { color: #cd7f32; }
+    .leader-name {
+      flex: 1;
+      font-weight: 600;
+    }
+    .leader-score {
+      font-size: 1.1rem;
+      color: #60a5fa;
+    }
+    .no-leaders {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 500px) {
+      .question-slide { padding: 18px; }
+      .question-text { font-size: 1.18rem; }
+      .choice-btn { font-size: 1rem; padding: 12px 16px; }
+      .header-actions { flex-direction: column; gap: 12px; }
+    }
+
+    /* Question image - make it smaller and centered */
+.question-image {
+  max-width: 280px;          /* ← smaller than full width */
+  max-height: 180px;         /* prevents very tall images */
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 16px auto;         /* centered with breathing room */
+  border-radius: 10px;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  object-fit: contain;       /* keeps aspect ratio, no cropping */
 }
 
-/* Light mode Actions trigger button */
-body.light-mode #actions-btn {
-  background: #475569 !important;
-  color: #ffffff !important;
+/* Choice images - even smaller, inline-friendly */
+.choice-btn img {
+  max-width: 140px;          /* ← noticeably smaller than question image */
+  max-height: 100px;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 10px auto 4px;     /* centered inside button + small spacing */
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  object-fit: contain;
 }
 
-/* Balance History Modal */
-#balance-history-modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.75);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1002;
-}
-
-#balance-history-modal .modal-content {
-  width: 90%;
-  max-width: 420px;
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
-.balance-history-item {
+/* Make sure the choice button adapts nicely when it has an image */
+.choice-btn {
+  padding: 14px 18px;
+  min-height: 48px;          /* prevents squashing when no image */
   display: flex;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(96,165,250,0.15);
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
 }
 
-body.light-mode .balance-history-item {
-  border-bottom-color: rgba(59,130,246,0.15);
+/* Optional: smaller on mobile */
+@media (max-width: 500px) {
+  .question-image {
+    max-width: 240px;
+    max-height: 160px;
+  }
+  
+  .choice-btn img {
+    max-width: 120px;
+    max-height: 90px;
+  }
 }
 
-.balance-history-item:last-child {
-  border-bottom: none;
-}
+
   </style>
 </head>
 <body>
- <header>
-  <div class="header-content">
-    <h1><i class="fas fa-coins"></i> CashSplit</h1>
-    <div style="position:relative;">
-      <button onclick="showBalanceHistory()" style="background:#334155; font-size:0.9rem;">
-        <i class="fas fa-chart-line"></i> History
-      </button>
-      <button onclick="toggleActions()" id="actions-btn" style="background:#334155; font-size:0.9rem;">
-        <i class="fas fa-ellipsis-v"></i> Actions
-      </button>
-      <div id="actions-menu" style="
-        display: none;
-        position: absolute;
-        top: calc(100% + 8px);
-        right: 0;
-        background: #1e2937;
-        border: 1px solid rgba(96,165,250,0.2);
-        border-radius: 14px;
-        padding: 8px;
-        min-width: 170px;
-        box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-        z-index: 200;
-        flex-direction: column;
-        gap: 6px;
-        animation: slideDown 0.2s ease;
-      ">
-        <button onclick="openSettings(); closeActions();" style="
-          width:100%; background:transparent; color:#e2e8f0;
-          text-align:left; padding:10px 14px; border-radius:10px;
-          font-size:0.95rem; display:flex; align-items:center; gap:10px;
-        " onmouseover="this.style.background='rgba(96,165,250,0.12)'" onmouseout="this.style.background='transparent'">
-          <i class="fas fa-cog" style="width:16px; color:#60a5fa;"></i> Settings
-        </button>
-        <button onclick="showResetSettings(); closeActions();" style="
-          width:100%; background:transparent; color:#e2e8f0;
-          text-align:left; padding:10px 14px; border-radius:10px;
-          font-size:0.95rem; display:flex; align-items:center; gap:10px;
-        " onmouseover="this.style.background='rgba(96,165,250,0.12)'" onmouseout="this.style.background='transparent'">
-          <i class="fas fa-clock" style="width:16px; color:#60a5fa;"></i> Reset Mode
-        </button>
-        <div style="height:1px; background:rgba(96,165,250,0.1); margin:2px 6px;"></div>
-        <button onclick="resetAll(); closeActions();" style="
-          width:100%; background:transparent; color:#ef4444;
-          text-align:left; padding:10px 14px; border-radius:10px;
-          font-size:0.95rem; display:flex; align-items:center; gap:10px;
-        " onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">
-          <i class="fas fa-trash" style="width:16px;"></i> Full Reset
-        </button>
-      </div>
+
+<div class="container">
+
+  <header>
+    <a href="Q&A.html" class="back-btn" title="Back to games"><i class="fas fa-arrow-left"></i></a>
+    <h1 id="gameTitle">Loading game...</h1>
+    <div class="header-actions" id="headerActions">
+  <!-- Buttons will be injected here by JS -->
+</div>
+
+    <!-- Leaderboard area – hidden until button clicked -->
+  <div id="leaderboardSection">
+    <h2 style="text-align:center; color:#60a5fa; margin-bottom:20px;">Leaderboard</h2>
+    <div id="leaderboardList" class="leaderboard-list">
+      <div class="no-leaders">Click "Leaderboard" to load rankings</div>
     </div>
   </div>
-</header>
 
-  <div class="main-container">
-    <div class="card total-balance">
-      <h2>Current Balance</h2>
-      <div class="balance-amount" id="total-balance">KSh 0.00</div>
-    </div>
+<div id="timerDisplay" style="
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #60a5fa;
+  background: rgba(15,23,42,0.6);
+  padding: 8px 16px;
+  border-radius: 12px;
+  min-width: 90px;
+  text-align: center;
+  margin: 12px auto 20px;
+">
+  --:--
+</div>
 
-    <!-- New: Actual Amount and Unallocated -->
-    <div class="card">
-      <div class="section-title"><i class="fas fa-info-circle"></i> Money Overview</div>
-      <div class="info-row">
-        <span>Actual Amount:</span>
-        <span id="actual-amount">KSh 0.00</span>
-      </div>
-      <div class="info-row unallocated">
-        <span>Unallocated Amount:</span>
-        <span id="unallocated-amount">KSh 0.00</span>
-      </div>
-    </div>
+  </header>
 
-    <div class="card">
-      <div class="section-title"><i class="fas fa-plus-circle"></i> Add Money</div>
-      <div style="display:grid; grid-template-columns:1fr auto; gap:12px;">
-        <input type="number" id="new-amount" placeholder="Amount received (KSh)" step="0.01">
-        <button onclick="addMoney()">Add</button>
-      </div>
-    </div>
+  <div id="currentQuestion" class="question-slide"></div>
 
-    <div class="card">
-      <div class="section-title"><i class="fas fa-chart-pie"></i> Allocations & Targets</div>
-      <div id="allocations-list" class="split-grid"></div>
-     <button id="add-allocation-btn" onclick="showAddNewAllocationModal()" style="margin-top:16px; width:100%;">
-  <i class="fas fa-plus"></i> Add New Main Allocation Category
+  <div id="finalScreen" style="display:none;">
+    <div class="score-final">Game Over!</div>
+    <p id="scoreText" style="text-align:center; font-size:1.4rem; margin:16px 0;"></p>
+  </div>
+
+  
+
+ <button id="backButton" class="next-btn" style="background: linear-gradient(135deg, #6b7280, #9ca3af); margin-right: 12px; display: none;">
+  Back
 </button>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><i class="fas fa-minus-circle"></i> Make Deduction</div>
-      <select id="deduct-category" style="margin-bottom:12px;"></select>
-      <div style="display:grid; grid-template-columns:1fr auto; gap:12px;">
-        <input type="number" id="deduct-amount" placeholder="Amount to spend" step="0.01">
-        <button onclick="makeDeduction()" class="deduction-btn">Deduct</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><i class="fas fa-history"></i> Today's Activity</div>
-      <div id="history-list" class="history"></div>
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-title" id="modal-title"></div>
-      <input type="text" id="modal-input" placeholder="Enter value...">
-      <div class="modal-buttons">
-        <button onclick="hideModal()" class="modal-cancel">Cancel</button>
-        <button onclick="confirmModalAction()">OK</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-<div id="settings-modal">
-  <div class="modal-content">
-    <div class="modal-title" style="font-size:1.2rem; margin-bottom:16px;">
-      <i class="fas fa-cog"></i> Settings
-    </div>
-
-    <!-- Light Mode -->
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Light Mode</div>
-        <div class="settings-desc">Switch to a brighter theme</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="setting-light-mode" onchange="applySetting('lightMode', this.checked)">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-
-    <!-- Font Size -->
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Text Size</div>
-        <div class="settings-desc">Adjust how large text appears</div>
-      </div>
-      <select class="font-select" id="setting-font-size" onchange="applySetting('fontSize', this.value)">
-        <option value="14px">Small</option>
-        <option value="16px" selected>Default</option>
-        <option value="18px">Large</option>
-        <option value="20px">X-Large</option>
-      </select>
-    </div>
-
-    <!-- Compact View -->
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Compact View</div>
-        <div class="settings-desc">Reduce spacing for more content on screen</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="setting-compact" onchange="applySetting('compactView', this.checked)">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-
-    <div style="margin-top:20px;">
-      <button onclick="closeSettings()" style="width:100%;">Done</button>
-    </div>
-  </div>
+<button id="nextButton" class="next-btn">Next</button>
 </div>
 
-<!-- Balance History Modal -->
-<div id="balance-history-modal">
-  <div class="modal-content">
-    <div class="modal-title" style="margin-bottom:20px;">
-      <i class="fas fa-chart-line"></i> Actual Balance History
-    </div>
-    <div id="balance-history-list" style="max-height:60vh; overflow-y:auto;"></div>
-    
-    <div style="margin-top:20px;">
-      <button onclick="hideBalanceHistory()" style="width:100%;">Close</button>
-    </div>
-  </div>
-</div>
-  <script>
-    let actualAmount = 0;        // The real money we have (this is 100%)
-    let unallocatedAmount = 0;   // What hasn't been assigned to any allocation yet
-    let allocations = [];
-    let history = [];
-    let pendingCallbacks = [];
-        let resetMode = "consistent";   // "consistent", "daily", "weekly", "monthly", "yearly"
-    let lastResetDate = null;
-
-       const STORAGE_KEY = 'cashsplit_data_v12';
-
-        function loadData() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const data = JSON.parse(saved);
-        actualAmount = data.actualAmount || 0;
-        unallocatedAmount = data.unallocatedAmount || 0;
-        allocations = data.allocations || [];
-        history = data.history || [];
-        resetMode = data.resetMode || "consistent";
-        lastResetDate = data.lastResetDate || null;
-      }
-      checkAndPerformAutoReset();
-      renderAll();
-    }
-       function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        actualAmount,
-        unallocatedAmount,
-        allocations,
-        history,
-        resetMode,
-        lastResetDate
-      }));
-    }
-
-    function renderAll() {
-      document.getElementById('total-balance').textContent = `KSh ${actualAmount.toFixed(2)}`;
-      document.getElementById('actual-amount').textContent = `KSh ${actualAmount.toFixed(2)}`;
-      document.getElementById('unallocated-amount').textContent = `KSh ${unallocatedAmount.toFixed(2)}`;
-
-      renderAllocations();
-      renderDeductOptions();
-      renderHistory();
-      updateAddButtonState();
-    }
-
-   function updateAddButtonState() {
-  const btn = document.getElementById('add-allocation-btn');
-  if (!btn) return;
-
-  if (!canAddNewAllocation()) {
-    btn.style.opacity = '0.5';
-    btn.style.cursor = 'pointer';        // remains clickable
-    btn.disabled = false;                // important: keep enabled
-  } else {
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-    btn.disabled = false;
-  }
-}
-    function showModal(title, defaultValue, callback, params = {}) {
-      pendingCallbacks.push(callback);
-      document.getElementById('modal-title').textContent = title;
-      const input = document.getElementById('modal-input');
-      input.value = defaultValue || '';
-      input.type = params.type || 'text';
-      if (params.type === 'number') input.step = "0.01";
-      document.getElementById('modal').style.display = 'flex';
-      setTimeout(() => input.focus(), 100);
-    }
-
-    function hideModal() {
-      document.getElementById('modal').style.display = 'none';
-      pendingCallbacks = [];
-    }
-
-    function confirmModalAction() {
-      const value = document.getElementById('modal-input').value.trim();
-      const callback = pendingCallbacks.pop();
-      if (callback) callback(value);
-      if (pendingCallbacks.length === 0) hideModal();
-    }
-
-    function addMoney() {
-  const amount = parseFloat(document.getElementById('new-amount').value);
-  if (!amount || amount <= 0) return showToast("Please enter a valid amount", "error");
-
-  actualAmount += amount;
-  redistributeAll();
-
-  history.unshift({ type: "income", amount, timestamp: new Date().toISOString(), note: "Money added" });
-
-  saveBalanceHistory();        // ← Added
-  document.getElementById('new-amount').value = '';
-  saveData();
-  renderAll();
-  showToast(`KSh ${amount.toFixed(2)} added`);
-}
-
-function makeDeduction() {
-  // ... your existing code ...
-
-  actualAmount -= amount;
-  redistributeAll();
-
-  history.unshift({ type: "deduction", amount, category: categoryName, timestamp: new Date().toISOString() });
-
-  saveBalanceHistory();        // ← Added
-  saveData();
-  renderAll();
-  showToast(`KSh ${amount.toFixed(2)} deducted from ${categoryName}`);
-}
-    // ====================== FIXED CORE FUNCTIONS ======================
-    function calculateTotalAllocated() {
-      let total = 0;
-      allocations.forEach(alloc => {
-        total += alloc.used || 0;
-        if (alloc.subAllocations) {
-          alloc.subAllocations.forEach(sub => {
-            total += sub.used || 0;
-          });
-        }
-      });
-      return total;
-    }
-
-    function redistributeAll() {
-      if (actualAmount <= 0) {
-        unallocatedAmount = 0;
-        allocations.forEach(alloc => {
-          alloc.used = 0;
-          if (alloc.subAllocations) {
-            alloc.subAllocations.forEach(sub => sub.used = 0);
-          }
-        });
-        return;
-      }
-
-
-      if (allocations.length === 0) {
-        unallocatedAmount = actualAmount;
-        return;
-      }
-
-      // Calculate based on ACTUAL AMOUNT (100%), not unallocated
-      allocations.forEach(alloc => {
-        const idealShare = (alloc.percent / 100) * actualAmount;
-
-        if (alloc.target > 0) {
-          alloc.used = Math.min(idealShare, alloc.target);
-        } else {
-          alloc.used = idealShare;
-        }
-
-        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
-          redistributeToSubs(alloc);
-        }
-      });
-
-      unallocatedAmount = Math.max(0, actualAmount - calculateTotalAllocated());
-    }
-
-    function canAddNewAllocation() {
-  if (actualAmount <= 0) return true; // Allow if no money yet
-
-  let totalPercent = 0;
-  allocations.forEach(alloc => {
-    totalPercent += alloc.percent || 0;
-  });
-
-  return totalPercent < 100;
-}
-
-    function redistributeToSubs(mainAlloc) {
-      if (!mainAlloc.subAllocations || mainAlloc.subAllocations.length === 0) return;
-
-      const mainUsed = mainAlloc.used;
-
-      mainAlloc.subAllocations.forEach(sub => {
-        const idealSubShare = (sub.percent / 100) * mainUsed;
-
-        if (sub.target > 0) {
-          sub.used = Math.min(idealSubShare, sub.target);
-        } else {
-          sub.used = idealSubShare;
-        }
-      });
-    }
-    // ====================== END OF FIXED FUNCTIONS ======================
-
-    function showAddNewAllocationModal() {
-  if (!canAddNewAllocation()) {
-    showToast("Cannot add more allocations. Total percentage is already 100%. Edit existing percentages first.", "error");
-    return;
-  }
-
-  showModal("Main Allocation Name", "", (name) => {
-    if (!name) return;
-
-    showModal(`Percentage for ${name} (%)`, "10", (percentStr) => {
-      const percent = parseFloat(percentStr);
-      
-      if (!percent || percent <= 0 || percent > 100) {
-        showToast("Percentage must be between 0.01 and 100", "error");
-        return;
-      }
-
-      // Double-check total after adding
-      let currentTotal = allocations.reduce((sum, alloc) => sum + (alloc.percent || 0), 0);
-      if (currentTotal + percent > 100) {
-        showToast("Total percentage would exceed 100%. Please use a smaller percentage or edit existing ones.", "error");
-        return;
-      }
-
-      allocations.push({
-        id: Date.now(),
-        name: name,
-        percent: percent,
-        target: 0,
-        used: 0,
-        subAllocations: []
-      });
-
-      redistributeAll();
-      saveData();
-      renderAll();
-      showToast(`"${name}" added (${percent}%)`);
-    }, {type: 'number'});
-  });
-}
-    function renderAllocations() {
-      const container = document.getElementById('allocations-list');
-      container.innerHTML = '';
-
-      if (allocations.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <p>No allocations yet.</p>
-            <p style="margin-top:12px; font-size:0.95rem;">All money is currently unallocated.</p>
-          </div>
-        `;
-        return;
-      }
-
-      allocations.forEach((alloc, index) => {
-        const progress = alloc.target > 0 ? Math.min((alloc.used / alloc.target) * 100, 100) : 0;
-        
-        let html = `
-          <div class="allocation-item">
-            <div class="allocation-header">
-              <strong>${alloc.name}</strong>
-              <span>${alloc.percent}%</span>
-            </div>
-            <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:8px;">
-              Allocated: KSh ${alloc.used.toFixed(2)} 
-              ${alloc.target > 0 ? `/ Target: KSh ${alloc.target.toFixed(2)}` : ''}
-            </div>
-        `;
-
-        if (alloc.target > 0) {
-          html += `<div class="progress-bar"><div class="progress" style="width: ${progress}%"></div></div>`;
-        }
-
-        html += `
-          <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-            <button onclick="setTarget(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Set Target</button>
-            <button onclick="addSubAllocation(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Add Sub</button>
-            <button onclick="editAllocation(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Edit %</button>
-          </div>
-        `;
-
-        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
-          html += `<div class="sub-allocations">`;
-          alloc.subAllocations.forEach((sub, subIndex) => {
-            const subProgress = sub.target > 0 ? Math.min((sub.used / sub.target) * 100, 100) : 0;
-            html += `
-              <div class="sub-item">
-                <div style="display:flex; justify-content:space-between;">
-                  <strong>${sub.name}</strong>
-                  <span>${sub.percent}%</span>
-                </div>
-                <div style="font-size:0.85rem; color:#94a3b8;">
-                  Allocated: KSh ${sub.used.toFixed(2)} 
-                  ${sub.target > 0 ? `/ Target: KSh ${sub.target.toFixed(2)}` : ''}
-                </div>
-                ${sub.target > 0 ? `<div class="progress-bar" style="margin-top:6px;"><div class="progress" style="width: ${subProgress}%"></div></div>` : ''}
-                <button onclick="setSubTarget(${index}, ${subIndex})" style="margin-top:8px; background:#334155; font-size:0.8rem; padding:6px 10px;">Set Target</button>
-              </div>
-            `;
-          });
-          html += `</div>`;
-        }
-        html += `</div>`;
-        container.innerHTML += html;
-      });
-    }
-
-    function setTarget(index) {
-      const alloc = allocations[index];
-      showModal(`Target for ${alloc.name} (0 = no limit)`, alloc.target || "0", (value) => {
-        const target = parseFloat(value);
-        if (!isNaN(target)) {
-          alloc.target = Math.max(0, target);
-          redistributeAll();   // Important: recalculate after changing target
-          saveData();
-          renderAll();
-        }
-      }, {type: 'number'});
-    }
-
-    function editAllocation(index) {
-      const alloc = allocations[index];
-      showModal(`Edit % for ${alloc.name}`, alloc.percent, (value) => {
-        const percent = parseFloat(value);
-        if (!isNaN(percent) && percent > 0 && percent <= 100) {
-          alloc.percent = percent;
-          redistributeAll();
-          saveData();
-          renderAll();
-        } else {
-          showToast("Percentage must be between 0 and 100", "error");
-        }
-      }, {type: 'number'});
-    }
-
-    function addSubAllocation(mainIndex) {
-      const mainAlloc = allocations[mainIndex];
-      showModal(`Sub-allocation name for ${mainAlloc.name}`, "", (name) => {
-        if (!name) return;
-        showModal(`% of ${mainAlloc.name} for ${name}`, "30", (percentStr) => {
-          const percent = parseFloat(percentStr);
-          if (!percent || percent <= 0 || percent > 100) {
-            showToast("Percentage must be between 0 and 100", "error");
-            return;
-          }
-          if (!mainAlloc.subAllocations) mainAlloc.subAllocations = [];
-          mainAlloc.subAllocations.push({
-            id: Date.now(),
-            name: name,
-            percent: percent,
-            target: 0,
-            used: 0
-          });
-          redistributeAll();
-          saveData();
-          renderAll();
-          showToast(`Sub-allocation "${name}" added`);
-        }, {type: 'number'});
-      });
-    }
-
-    function setSubTarget(mainIndex, subIndex) {
-      const sub = allocations[mainIndex].subAllocations[subIndex];
-      showModal(`Target for ${sub.name} (0 = no limit)`, sub.target || "0", (value) => {
-        const target = parseFloat(value);
-        if (!isNaN(target)) {
-          sub.target = Math.max(0, target);
-          redistributeAll();   // Recalculate after target change
-          saveData();
-          renderAll();
-        }
-      }, {type: 'number'});
-    }
-
-    function renderDeductOptions() {
-      const select = document.getElementById('deduct-category');
-      select.innerHTML = '<option value="">Select Category or Sub-Category</option>';
-
-      allocations.forEach((alloc, mainIndex) => {
-        const mainOption = document.createElement('option');
-        mainOption.value = `main-${mainIndex}`;
-        mainOption.textContent = `${alloc.name} - KSh ${alloc.used.toFixed(2)}`;
-        select.appendChild(mainOption);
-
-        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
-          alloc.subAllocations.forEach((sub, subIndex) => {
-            const subOption = document.createElement('option');
-            subOption.value = `sub-${mainIndex}-${subIndex}`;
-            subOption.textContent = `   └ ${sub.name} - KSh ${sub.used.toFixed(2)}`;
-            select.appendChild(subOption);
-          });
-        }
-      });
-    }
-
-    function makeDeduction() {
-      const select = document.getElementById('deduct-category');
-      const amount = parseFloat(document.getElementById('deduct-amount').value);
-
-      if (!select.value || !amount || amount <= 0) 
-        return showToast("Please select category and enter amount", "error");
-
-      const value = select.value;
-      let categoryName = "";
-
-      if (value.startsWith('main-')) {
-        const idx = parseInt(value.split('-')[1]);
-        const alloc = allocations[idx];
-        if (alloc.used < amount) return showToast(`Not enough in ${alloc.name}`, "error");
-        alloc.used -= amount;
-        categoryName = alloc.name;
-      } else if (value.startsWith('sub-')) {
-        const parts = value.split('-');
-        const mainIdx = parseInt(parts[1]);
-        const subIdx = parseInt(parts[2]);
-        const sub = allocations[mainIdx].subAllocations[subIdx];
-        if (sub.used < amount) return showToast(`Not enough in ${sub.name}`, "error");
-        sub.used -= amount;
-        categoryName = sub.name;
-      }
-
-      actualAmount -= amount;
-      redistributeAll();   // Important: recalculate after deduction
-
-      history.unshift({ 
-        type: "deduction", 
-        amount, 
-        category: categoryName, 
-        timestamp: new Date().toISOString() 
-      });
-
-      saveData();
-      renderAll();
-      showToast(`KSh ${amount.toFixed(2)} deducted from ${categoryName}`);
-    }
-
-        function renderHistory() {
-      const container = document.getElementById('history-list');
-      container.innerHTML = history.length === 0 
-        ? '<p style="text-align:center; color:#64748b; padding:60px 20px;">No transactions yet.<br>Add money to start tracking.</p>' 
-        : '';
-
-      history.slice(0, 30).forEach((item, i) => {
-        const isIncome = item.type === 'income';
-        const isReset = item.type === 'reset';
-
-        const div = document.createElement('div');
-        div.className = 'history-item';
-
-        let label = isReset ? `<strong style="color:#eab308">${item.note}</strong>` :
-                    isIncome ? `<strong>Received</strong>` : `<strong>Spent ${item.category ? `(${item.category})` : ''}</strong>`;
-
-        div.innerHTML = `
-          <div style="flex:1">
-            ${label}<br>
-            <small style="color:#64748b">${new Date(item.timestamp).toLocaleString()}</small>
-          </div>
-          <div style="text-align:right">
-            ${isReset ? '' : `<span style="color:${isIncome ? '#22c55e' : '#ef4444'};font-weight:600">
-              ${isIncome ? '+' : '-'} KSh ${item.amount.toFixed(2)}
-            </span>`}
-            <button onclick="deleteHistoryItem(${i})" class="delete-history-btn" style="margin-left:8px">×</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-        // ====================== RESET SYSTEM ======================
-    function checkAndPerformAutoReset() {
-      if (resetMode === "consistent" || !lastResetDate) return;
-
-      const now = new Date();
-      const last = new Date(lastResetDate);
-      let shouldReset = false;
-
-      switch(resetMode) {
-        case "daily":
-          shouldReset = now.toDateString() !== last.toDateString();
-          break;
-        case "weekly":
-          shouldReset = (now - last) / (1000*60*60*24) >= 7;
-          break;
-        case "monthly":
-          shouldReset = now.getMonth() !== last.getMonth() || now.getFullYear() !== last.getFullYear();
-          break;
-        case "yearly":
-          shouldReset = now.getFullYear() !== last.getFullYear();
-          break;
-      }
-
-      if (shouldReset) {
-        performReset(false); // auto reset, no confirm
-      }
-    }
-
-   function performReset(askConfirm = true) {
-  if (askConfirm) {
-    showConfirm("Confirm Reset", `Reset Actual Amount and Allocations to 0?\nMode: ${resetMode}\nHistory will be kept.`, () => {
-      executeReset();
-    });
-    return;
-  }
-  executeReset();
-}
-
-function executeReset() {
-  actualAmount = 0;
-  unallocatedAmount = 0;
-
-  allocations.forEach(alloc => {
-    alloc.used = 0;
-    if (alloc.subAllocations) {
-      alloc.subAllocations.forEach(sub => sub.used = 0);
-    }
-  });
-
-  lastResetDate = new Date().toISOString();
-
-  history.unshift({
-    type: "reset",
-    amount: 0,
-    note: `${resetMode} Reset`,
-    timestamp: new Date().toISOString()
-  });
-
-  saveData();
-  renderAll();
-  showToast(`Reset done (${resetMode})`, "success");
-}
-                 function showResetSettings() {
-  const options = [
-    { value: "consistent", text: "Keep Consistent (No Auto Reset)" },
-    { value: "daily",      text: "Reset Every Day" },
-    { value: "weekly",     text: "Reset Every Week" },
-    { value: "monthly",    text: "Reset Every Month" },
-    { value: "yearly",     text: "Reset Every Year" }
-  ];
-
-  let html = `<p style="margin-bottom: 12px; color: #94a3b8;">
-                Current mode: <strong>${options.find(o => o.value === resetMode)?.text || resetMode}</strong>
-              </p>`;
-
-  html += `<select id="reset-select" style="width:100%; padding:12px; border-radius:12px; background:rgba(255,255,255,0.08); color:white; border:1px solid rgba(96,165,250,0.3);">`;
-  options.forEach(opt => {
-    html += `<option value="${opt.value}" ${opt.value === resetMode ? 'selected' : ''}>${opt.text}</option>`;
-  });
-  html += `</select>`;
-
-  // Use the existing modal
-  document.getElementById('modal-title').innerHTML = 'Reset Settings';
-  document.getElementById('modal-input').style.display = 'none';
-
-  const modalContent = document.querySelector('.modal-content');
-  // Remove any previous extra select
-  const oldSelect = document.getElementById('reset-select');
-  if (oldSelect) oldSelect.remove();
-
-  modalContent.insertAdjacentHTML('beforeend', html);
-
-  document.getElementById('modal').style.display = 'flex';
-
-  // Override OK button for this modal
-  const okBtn = document.querySelector('.modal-buttons button:last-child');
-  const originalOnClick = okBtn.onclick;
-
-  okBtn.onclick = function() {
-    const select = document.getElementById('reset-select');
-    if (select) {
-      resetMode = select.value;
-      saveData();
-      showToast(`Reset mode changed to: ${options.find(o => o.value === resetMode).text}`, "success");
-    }
-
-    // Cleanup
-    if (select) select.remove();
-    document.getElementById('modal-input').style.display = 'block';
-    okBtn.onclick = originalOnClick || confirmModalAction;
-    hideModal();
-  };
-}
-           function hideModal() {
-      document.getElementById('modal').style.display = 'none';
-      
-      // Clean up any leftover reset elements
-      const extraSelect = document.getElementById('reset-select');
-      if (extraSelect) extraSelect.remove();
-      
-      const input = document.getElementById('modal-input');
-      input.style.display = 'block';
-      input.value = '';
-      
-      pendingCallbacks = [];
-      
-      // Restore OK button
-      const okBtn = document.querySelector('.modal-buttons button:last-child');
-      if (okBtn) okBtn.onclick = confirmModalAction;
-    }
-    
-   function deleteHistoryItem(index) {
-  showConfirm("Delete Record", "Delete this history record? This action cannot be undone.", () => {
-    history.splice(index, 1);
-    saveData();
-    renderHistory();
-    showToast("History item deleted", "success");
-  });
-}
-
-    function showToast(message, type = "success") {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.style.borderLeft = type === "error" ? "4px solid #ef4444" : "4px solid #22c55e";
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 2800);
-    }
-    function showConfirm(title, message, onConfirm) {
-  document.getElementById('modal-title').innerHTML = `<strong>${title}</strong>`;
-  
-  const input = document.getElementById('modal-input');
-  input.style.display = 'none';
-  input.value = '';
-
-  let msgEl = document.getElementById('confirm-message');
-  if (!msgEl) {
-    msgEl = document.createElement('p');
-    msgEl.id = 'confirm-message';
-    msgEl.style.marginBottom = '20px';
-   msgEl.style.color = document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0';
-    document.querySelector('.modal-content').insertBefore(msgEl, document.querySelector('.modal-buttons'));
-  }
-  msgEl.textContent = message;
-
-  pendingCallbacks.push(onConfirm);
-
-  document.getElementById('modal').style.display = 'flex';
-
-  const okBtn = document.querySelector('.modal-buttons button:last-child');
-  const originalOk = okBtn.onclick;
-
-  okBtn.onclick = () => {
-    const cb = pendingCallbacks.pop();
-    if (cb) cb();
-    hideModal();
-    okBtn.onclick = originalOk || confirmModalAction;
-    if (msgEl) msgEl.remove();
-  };
-}
-
-   function resetAll() {
-  showConfirm("Full Reset", "Reset ALL data? This cannot be undone.", () => {
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  });
-}
-
-  
-// ===== SETTINGS =====
-const SETTINGS_KEY = 'cashsplit_settings_v1';
-let appSettings = { lightMode: false, fontSize: '16px', compactView: false };
-
-function loadSettings() {
-  const saved = localStorage.getItem(SETTINGS_KEY);
-  if (saved) appSettings = { ...appSettings, ...JSON.parse(saved) };
-  applyAllSettings();
-  // Sync UI toggles/selects
-  document.getElementById('setting-light-mode').checked = appSettings.lightMode;
-  document.getElementById('setting-font-size').value = appSettings.fontSize;
-  document.getElementById('setting-compact').checked = appSettings.compactView;
-}
-
-function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings));
-}
-
-function applySetting(key, value) {
-  appSettings[key] = value;
-  saveSettings();
-  applyAllSettings();
-}
-
-function applyAllSettings() {
-  // Light mode
-  document.body.classList.toggle('light-mode', appSettings.lightMode);
-
-  // Font size — apply to root so rem/em cascade correctly
-  document.documentElement.style.fontSize = appSettings.fontSize;
-
-  // Compact view
-  document.querySelectorAll('.card').forEach(card => {
-    card.style.padding = appSettings.compactView ? '12px' : '20px';
-  });
-  document.querySelectorAll('.allocation-item').forEach(el => {
-    el.style.padding = appSettings.compactView ? '8px' : '16px';
-  });
-  document.querySelectorAll('.sub-item').forEach(el => {
-    el.style.padding = appSettings.compactView ? '6px' : '10px';
-  });
-  document.querySelectorAll('.main-container').forEach(el => {
-    el.style.gap = appSettings.compactView ? '12px' : '24px';
-  });
-}
-
-function openSettings() {
-  document.getElementById('settings-modal').style.display = 'flex';
-}
-
-function closeSettings() {
-  document.getElementById('settings-modal').style.display = 'none';
-  // Re-apply compact since new cards may have rendered
-  applyAllSettings();
-}
-
-function toggleActions() {
-  const menu = document.getElementById('actions-menu');
-  const isOpen = menu.style.display === 'flex';
-  menu.style.display = isOpen ? 'none' : 'flex';
-}
-
-function closeActions() {
-  document.getElementById('actions-menu').style.display = 'none';
-}
-
-document.addEventListener('click', (e) => {
-  if (!document.getElementById('actions-btn').contains(e.target) &&
-      !document.getElementById('actions-menu').contains(e.target)) {
-    closeActions();
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHIx3R3eU-2A9rSIMxRX8hoHfY5rehFclVkUiGI5tSl12UM7h9fg4Q_kZhMskw5rrX/exec';
+
+const urlParams = new URLSearchParams(window.location.search);
+const gameId = urlParams.get('gameId');
+const username = localStorage.getItem("userName") || "";
+
+let currentGame = null;
+let currentQuestionIndex = 0;
+let score = 0;
+let timerInterval = null;
+let leaderboardLoaded = false;
+let surveyResponses = {};  // { questionIndex: chosenChoiceIndex }
+let hasAlreadySubmitted = false;  // Will be set after checking on load
+let quizResponses = {};   // { questionIndex: chosenChoiceIndex }
+
+document.getElementById("backButton").addEventListener("click", () => {
+  if (currentQuestionIndex > 0) {
+    showQuestion(currentQuestionIndex - 1);
   }
 });
 
-// ====================== DAILY BALANCE HISTORY ======================
-let dailyBalanceHistory = {};   // Format: { "2026-04-28": 12500.50, ... }
-
-function getTodayKey() {
-  return new Date().toISOString().split('T')[0];
+if (!gameId || !username) {
+  document.getElementById("currentQuestion").innerHTML = '<div class="empty">Invalid game or not logged in</div>';
+} else {
+  loadGame();
 }
 
-function saveBalanceHistory() {
-  const today = getTodayKey();
-  dailyBalanceHistory[today] = actualAmount;
-  saveData(); // reuse your existing saveData()
-}
-
-function loadBalanceHistory() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    const data = JSON.parse(saved);
-    if (data.dailyBalanceHistory) {
-      dailyBalanceHistory = data.dailyBalanceHistory;
+// Toggle leaderboard visibility
+document.getElementById("showLeaderboardBtn").addEventListener("click", () => {
+  const section = document.getElementById("leaderboardSection");
+  if (section.style.display === "block") {
+    section.style.display = "none";
+  } else {
+    section.style.display = "block";
+    if (!leaderboardLoaded) {
+      loadLeaderboard();
+      leaderboardLoaded = true;
     }
+  }
+});
+
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    padding: 12px 24px; border-radius: 8px; color: white; font-weight: 500;
+    z-index: 9999; min-width: 240px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  `;
+
+  if (type === "success") toast.style.background = "#10b981";
+  else if (type === "error")   toast.style.background = "#ef4444";
+  else if (type === "info")    toast.style.background = "#3b82f6";
+  else                         toast.style.background = "#6b7280";
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transition = "opacity 0.6s";
+    setTimeout(() => toast.remove(), 600);
+  }, 2800);
+}
+
+function getLh3Link(url) {
+  if (!url) return '';
+  const id = url.match(/[-\w]{25,}/)?.[0];
+  return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
+}
+
+async function loadGame() {
+  try {
+    // Step 1: Get game metadata (name, timer, etc.)
+    const gameRes = await fetch(`${SCRIPT_URL}?operation=getQnAGame&gameId=${gameId}&username=${encodeURIComponent(username)}`);
+    const gameData = await gameRes.json();
+    if (gameData.status !== "success") {
+      document.getElementById("currentQuestion").innerHTML = '<div class="empty">Failed to load game</div>';
+      return;
+    }
+    currentGame = gameData.game;
+
+    // ── Check if user already submitted this survey ────────────────────────
+if (currentGame.mode === "survey") {
+  try {
+    const checkRes = await fetch(
+      `${SCRIPT_URL}?operation=hasUserSubmittedSurvey&gameId=${gameId}&username=${encodeURIComponent(username)}`
+    );
+    const checkData = await checkRes.json();
+
+    if (checkData.status === "success") {
+      hasAlreadySubmitted = !!checkData.submitted;  // true/false from backend
+    } else {
+      console.warn("Submission check failed:", checkData.message);
+    }
+  } catch (err) {
+    console.warn("Could not check if already submitted:", err);
+    // Assume not submitted if check fails (safer default)
+    hasAlreadySubmitted = false;
+  }
+}
+// Dynamically create the correct button
+const actionsDiv = document.getElementById("headerActions");
+actionsDiv.innerHTML = ""; // clear
+
+if (currentGame.mode === "survey") {
+  const resultsBtn = document.createElement("button");
+  resultsBtn.className = "leaderboard-btn"; // reuse style, or make new class
+  resultsBtn.innerHTML = '<i class="fas fa-chart-bar"></i> View Results';
+  resultsBtn.onclick = () => showSurveyResults();
+  actionsDiv.appendChild(resultsBtn);
+} else {
+  const lbBtn = document.createElement("button");
+  lbBtn.id = "showLeaderboardBtn";
+  lbBtn.className = "leaderboard-btn";
+  lbBtn.innerHTML = '<i class="fas fa-trophy"></i> Leaderboard';
+  lbBtn.onclick = () => {
+    const section = document.getElementById("leaderboardSection");
+    section.style.display = section.style.display === "block" ? "none" : "block";
+    if (section.style.display === "block" && !leaderboardLoaded) {
+      loadLeaderboard();
+      leaderboardLoaded = true;
+    }
+  };
+  actionsDiv.appendChild(lbBtn);
+}
+
+    // Step 2: Get ALL questions + choices for this game (you'll need a new backend function)
+    const qRes = await fetch(`${SCRIPT_URL}?operation=getQnAQuestionsAndChoices&gameId=${gameId}`);
+    const qData = await qRes.json();
+    if (qData.status !== "success") {
+      document.getElementById("currentQuestion").innerHTML = '<div class="empty">Failed to load questions</div>';
+      return;
+    }
+
+    // Combine: attach questions with their choices
+    currentGame.questions = qData.questions.map(q => ({
+      ...q,
+      choices: q.choices || []   // already array from backend
+    }));
+
+    document.getElementById("gameTitle").textContent = currentGame.name;
+
+    // Show timer only if it exists
+    const timerEl = document.getElementById("timerDisplay");
+    if (currentGame.timer && currentGame.timer > 0) {
+      timerEl.style.display = "block";
+      startTimer(currentGame.timer);
+    } else {
+      timerEl.style.display = "none";
+    }
+
+    showQuestion(0);
+  } catch (err) {
+    console.error(err);
+    document.getElementById("currentQuestion").innerHTML = '<div class="empty">Network error</div>';
   }
 }
 
-// Update saveData to also save balance history
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    actualAmount,
-    unallocatedAmount,
-    allocations,
-    history,
-    resetMode,
-    lastResetDate,
-    dailyBalanceHistory   // ← Added
-  }));
-}
+function showQuestion(index) {
+  currentQuestionIndex = index;
+  const q = currentGame.questions[index];
+  const container = document.getElementById("currentQuestion");
 
-// Show Balance History Modal
-function showBalanceHistory() {
-  const container = document.getElementById('balance-history-list');
-  container.innerHTML = '';
+  let questionHTML = `<div class="question-text">${q.text || "Question missing"}</div>`;
 
-  const sortedDates = Object.keys(dailyBalanceHistory).sort().reverse();
+  if (q.imageLink) {
+    const safeUrl = getLh3Link(q.imageLink);
+    questionHTML += `
+      <img class="question-image"
+           src="${safeUrl}"
+           onerror="this.src='https://via.placeholder.com/320?text=Image+Not+Available'; this.style.opacity=0.7;"
+           alt="Question image">
+    `;
+  }
 
-  if (sortedDates.length === 0) {
-    container.innerHTML = `<p style="text-align:center; color:#64748b; padding:40px 20px;">No balance history yet.<br>Add money to start tracking daily balances.</p>`;
-  } else {
-    sortedDates.forEach(date => {
-      const amount = dailyBalanceHistory[date];
-      const isToday = date === getTodayKey();
-      
-      const div = document.createElement('div');
-      div.className = 'balance-history-item';
-      div.innerHTML = `
-        <div>
-          <strong>${isToday ? 'Today' : new Date(date).toLocaleDateString('en-GB', { 
-            weekday: 'short', 
-            month: 'short', 
-            day: 'numeric' 
-          })}</strong>
-        </div>
-        <div style="text-align:right; font-weight:600; color:#60a5fa;">
-          KSh ${amount.toFixed(2)}
-        </div>
+  questionHTML += `
+    <div class="choices" id="choices"></div>
+    <div class="reason" id="reason">${q.reason || ''}</div>
+  `;
+  container.innerHTML = questionHTML;
+
+  const choicesDiv = document.getElementById("choices");
+
+  (q.choices || []).forEach((choice, i) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    let html = choice.text || "";
+    if (choice.imageLink) {
+      const safeChoiceUrl = getLh3Link(choice.imageLink);
+      html += `
+        <br>
+        <img src="${safeChoiceUrl}"
+             style="max-width:100%; margin-top:8px; border-radius:8px;"
+             onerror="this.src='https://via.placeholder.com/200?text=Choice+Failed'; this.style.opacity=0.7;"
+             alt="Choice image">
       `;
-      container.appendChild(div);
+    }
+    btn.innerHTML = html;
+    btn.onclick = () => selectChoice(i);
+    choicesDiv.appendChild(btn);
+  });
+
+  // ────────────────────────────────────────────────────────────────
+  // Navigation: Back & Next
+  // ────────────────────────────────────────────────────────────────
+  const nextBtn = document.getElementById("nextButton");
+  const backBtn = document.getElementById("backButton");
+
+  // Back: always visible when not on first question
+  backBtn.style.display = currentQuestionIndex > 0 ? "inline-block" : "none";
+
+  // Default: Next button is visible in survey always, in quiz only if answered
+  let showNext = currentGame.mode === "survey" || quizResponses[index] !== undefined;
+  nextBtn.style.display = showNext ? "inline-block" : "none";
+
+  // ────────────────────────────────────────────────────────────────
+  // IMPORTANT: Button text & behavior depends on whether this is the last question
+  // ────────────────────────────────────────────────────────────────
+  const isLastQuestion = currentQuestionIndex === currentGame.questions.length - 1;
+
+  if (isLastQuestion) {
+    // Last question → special text & action
+    if (currentGame.mode === "survey") {
+      if (hasAlreadySubmitted) {
+        nextBtn.textContent = "Already Submitted";
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = "0.6";
+        nextBtn.onclick = () => showToast("You have already completed this survey", "info");
+      } else {
+        nextBtn.textContent = "Submit Responses";
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = "1";
+        nextBtn.onclick = finishGame;
+      }
+    } else {
+      // Quiz
+      nextBtn.textContent = "Complete Game";
+      nextBtn.disabled = false;
+      nextBtn.onclick = finishGame;
+    }
+  } else {
+    // Not last question → always "Next" when visible
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = false;
+    nextBtn.onclick = () => {
+      if (currentQuestionIndex + 1 < currentGame.questions.length) {
+        showQuestion(currentQuestionIndex + 1);
+      }
+    };
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Restore previous answer & visual state
+  // ────────────────────────────────────────────────────────────────
+  document.getElementById("reason").style.display = "none";
+
+  const previousChoice = currentGame.mode === "survey"
+    ? surveyResponses[index]
+    : quizResponses[index];
+
+  if (previousChoice !== undefined) {
+    const buttons = document.querySelectorAll("#choices .choice-btn");
+
+    buttons.forEach((btn, i) => {
+      btn.classList.remove("correct", "incorrect", "selected");
+
+      if (i === previousChoice) {
+        btn.classList.add("selected");
+      }
+
+      if (currentGame.mode === "survey") {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+        if (i === q.correctIndex) {
+          btn.classList.add("correct");
+        }
+        if (i === previousChoice && q.correctIndex !== previousChoice) {
+          btn.classList.add("incorrect");
+        }
+        document.getElementById("reason").style.display = "block";
+      }
     });
   }
 
-  document.getElementById('balance-history-modal').style.display = 'flex';
-}
-
-function hideBalanceHistory() {
-  document.getElementById('balance-history-modal').style.display = 'none';
-}
-
-// Update loadData to include balance history
-function loadData() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    const data = JSON.parse(saved);
-    actualAmount = data.actualAmount || 0;
-    unallocatedAmount = data.unallocatedAmount || 0;
-    allocations = data.allocations || [];
-    history = data.history || [];
-    resetMode = data.resetMode || "consistent";
-    lastResetDate = data.lastResetDate || null;
-    dailyBalanceHistory = data.dailyBalanceHistory || {};
+  // Optional survey hint
+  /*
+  if (currentGame.mode === "survey") {
+    const hint = document.createElement("p");
+    hint.style.cssText = "margin-top:16px; color:#94a3b8; font-size:0.95rem; text-align:center;";
+    hint.textContent = "You can change your answer anytime before submitting";
+    choicesDiv.after(hint);
   }
-  
-  // Save today's balance on load (in case it changed)
-  saveBalanceHistory();
-  
-  checkAndPerformAutoReset();
-  renderAll();
+  */
+}
+function selectChoice(choiceIndex) {
+  const q = currentGame.questions[currentQuestionIndex];
+
+  // ── Remember the choice in BOTH modes ─────────────────────────────
+  // We need this so we can restore the selection when going back
+  if (currentGame.mode === "survey") {
+    surveyResponses[currentQuestionIndex] = choiceIndex;
+  } else {
+    // Quiz: remember what was chosen (for restore), but score only once
+    if (quizResponses[currentQuestionIndex] === undefined) {  // only first time
+      quizResponses[currentQuestionIndex] = choiceIndex;
+      const correct = q.correctIndex === choiceIndex;
+      if (correct) score++;
+    }
+    // Note: after first answer, further clicks do nothing to score
+  }
+
+  // ── Visual update ─────────────────────────────────────────────────
+  const buttons = document.querySelectorAll("#choices .choice-btn");
+
+  buttons.forEach((btn, i) => {
+    // Clear previous visual states
+    btn.classList.remove("correct", "incorrect", "selected");
+
+    if (currentGame.mode === "survey") {
+      // Survey: highlight current selection, buttons stay clickable
+      if (i === surveyResponses[currentQuestionIndex]) {
+        btn.classList.add("selected");
+      }
+      btn.disabled = false;
+    } else {
+      // Quiz: show feedback, disable buttons, but keep selected visible
+      btn.disabled = true;
+
+      const chosen = quizResponses[currentQuestionIndex];
+
+      if (chosen !== undefined) {
+        // Show what was actually chosen
+        if (i === chosen) {
+          btn.classList.add("selected");
+        }
+        // Show correct answer
+        if (i === q.correctIndex) {
+          btn.classList.add("correct");
+        }
+        // Mark incorrect if wrong choice was made
+        if (i === chosen && q.correctIndex !== chosen) {
+          btn.classList.add("incorrect");
+        }
+      }
+    }
+  });
+
+  // Reason only for quiz
+  document.getElementById("reason").style.display = 
+    currentGame.mode === "survey" ? "none" : "block";
+
+  // Always show Next / Submit button in survey (even if changed many times)
+  const nextBtn = document.getElementById("nextButton");
+  nextBtn.style.display = "block";
+
+  // ── Last question logic ───────────────────────────────────────────
+  if (currentQuestionIndex === currentGame.questions.length - 1) {
+    if (currentGame.mode === "survey") {
+      if (hasAlreadySubmitted) {
+        nextBtn.textContent = "Already Submitted";
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = "0.6";
+        nextBtn.onclick = () => showToast("You have already completed this survey", "info");
+      } else {
+        nextBtn.textContent = "Submit Responses";
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = "1";
+        nextBtn.onclick = finishGame;
+      }
+    } else {
+      // Quiz
+      nextBtn.textContent = "Complete Game";
+      nextBtn.disabled = false;
+      nextBtn.onclick = finishGame;
+    }
+  } else {
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = false;
+    nextBtn.onclick = () => {
+      if (currentQuestionIndex + 1 < currentGame.questions.length) {
+        showQuestion(currentQuestionIndex + 1);
+      }
+    };
+  }
+}
+async function finishGame() {
+  clearInterval(timerInterval);
+
+  const nextBtn = document.getElementById("nextButton");
+  const originalText = nextBtn.textContent;
+
+  nextBtn.disabled = true;
+  nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+  // Prevent infinite loading — timeout after 12 seconds
+  const TIMEOUT_MS = 12000;
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS)
+  );
+
+  try {
+    if (currentGame.mode === "survey") {
+      await Promise.race([submitSurveyResponses(), timeoutPromise]);
+
+      showToast("Responses submitted successfully!", "success");
+
+      document.getElementById("scoreText").innerHTML = `
+        <div style="color:#10b981; font-size:1.4rem; margin:16px 0;">
+          <i class="fas fa-check-circle"></i> Thank you!
+        </div>
+        Your responses have been recorded.<br>
+        <small style="color:#94a3b8;">You can now view the aggregated results.</small>
+      `;
+    } else {
+      await Promise.race([submitScore(), timeoutPromise]);
+
+      document.getElementById("scoreText").innerHTML = 
+        `Game completed!<br>Your score: <b>${score} / ${currentGame.questions.length}</b>`;
+    }
+
+    document.getElementById("currentQuestion").style.display = "none";
+    nextBtn.style.display = "none";
+    document.getElementById("finalScreen").style.display = "block";
+
+  } catch (err) {
+    console.error("Finish failed:", err);
+
+    let toastMsg = "Failed to submit – please try again";
+    let finalMsg = "";
+
+    if (err.message === "timeout") {
+      toastMsg = "Submission timed out. Check your connection.";
+    } else if (err.message.includes("already_submitted")) {
+      toastMsg = "You have already submitted this survey.";
+      finalMsg = `
+        <div style="color:#10b981; font-size:1.3rem; margin:16px 0;">
+          <i class="fas fa-check-circle"></i> Already submitted
+        </div>
+        You completed this survey earlier.<br>
+        Feel free to view the results.
+      `;
+      hasAlreadySubmitted = true; // Remember for next time
+    }
+
+    showToast(toastMsg, err.message.includes("already") ? "info" : "error");
+
+    if (finalMsg) {
+      document.getElementById("scoreText").innerHTML = finalMsg;
+      document.getElementById("finalScreen").style.display = "block";
+      nextBtn.style.display = "none";
+    } else {
+      // Allow retry
+      nextBtn.disabled = false;
+      nextBtn.innerHTML = originalText;
+    }
+  }
+}
+async function submitScore() {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        operation: "submitQnAScore",
+        gameId,
+        username,
+        score
+      })
+    });
+  } catch {}
 }
 
-// Call saveBalanceHistory after every change that affects actualAmount
+function startTimer(seconds) {
+  let remaining = seconds;
+  const display = document.getElementById("timerDisplay");
 
+  // Initial display
+  updateTimerDisplay(remaining);
 
-   window.onload = () => { loadData(); loadSettings(); };
-  </script>
+  timerInterval = setInterval(() => {
+    remaining--;
+    updateTimerDisplay(remaining);
+
+    if (remaining <= 10) {
+      display.classList.add("danger");
+    } else if (remaining <= 30) {
+      display.classList.add("warning");
+    }
+
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      display.textContent = "Time's up!";
+      finishGame();
+    }
+  }, 1000);
+}
+
+async function submitSurveyResponses() {
+  if (Object.keys(surveyResponses).length === 0) {
+    console.warn("No responses to submit");
+    return;
+  }
+
+  console.log(`Submitting ${Object.keys(surveyResponses).length} survey answers...`);
+
+  for (const [qIdxStr, cIdx] of Object.entries(surveyResponses)) {
+    const qIndex = Number(qIdxStr);
+    const question = currentGame.questions[qIndex];
+    const questionId = question.questionId || `${gameId}-q${qIndex + 1}`;
+
+    // ── NEW: Get the actual text of the chosen answer ───────────────────────
+    let choiceText = "";
+    const selectedChoice = question.choices[Number(cIdx)];
+    if (selectedChoice && selectedChoice.text) {
+      choiceText = selectedChoice.text.trim();
+    } else {
+      console.warn(`No text found for choice ${cIdx} on question ${qIndex + 1}`);
+      // Optional: fallback or skip — but better to send empty string
+    }
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          operation: "recordSurveyResponses",
+          gameId,
+          username,
+          questionId,
+          choiceIndex: Number(cIdx),
+          choiceText: choiceText   // ← ADD THIS LINE
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} – server error`);
+      }
+
+      const data = await res.json();
+
+      if (data.status !== "success") {
+        if (data.message?.toLowerCase().includes("already submitted") ||
+            data.message?.toLowerCase().includes("duplicate") ||
+            data.message?.toLowerCase().includes("already answered")) {
+          throw new Error("already_submitted");
+        }
+        throw new Error(data.message || "Backend rejected submission");
+      }
+
+      console.log(`Q${qIndex + 1} submitted OK`);
+    } catch (err) {
+      console.error(`Failed Q${qIndex + 1}:`, err);
+      throw err; // Stop on first real error
+    }
+  }
+
+  console.log("All responses submitted successfully");
+}
+function updateTimerDisplay(seconds) {
+  const display = document.getElementById("timerDisplay");
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  display.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+}
+async function loadLeaderboard() {
+  const list = document.getElementById("leaderboardList");
+  list.innerHTML = '<div class="no-leaders">Loading leaderboard...</div>';
+
+  try {
+    const r = await fetch(`${SCRIPT_URL}?operation=getQnALeaderboard&gameId=${gameId}`);
+    const data = await r.json();
+
+    if (data.status !== "success") {
+      list.innerHTML = '<div class="no-leaders">Could not load leaderboard</div>';
+      return;
+    }
+
+    const leaders = data.leaders || [];
+    if (leaders.length === 0) {
+      list.innerHTML = '<div class="no-leaders">No scores yet — be the first!</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    leaders.forEach((l, index) => {
+      const item = document.createElement('div');
+      item.className = 'leader-item';
+
+      const rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+
+      item.innerHTML = `
+        <div class="leader-rank ${rankClass}">${index + 1}</div>
+        <div class="leader-name">${l.username}</div>
+        <div class="leader-score">${l.score}</div>
+      `;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    list.innerHTML = '<div class="no-leaders">Error loading leaderboard</div>';
+  }
+}
+
+function showSurveyResults() {
+  // Create or reuse modal
+  let modal = document.getElementById("surveyResultsModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "surveyResultsModal";
+    modal.style.cssText = `
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.85); display: none;
+      overflow: hidden; touch-action: pan-x;
+    `;
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div style="height:100%; width:100%; position:relative;">
+      <button onclick="document.getElementById('surveyResultsModal').style.display='none'" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#60a5fa; font-size:2.2rem; cursor:pointer; z-index:10;">×</button>
+      
+      <div id="resultsCarousel" style="
+        display:flex; height:100%; transition: transform 0.4s ease;
+        touch-action: pan-x; user-select: none;
+      "></div>
+
+      <div id="carouselDots" style="
+        position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+        display:flex; gap:12px; z-index:10;
+      "></div>
+    </div>
+  `;
+  modal.style.display = "block";
+
+  // Loading
+  document.getElementById("resultsCarousel").innerHTML = `
+    <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem;">
+      Loading Survey Results...
+    </div>
+  `;
+
+  // Fetch results + participants
+  Promise.all([
+    fetch(`${SCRIPT_URL}?operation=getSurveyResults&gameId=${gameId}`).then(r => r.json()),
+    fetch(`${SCRIPT_URL}?operation=getSurveyParticipants&gameId=${gameId}`).then(r => r.json())
+  ])
+  .then(([resultsData, participantsData]) => {
+    const results = resultsData.results || [];
+    const participants = participantsData.participants || [];
+
+    if (resultsData.status !== "success") {
+      document.getElementById("resultsCarousel").innerHTML = `
+        <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1.3rem; text-align:center; padding:20px;">
+          ${resultsData.message || "Failed to load results"}
+        </div>
+      `;
+      return;
+    }
+
+    let slidesHTML = "";
+    let dotsHTML = "";
+
+    // Questions slides
+    results.forEach((q, qIndex) => {
+      let choicesHTML = "";
+      q.choices.forEach(c => {
+        const percent = c.percent;
+        choicesHTML += `
+          <div style="margin:12px 0;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:1.1rem;">
+              <span>${c.text}</span>
+              <span style="color:#60a5fa; font-weight:600;">${percent}% (${c.count})</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.1); border-radius:8px; height:14px; overflow:hidden;">
+              <div style="background:#3b82f6; height:100%; width:${percent}%; transition:width 0.6s;"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      slidesHTML += `
+        <div style="flex:0 0 100%; padding:60px 20px 100px; overflow-y:auto; color:white;">
+          <h2 style="margin:0 0 20px; color:#60a5fa; font-size:1.6rem; text-align:center;">${q.questionText}</h2>
+          ${q.questionImage ? `<img src="${getLh3Link(q.questionImage)}" style="max-width:100%; border-radius:12px; margin:0 auto 24px; display:block; max-height:260px;">` : ''}
+          <p style="text-align:center; font-weight:600; margin-bottom:24px; font-size:1.1rem;">Total responses: ${q.totalResponses}</p>
+          <div style="max-width:520px; margin:0 auto;">${choicesHTML}</div>
+        </div>
+      `;
+      dotsHTML += `<div style="width:12px; height:12px; border-radius:50%; background:${qIndex===0?'#60a5fa':'rgba(255,255,255,0.3)'}; transition:all 0.3s;"></div>`;
+    });
+
+    // Participants slide (last one)
+    let participantsHTML = `
+      <div style="flex:0 0 100%; padding:60px 20px 100px; overflow-y:auto; color:white; text-align:center;">
+        <h2 style="margin:0 0 32px; color:#60a5fa; font-size:1.6rem;">Participants (${participants.length})</h2>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:24px; max-width:600px; margin:0 auto;">
+    `;
+    if (participants.length === 0) {
+      participantsHTML += `<p style="color:#94a3b8; font-size:1.2rem;">No participants yet.</p>`;
+    } else {
+      participants.forEach(p => {
+        const pic = p.picLink ? getLh3Link(p.picLink) : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username)}&background=60a5fa&color=fff&size=128`;
+        participantsHTML += `
+          <div style="text-align:center;">
+            <img src="${pic}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid #60a5fa; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+            <div style="margin-top:8px; font-size:1rem; color:#e2e8f0;">${p.username}</div>
+          </div>
+        `;
+      });
+    }
+    participantsHTML += `</div></div>`;
+
+    slidesHTML += participantsHTML;
+    dotsHTML += `<div style="width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.3); transition:all 0.3s;"></div>`;
+
+    document.getElementById("resultsCarousel").innerHTML = slidesHTML;
+    document.getElementById("carouselDots").innerHTML = dotsHTML;
+
+    // Swipe logic (touch + mouse)
+    const carousel = document.getElementById("resultsCarousel");
+    let isDragging = false, startX = 0, currentTranslate = 0, prevTranslate = 0, currentIndex = 0;
+    const totalSlides = results.length + 1;
+
+    const updateDots = (index) => {
+      document.querySelectorAll("#carouselDots > div").forEach((dot, i) => {
+        dot.style.background = i === index ? "#60a5fa" : "rgba(255,255,255,0.3)";
+      });
+    };
+
+    const setPositionByIndex = () => {
+      currentTranslate = currentIndex * -100;
+      prevTranslate = currentTranslate;
+      carousel.style.transform = `translateX(${currentTranslate}%)`;
+      updateDots(currentIndex);
+    };
+
+    // Mouse + touch events
+    const pointerDown = (e) => {
+      isDragging = true;
+      startX = e.type.includes("mouse") ? e.pageX : e.touches[0].clientX;
+      carousel.style.transition = "none";
+    };
+
+    const pointerMove = (e) => {
+      if (!isDragging) return;
+      const currentPosition = e.type.includes("mouse") ? e.pageX : e.touches[0].clientX;
+      const diff = currentPosition - startX;
+      currentTranslate = prevTranslate + diff;
+      carousel.style.transform = `translateX(${currentTranslate}%)`;
+    };
+
+    const pointerUp = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      carousel.style.transition = "transform 0.4s ease";
+
+      const movedBy = currentTranslate - prevTranslate;
+      if (movedBy < -60 && currentIndex < totalSlides - 1) currentIndex++;
+      if (movedBy > 60 && currentIndex > 0) currentIndex--;
+
+      setPositionByIndex();
+    };
+
+    carousel.addEventListener("mousedown", pointerDown);
+    carousel.addEventListener("mousemove", pointerMove);
+    carousel.addEventListener("mouseup", pointerUp);
+    carousel.addEventListener("mouseleave", pointerUp);
+
+    carousel.addEventListener("touchstart", pointerDown);
+    carousel.addEventListener("touchmove", pointerMove);
+    carousel.addEventListener("touchend", pointerUp);
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById("resultsCarousel").innerHTML = `
+      <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1.3rem;">
+        Network error — try again
+      </div>
+    `;
+  });
+}
+</script>
 </body>
-</html>
 
 </html>
