@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CashSplit - Money Tracker</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/font-awesome.min.css"/>
-<style>
+ <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; width: 100%; }
     body {
@@ -509,15 +509,6 @@ body.light-mode .balance-history-item {
 .balance-history-item:last-child {
   border-bottom: none;
 }
-
-  /* Bottom spacer bar */
-.bottom-bar {
-    height: 30px;
-    flex-shrink: 0;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(96, 165, 250, 0.15);
-}
   </style>
 </head>
 <body>
@@ -700,8 +691,6 @@ body.light-mode .balance-history-item {
     </div>
   </div>
 </div>
-
-  <div class="bottom-bar"></div>
   <script>
     let actualAmount = 0;        // The real money we have (this is 100%)
     let unallocatedAmount = 0;   // What hasn't been assigned to any allocation yet
@@ -1524,4 +1513,6 @@ function loadData() {
    window.onload = () => { loadData(); loadSettings(); };
   </script>
 </body>
+</html>
+
 </html>
