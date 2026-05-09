@@ -24,10 +24,13 @@ messaging.onBackgroundMessage((payload) => {
   const postId    = payload.data?.postId    || "";
   const gameId    = payload.data?.gameId    || "";
   const announcement = payload.data?.announcement || "";   // ← NEW for announcements
+ const callId = payload.data?.callId || "";
 
   // ── SMART URL LOGIC ─────────────────────────────────────────────────────
   let url = "https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/home.html";
-
+ if (callId) {
+  url = `https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/call.html?callId=${encodeURIComponent(callId)}`;
+}
   if (gameId) {
     // Q&A Game
     url = `https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/Q&A.html?gameId=${encodeURIComponent(gameId)}`;
@@ -75,6 +78,7 @@ self.addEventListener("notificationclick", (event) => {
       // Try to focus existing window/tab
       for (const client of clientList) {
         if (client.url === urlToOpen || 
+            (event.notification.data?.callId && client.url.includes("call.html")) ||
             (event.notification.data?.gameId && client.url.includes("Q&A.html")) ||
             (event.notification.data?.channelId && client.url.includes("channel.html")) ||
             (event.notification.data?.announcement && client.url.includes("announce.html")) ||
