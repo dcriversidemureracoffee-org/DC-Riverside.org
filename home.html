@@ -40,7 +40,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Riverside Connect chat preview">
-  <style>
+   <style>
     * {
       margin: 0;
       padding: 0;
@@ -776,7 +776,11 @@ html, body {
 <div class="input-area">
   <div class="input-wrapper">
     <input type="file" id="fileInput" accept="image/*,video/*,audio/*" style="display:none;">
-    
+   
+  <button type="button" id="callBtn" title="Start a video call">
+  <i class="fas fa-video"></i>
+</button>
+
     <button type="button" id="addFileBtn" style="background:none; box-shadow:none; color:#60a5fa; width:40px;">
       <i class="fas fa-plus-circle"></i>
     </button>
@@ -846,6 +850,165 @@ html, body {
   background: rgba(96, 165, 250, 0.4);
   border-radius: 3px;
 }
+
+/* ── Call Card (appears in chat like a message) ── */
+.call-card {
+  background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(16,185,129,0.08));
+  border: 1px solid rgba(34,197,94,0.35);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 100%;
+}
+.call-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: white;
+  flex-shrink: 0;
+  animation: callPulse 2s ease-in-out infinite;
+}
+@keyframes callPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+  50%      { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+}
+.call-card-icon.ended {
+  background: linear-gradient(135deg, #475569, #334155);
+  animation: none;
+}
+.call-card-body { flex: 1; min-width: 0; }
+.call-card-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #e2e8f0;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.call-card-sub {
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+.join-call-btn {
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  text-decoration: none;
+  display: inline-block;
+}
+.join-call-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.4); }
+.join-call-btn.ended { background: #475569; cursor: default; }
+.join-call-btn.ended:hover { transform: none; box-shadow: none; }
+ 
+/* ── Call button in input area ── */
+#callBtn {
+  background: none;
+  box-shadow: none;
+  color: #22c55e;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+#callBtn:hover { color: #16a34a; transform: scale(1.1); box-shadow: none; }
+ 
+/* ── Call modal ── */
+#callModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,15,30,0.88);
+  backdrop-filter: blur(10px);
+  z-index: 3000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+#callModal .modal-box {
+  background: rgba(30,41,59,0.98);
+  width: 100%;
+  max-width: 420px;
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba(96,165,250,0.25);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+#callModal h2 { color: #22c55e; font-size: 1.4rem; margin-bottom: 20px; text-align: center; }
+ 
+.call-option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.call-option-row:hover { background: rgba(255,255,255,0.06); }
+.call-option-row input[type=checkbox] { accent-color: #22c55e; width: 18px; height: 18px; cursor: pointer; }
+.call-option-row img {
+  width: 38px; height: 38px; border-radius: 50%;
+  object-fit: cover; border: 2px solid #334155;
+}
+.call-option-row .placeholder-av {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: #334155; display: flex; align-items: center;
+  justify-content: center; color: #60a5fa; font-size: 1rem;
+  border: 2px solid #475569; flex-shrink: 0;
+}
+.call-option-label { font-size: 0.95rem; color: #e2e8f0; }
+ 
+#callTitleInput {
+  width: 100%; padding: 11px 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(96,165,250,0.3);
+  color: white; font-size: 0.95rem; outline: none; margin-bottom: 16px;
+}
+ 
+.call-type-tabs {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.call-type-tab {
+  flex: 1; padding: 9px; border-radius: 8px; border: 1px solid rgba(96,165,250,0.25);
+  background: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem;
+  transition: all 0.15s;
+}
+.call-type-tab.active {
+  background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; font-weight: 600;
+}
+ 
+#memberListContainer {
+  max-height: 240px; overflow-y: auto; margin-bottom: 16px;
+  border: 1px solid rgba(96,165,250,0.15); border-radius: 10px; padding: 4px;
+}
+ 
+#startCallBtn {
+  width: 100%; padding: 13px; background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white; border: none; border-radius: 12px; font-size: 1rem;
+  font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 4px;
+}
+#startCallBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+.call-card.ended-card {
+  opacity: 0.5;
+  filter: grayscale(60%);
+}
     </style>
 
     <!-- Name Input -->
@@ -888,12 +1051,45 @@ html, body {
   </div>
 </div>
 
+<div id="callModal">
+  <div class="modal-box">
+    <h2><i class="fas fa-phone"></i> Start a Call</h2>
+ 
+    <input type="text" id="callTitleInput" placeholder="Call title (optional)…">
+ 
+    <div class="call-type-tabs">
+      <button class="call-type-tab active" id="tabAll" onclick="setCallType('all')">
+        <i class="fas fa-users"></i> All Members
+      </button>
+      <button class="call-type-tab" id="tabSelect" onclick="setCallType('select')">
+        <i class="fas fa-user-check"></i> Select People
+      </button>
+    </div>
+ 
+    <div id="memberListContainer" style="display:none;">
+      <div id="memberList" style="padding:4px;"></div>
+    </div>
+ 
+    <button id="startCallBtn">
+      <i class="fas fa-phone"></i> Start Call
+    </button>
+    <button onclick="document.getElementById('callModal').style.display='none'"
+      style="width:100%;padding:10px;margin-top:8px;background:none;border:1px solid rgba(255,255,255,0.1);
+             color:#94a3b8;border-radius:12px;cursor:pointer;font-size:0.9rem;">
+      Cancel
+    </button>
+  </div>
+</div>
+ 
+ 
 <canvas id="cropCanvas" style="display:none;"></canvas>
 
  <script>
-  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwnB7PbhKr9dydL3J3TH9EQy3JgWegPBwSO6YfnCglsW-NAWiOqc0_THR-La0THmVeQ/exec';
 
  let userName = localStorage.getItem('userName');
+let callType       = 'all';  // 'all' | 'select'
+let allMembersCache = [];
 
   if (!userName) {
     window.location.href = 'login.html';
@@ -1423,90 +1619,105 @@ checkUserStatus();
       commentsDiv.innerHTML = '';
 
       data.comments.reverse().forEach(c => {
+
+        // ── Detect call card ──────────────────────────────────────
+        if (c.comment && c.comment.startsWith('{"type":"call"')) {
+          try {
+            const callData = JSON.parse(c.comment);
+            if (callData.type === 'call') {
+              const isOwn = c.name === userName;
+              const isInvited = callData.isAllUsers ||
+                (callData.invitees || []).some(i => i.username === userName);
+
+              if (!isInvited && !isOwn) return; // not for this user — skip silently
+
+              const msg = document.createElement('div');
+              msg.className = `message ${isOwn ? 'own' : ''}`;
+              msg.innerHTML = buildCallCard(c, callData);
+              commentsDiv.appendChild(msg);
+              return; // skip normal message rendering below
+            }
+          } catch(e) {}
+        }
+        // ─────────────────────────────────────────────────────────
+
         const isOwn = c.name === userName;
-        const mediaLink = getLh3Link(c.fileLink); // Fetch using lh3
+        const mediaLink = getLh3Link(c.fileLink);
         if (data.announcements) {
-  updateAnnBadge(data.announcements.length);
-}
+          updateAnnBadge(data.announcements.length);
+        }
         
         let mediaHtml = '';
-if (mediaLink) {
-  // Video: Use iframe for Drive preview
-  if (c.fileLink.toLowerCase().match(/\.(mp4|mov|webm|m4v)$/i) || 
-      (c.fileType && c.fileType.includes('video'))) {
-    const previewUrl = c.fileLink;  // "https://drive.google.com/file/d/ID/preview"
-    mediaHtml = `
-      <div class="video-container">
-        <iframe 
-          src="${previewUrl}"
-          allowfullscreen
-          allow="autoplay; fullscreen; picture-in-picture"
-          loading="lazy"
-        ></iframe>
-      </div>`;
-  } 
-  // Audio: Use iframe for Drive audio player preview (adjust height)
-  else if (c.fileLink.toLowerCase().match(/\.(mp3|wav|ogg|aac|m4a)$/i) || 
-           (c.fileType && c.fileType.includes('audio'))) {
-    const previewUrl = c.fileLink;  // Same /preview URL works for audio
-    mediaHtml = `
-      <div class="audio-container">
-        <iframe 
-          src="${previewUrl}"
-          allow="autoplay"
-          loading="lazy"
-          style="height:80px;"  // Shorter for audio
-        ></iframe>
-      </div>`;
-  } 
-  // Images: Existing logic
-  else {
-    mediaHtml = `<div class="media-content"><img src="${mediaLink}" style="max-width:100%; border-radius:8px; margin-top:8px;" loading="lazy"></div>`;
-  }
-
+        if (mediaLink) {
+          if (c.fileLink.toLowerCase().match(/\.(mp4|mov|webm|m4v)$/i) || 
+              (c.fileType && c.fileType.includes('video'))) {
+            const previewUrl = c.fileLink;
+            mediaHtml = `
+              <div class="video-container">
+                <iframe 
+                  src="${previewUrl}"
+                  allowfullscreen
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  loading="lazy"
+                ></iframe>
+              </div>`;
+          } 
+          else if (c.fileLink.toLowerCase().match(/\.(mp3|wav|ogg|aac|m4a)$/i) || 
+                   (c.fileType && c.fileType.includes('audio'))) {
+            const previewUrl = c.fileLink;
+            mediaHtml = `
+              <div class="audio-container">
+                <iframe 
+                  src="${previewUrl}"
+                  allow="autoplay"
+                  loading="lazy"
+                  style="height:80px;"
+                ></iframe>
+              </div>`;
+          } 
+          else {
+            mediaHtml = `<div class="media-content"><img src="${mediaLink}" style="max-width:100%; border-radius:8px; margin-top:8px;" loading="lazy"></div>`;
+          }
         }
 
         const msg = document.createElement('div');
         msg.className = `message ${isOwn ? 'own' : ''}`;
-       // Inside the forEach loop of loadComments:
-// 1. IMPROVED ACTIONS: Show 'Reply' for everyone, but 'Edit/Delete' only for own messages
-const actionsHtml = `
-  <div class="msg-actions">
-    <button class="action-btn reply-btn" onclick="setReply('${c.name}', '${c.comment.replace(/'/g, "\\'")}')">
-      <i class="fas fa-reply"></i> Reply
-    </button>
-    ${isOwn ? `
-      <button class="action-btn edit-btn" onclick="startEdit('${c.timestamp}', '${c.comment.replace(/'/g, "\\'")}')">
-        <i class="fas fa-edit"></i> Edit
-      </button>
-      <button class="action-btn delete-btn" onclick="deleteMsg('${c.timestamp}')">
-        <i class="fas fa-trash"></i> Delete
-      </button>
-    ` : ''}
-  </div>
-`;
 
-// Check if this comment is a reply
-const replyHtml = c.replyTo ? `
-  <div class="quoted-msg">
-    <b>@${c.replyTo.name}</b>: ${c.replyTo.text.substring(0, 50)}${c.replyTo.text.length > 50 ? '...' : ''}
-  </div>
-` : '';
+        const actionsHtml = `
+          <div class="msg-actions">
+            <button class="action-btn reply-btn" onclick="setReply('${c.name}', '${c.comment.replace(/'/g, "\\'")}')">
+              <i class="fas fa-reply"></i> Reply
+            </button>
+            ${isOwn ? `
+              <button class="action-btn edit-btn" onclick="startEdit('${c.timestamp}', '${c.comment.replace(/'/g, "\\'")}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="action-btn delete-btn" onclick="deleteMsg('${c.timestamp}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            ` : ''}
+          </div>
+        `;
 
-// 2. CLEANER BUBBLE: No more onclick on the container
-msg.innerHTML = `
-  <img src="https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}" class="avatar">
-  <div class="message-content">
-    <div class="name">${c.name}</div>
-    ${replyHtml} 
-    ${mediaHtml}
-    <div class="text" id="text-${c.timestamp}">${c.comment}</div>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <span class="time">${formatSmartTime(c.timestamp)}</span>
-      ${actionsHtml}
-    </div>
-  </div>
-`;
+        const replyHtml = c.replyTo ? `
+          <div class="quoted-msg">
+            <b>@${c.replyTo.name}</b>: ${c.replyTo.text.substring(0, 50)}${c.replyTo.text.length > 50 ? '...' : ''}
+          </div>
+        ` : '';
+
+        msg.innerHTML = `
+          <img src="https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}" class="avatar">
+          <div class="message-content">
+            <div class="name">${c.name}</div>
+            ${replyHtml} 
+            ${mediaHtml}
+            <div class="text" id="text-${c.timestamp}">${c.comment}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="time">${formatSmartTime(c.timestamp)}</span>
+              ${actionsHtml}
+            </div>
+          </div>
+        `;
         commentsDiv.appendChild(msg);
       });
 
@@ -1515,7 +1726,6 @@ msg.innerHTML = `
       console.error('Failed to load messages:', err);
     }
   }
-
   function setReply(name, text) {
   replyingTo = { name, text };
   document.getElementById('reply-text').innerHTML = `Replying to <b>${name}</b>`;
@@ -1778,8 +1988,244 @@ document.getElementById('copy-recovery-btn')?.addEventListener('click', () => {
     });
 });
 
+function setCallType(type) {
+  callType = type;
+  document.getElementById('tabAll').classList.toggle('active', type === 'all');
+  document.getElementById('tabSelect').classList.toggle('active', type === 'select');
+  document.getElementById('memberListContainer').style.display = type === 'select' ? 'block' : 'none';
+}
+ 
+// Open call modal + load members if needed
+document.getElementById('callBtn').addEventListener('click', async () => {
+  if (!isApproved) { showToast('Account not yet approved', 'error'); return; }
+  document.getElementById('callModal').style.display = 'flex';
+  loadMembersForCall();
+});
+ 
+// Close if clicking outside
+document.getElementById('callModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('callModal')) {
+    document.getElementById('callModal').style.display = 'none';
+  }
+});
+ 
+async function loadMembersForCall() {
+  if (allMembersCache.length > 0) { renderMemberList(); return; }
+  try {
+    const res  = await fetch(`${scriptUrl}?operation=getMembers`);
+    const data = await res.json();
+    allMembersCache = (data.users || []).filter(u => u.status === 'approved' && u.name !== userName);
+    renderMemberList();
+  } catch(e) {
+    console.error('Could not load members for call', e);
+  }
+}
+ 
+function renderMemberList() {
+  const container = document.getElementById('memberList');
+  container.innerHTML = '';
+  allMembersCache.forEach(u => {
+    const row = document.createElement('div');
+    row.className = 'call-option-row';
+ 
+    const chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.value = u.name;
+    chk.dataset.pic = u.picLink || '';
+    chk.id = 'chk-' + u.name;
+ 
+    const src = u.picLink ? getLh3Link(u.picLink) : '';
+    let avatarEl;
+    if (src) {
+      avatarEl = document.createElement('img');
+      avatarEl.src  = src;
+      avatarEl.onerror = () => { avatarEl.style.display='none'; };
+    } else {
+      avatarEl = document.createElement('div');
+      avatarEl.className = 'placeholder-av';
+      avatarEl.innerHTML = `<i class="fas fa-user"></i>`;
+    }
+ 
+    const label = document.createElement('label');
+    label.htmlFor = 'chk-' + u.name;
+    label.className = 'call-option-label';
+    label.textContent = u.name;
+ 
+    row.appendChild(chk);
+    row.appendChild(avatarEl);
+    row.appendChild(label);
+    row.addEventListener('click', (e) => {
+      if (e.target !== chk) chk.checked = !chk.checked;
+    });
+ 
+    container.appendChild(row);
+  });
+}
+ 
+// Start the call
+document.getElementById('startCallBtn').addEventListener('click', async () => {
+  const btn   = document.getElementById('startCallBtn');
+  const title = document.getElementById('callTitleInput').value.trim() || `${userName}'s Call`;
+ 
+  let invitees = [];
+  if (callType === 'select') {
+    const checked = document.querySelectorAll('#memberList input[type=checkbox]:checked');
+    if (checked.length === 0) { showToast('Select at least one person', 'error'); return; }
+    invitees = Array.from(checked).map(c => ({ username: c.value, picLink: c.dataset.pic }));
+  }
+ 
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting…';
+ 
+  try {
+    const res  = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        operation:   'initiateCall',
+        username:    userName,
+        picLink:     localStorage.getItem('userPicLink') || '',
+        title:       title,
+        invitees:    invitees,
+        isAllUsers:  callType === 'all'
+      })
+    });
+    const data = await res.json();
+ 
+    if (data.status === 'success') {
+      document.getElementById('callModal').style.display = 'none';
+      // Open call.html as host
+     window.location.href = `call.html?callId=${data.callId}&host=1`;
+      loadComments(false); // refresh chat to show call card
+    } else {
+      showToast(data.message || 'Failed to start call', 'error');
+    }
+  } catch(e) {
+    showToast('Network error', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-phone"></i> Start Call';
+  }
+});
 
+function buildCallCard(c, callData) {
+  // Check if call is still active (simple: no "ended" status in card)
+  const isEnded  = callData.status === 'ended';
+  const isOwn    = c.name === userName;
+  const isInvited = callData.isAllUsers ||
+    (callData.invitees || []).some(inv => inv.username === userName);
+  const canJoin  = !isEnded && (isInvited || isOwn);
+ 
+  const callUrl  = `call.html?callId=${encodeURIComponent(callData.callId)}`;
+  const iconClass = isEnded ? 'ended' : '';
+  const btnHtml   = canJoin
+    ? `<a href="${callUrl}" class="join-call-btn">
+        <i class="fas fa-phone"></i> Join
+       </a>`
+    : `<span class="join-call-btn ended">Ended</span>`;
+ 
+  const inviteeText = callData.isAllUsers
+    ? 'Everyone'
+    : (callData.invitees || []).map(i => i.username).slice(0,3).join(', ') +
+      ((callData.invitees || []).length > 3 ? ` +${callData.invitees.length - 3}` : '');
+ 
+  const picHtml = c.picLink
+    ? `<img src="https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}" class="avatar">`
+    : '';
+ 
+  return `
+    ${picHtml}
+    <div class="message-content" style="padding:10px 12px; background:transparent;">
+      <div class="name">${c.name}</div>
+     <div class="call-card ${isEnded ? 'ended-card' : ''}">
+        <div class="call-card-icon ${iconClass}">
+          <i class="fas fa-${isEnded ? 'phone-slash' : 'phone-volume'}"></i>
+        </div>
+        <div class="call-card-body">
+          <div class="call-card-title">${callData.title || 'Call'}</div>
+          <div class="call-card-sub">
+            <i class="fas fa-users" style="font-size:0.72rem;margin-right:4px;"></i>
+            ${inviteeText}
+          </div>
+        </div>
+        ${btnHtml}
+      </div>
+      <span class="time">${formatSmartTime(c.timestamp)}</span>
+    </div>
+  `;
+}
+ 
+ 
 
+</script>
+<script>
+ if ('serviceWorker' in navigator) {
+  // Use './' to stay inside the /The-Riverside-Connect/ subfolder
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .then(reg => console.log('✅ SW registered in subfolder scope'))
+    .catch(err => console.error('❌ SW registration failed:', err));
+}
+</script>
+<script>
+  let deferredPrompt;
+  const installBtn = document.getElementById('installAppBtn');
+  const installModal = document.getElementById('installModal');
+
+  // --- NEW: Hide button immediately if already in "standalone" (installed) mode ---
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+    if (installBtn) installBtn.style.display = 'none';
+  }
+
+  // 1. Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW registered'))
+        .catch(err => console.error('SW failed:', err));
+    });
+  }
+
+  // 2. Capture the install event
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Only show button if not already installed
+    if (installBtn) installBtn.style.display = 'block';
+  });
+
+  // 3. The "Yes" Button Logic
+  document.getElementById('installYes').addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        console.log('User accepted install');
+        if (installBtn) installBtn.style.display = 'none'; // Hide button
+      }
+      deferredPrompt = null;
+      installModal.style.display = 'none';
+    }
+  });
+
+  // 4. Manual Modal Trigger
+  if (installBtn) {
+    installBtn.addEventListener('click', () => {
+      installModal.style.display = 'flex';
+    });
+  }
+
+  // 5. Cancel Button
+  document.getElementById('installNo').addEventListener('click', () => {
+    installModal.style.display = 'none';
+  });
+
+  // 6. --- NEW: Final safeguard to hide button when installation finishes ---
+  window.addEventListener('appinstalled', () => {
+    console.log('App installed successfully');
+    if (installBtn) installBtn.style.display = 'none';
+    installModal.style.display = 'none';
+    deferredPrompt = null;
+  });
 </script>
 <script>
  if ('serviceWorker' in navigator) {
@@ -1855,7 +2301,7 @@ document.getElementById('copy-recovery-btn')?.addEventListener('click', () => {
 
   <!-- ==================== FCM PUSH NOTIFICATION REGISTRATION (Home) ==================== -->
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnB7PbhKr9dydL3J3TH9EQy3JgWegPBwSO6YfnCglsW-NAWiOqc0_THR-La0THmVeQ/exec';
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
@@ -1920,21 +2366,50 @@ document.getElementById('copy-recovery-btn')?.addEventListener('click', () => {
         }
 
         // Handle foreground messages
-        onMessage(messaging, (payload) => {
-          console.log("Foreground message received (home):", payload);
+       onMessage(messaging, (payload) => {
+  const title  = payload.data?.title || "Riverside Connect";
+  const body   = payload.data?.body  || "New message";
+  const callId = payload.data?.callId || "";
 
-          const title = payload.data?.title || "Riverside Connect";
-          const body  = payload.data?.body  || "New message";
-
-          // Use your existing toast function
-          showToast(`${title}: ${body}`, "info");
-
-          // Refresh the chat
-          if (isApproved) {
-            loadComments(false);
-          }
-        });
-
+  if (callId) {
+    // Show a clickable in-app call banner instead of a plain toast
+    const banner = document.createElement('div');
+    banner.style.cssText = `
+      position:fixed; top:0; left:0; right:0; z-index:9999;
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:white; padding:16px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+      box-shadow:0 4px 20px rgba(0,0,0,0.4); animation:slideDown 0.3s ease;
+    `;
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;">
+        <i class="fas fa-phone-volume" style="font-size:1.4rem;animation:callPulse 1s infinite;"></i>
+        <div>
+          <div style="font-weight:700;font-size:1rem;">${title}</div>
+          <div style="font-size:0.85rem;opacity:0.9;">${body}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="window.location.href='call.html?callId=${callId}'"
+          style="padding:8px 18px;background:white;color:#16a34a;border:none;
+                 border-radius:999px;font-weight:700;cursor:pointer;">
+          Join
+        </button>
+        <button onclick="this.closest('div[style]').remove()"
+          style="padding:8px 14px;background:rgba(255,255,255,0.2);color:white;
+                 border:none;border-radius:999px;cursor:pointer;">
+          Dismiss
+        </button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+    // Auto-dismiss after 30 seconds
+    setTimeout(() => banner.remove(), 30000);
+  } else {
+    showToast(`${title}: ${body}`, "info");
+    if (isApproved) loadComments(false);
+  }
+});
       } catch (err) {
         console.error("❌ FCM registration error in home.html:", err);
       }
