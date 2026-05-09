@@ -51,19 +51,25 @@ messaging.onBackgroundMessage((payload) => {
   const icon = payload.data?.icon || "./maskable_icon_x192.png";
   const badge = "./badge.png";
 
-  self.registration.showNotification(title, {
-    body: body,
-    icon: icon,
-    badge: badge,
-    image: payload.data?.image || "",
-    data: { 
-      url: url,
-      channelId: channelId,
-      postId: postId,
-      gameId: gameId,
-      announcement: announcement   // ← NEW
-    }
-  });
+  const isCall = !!callId;
+
+self.registration.showNotification(title, {
+  body: body,
+  icon: icon,
+  badge: badge,
+  image: payload.data?.image || "",
+  vibrate: isCall ? [500, 200, 500, 200, 500] : [200, 100, 200],
+  requireInteraction: isCall, // keeps call notification on screen until tapped
+  tag: isCall ? `call-${callId}` : undefined, // prevents duplicate call notifications
+  data: {
+    url: url,
+    channelId: channelId,
+    postId: postId,
+    gameId: gameId,
+    announcement: announcement,
+    callId: callId
+  }
+});
 });
 
 // Handle notification click
