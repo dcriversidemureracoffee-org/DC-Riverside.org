@@ -1631,11 +1631,30 @@ checkUserStatus();
 
               if (!isInvited && !isOwn) return; // not for this user — skip silently
 
-              const msg = document.createElement('div');
-              msg.className = `message ${isOwn ? 'own' : ''}`;
-              msg.innerHTML = buildCallCard(c, callData);
-              commentsDiv.appendChild(msg);
-              return; // skip normal message rendering below
+             const msg = document.createElement('div');
+msg.className = `message ${isOwn ? 'own' : ''}`;
+msg.innerHTML = buildCallCard(c, callData);
+
+// Allow owner to delete their own call card
+if (isOwn) {
+  const deleteDiv = document.createElement('div');
+  deleteDiv.className = 'msg-actions';
+  deleteDiv.style.opacity = '0';
+  deleteDiv.innerHTML = `
+    <button class="action-btn delete-btn" onclick="deleteMsg('${c.timestamp}')">
+      <i class="fas fa-trash"></i> Delete
+    </button>
+  `;
+  // Append inside message-content div
+  const msgContent = msg.querySelector('.message-content');
+  if (msgContent) msgContent.appendChild(deleteDiv);
+
+  msg.addEventListener('mouseenter', () => deleteDiv.style.opacity = '1');
+  msg.addEventListener('mouseleave', () => deleteDiv.style.opacity = '0');
+}
+
+commentsDiv.appendChild(msg);
+return; // skip normal message rendering below
             }
           } catch(e) {}
         }
