@@ -128,7 +128,7 @@ const API_CACHE_PATTERNS = [
 
 const EXPECTED_CACHES = [CACHE_NAME];
 
-const API_BASE = 'https://script.google.com/macros/s/AKfycbz7Bav_E5Q5lfUMR5smrFz9EwMFiy_6QNx9gVqDBDcwyEOqrWMyfLQ23SgVw6IxeU-l/exec';
+const API_BASE = 'https://script.google.com/macros/s/AKfycbwHTb46hbNXw8iGvza3Rsnt7woeLXSO3F4Q3xnNwYfLWXKxZQ1ieuujhfZwceAVafVe/exec';
 
 self.addEventListener('install', event => {
   event.waitUntil(
