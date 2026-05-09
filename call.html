@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Riverside Call</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #topBar {
+      background: rgba(15,23,42,0.95);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(96,165,250,0.2);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    #callTitle { color: #60a5fa; font-size: 1.1rem; font-weight: 600; }
+    #callTimer { color: #94a3b8; font-size: 0.95rem; font-family: monospace; }
+    #participantCount { color: #94a3b8; font-size: 0.9rem; }
+
+    #videoGrid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 4px;
+      overflow: hidden;
+      background: #0a0f1e;
+      position: relative;
+    }
+
+    #videoGrid.count-1 { grid-template-columns: 1fr; }
+    #videoGrid.count-2 { grid-template-columns: 1fr 1fr; }
+    #videoGrid.count-3,
+    #videoGrid.count-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+    #videoGrid.count-5,
+    #videoGrid.count-6 { grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; }
+    #videoGrid.count-many { grid-template-columns: repeat(3, 1fr); }
+
+    /* Empty state when alone in call */
+    #emptyState {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #475569;
+      pointer-events: none;
+    }
+    #emptyState i { font-size: 3rem; opacity: 0.4; }
+    #emptyState p { font-size: 0.95rem; opacity: 0.6; }
+
+    .video-tile {
+      position: relative;
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 120px;
+    }
+    .video-tile.speaking { box-shadow: 0 0 0 3px #22c55e; }
+    .video-tile video { width: 100%; height: 100%; object-fit: cover; }
+
+    .video-tile .avatar-fallback { display: none; flex-direction: column; align-items: center; gap: 10px; }
+    .video-tile.no-video .avatar-fallback { display: flex; }
+    .video-tile.no-video video { display: none; }
+
+    .avatar-fallback img {
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 3px solid #60a5fa; object-fit: cover;
+    }
+    .avatar-fallback .avatar-placeholder {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: white; border: 3px solid #60a5fa;
+    }
+    .avatar-fallback span { color: #e2e8f0; font-size: 0.95rem; font-weight: 500; }
+
+    .name-tag {
+      position: absolute; bottom: 8px; left: 10px;
+      background: rgba(0,0,0,0.65); color: white;
+      font-size: 0.8rem; padding: 3px 8px; border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+    .name-tag .mic-icon { font-size: 0.7rem; margin-right: 4px; }
+    .name-tag .mic-icon.muted { color: #ef4444; }
+
+    #localTile {
+      position: absolute; bottom: 100px; right: 12px;
+      width: 110px; height: 155px; border-radius: 12px;
+      overflow: hidden; border: 2px solid #60a5fa;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 5;
+      cursor: pointer; transition: all 0.2s;
+    }
+    #localTile:hover { transform: scale(1.05); }
+    #localTile video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #localTile .name-tag { font-size: 0.7rem; padding: 2px 6px; }
+
+    #localTile .local-fallback {
+      display: none; width: 100%; height: 100%;
+      align-items: center; justify-content: center;
+      background: #1e293b; flex-direction: column; gap: 6px;
+    }
+    #localTile.cam-off video { display: none; }
+    #localTile.cam-off .local-fallback { display: flex; }
+    #localTile .local-fallback span { font-size: 0.65rem; color: #94a3b8; }
+    #localTile .local-fallback .lf-icon {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 1.3rem;
+    }
+
+    #controls {
+      background: rgba(15,23,42,0.98);
+      padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+      display: flex; justify-content: center; align-items: center;
+      gap: 16px; border-top: 1px solid rgba(96,165,250,0.15); flex-shrink: 0;
+    }
+    .ctrl-btn {
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      cursor: pointer; font-size: 1.3rem; display: flex;
+      align-items: center; justify-content: center; transition: all 0.2s; color: white;
+    }
+    .ctrl-btn:hover { transform: scale(1.08); }
+    .ctrl-btn.on  { background: rgba(255,255,255,0.15); }
+    .ctrl-btn.off { background: #ef4444; }
+    #btnMic   { background: rgba(255,255,255,0.12); }
+    #btnCam   { background: rgba(255,255,255,0.12); }
+    #btnShare { background: rgba(255,255,255,0.12); }
+    #btnHangup{ background: #ef4444; width: 64px; height: 64px; font-size: 1.5rem; }
+    #btnHangup:hover { background: #dc2626; }
+
+    .ctrl-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .ctrl-label { font-size: 0.65rem; color: #94a3b8; text-align: center; }
+
+    /* ── Loading overlay (replaces the old lobby) ── */
+    #loadingOverlay {
+      position: fixed; inset: 0;
+      background: rgba(10,15,30,0.97);
+      z-index: 50;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 18px; padding: 24px; text-align: center;
+    }
+    #loadingOverlay .spin {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 4px solid rgba(96,165,250,0.2);
+      border-top-color: #60a5fa;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loadingOverlay h2 { color: #60a5fa; font-size: 1.4rem; }
+    #loadingOverlay p  { color: #94a3b8; font-size: 0.95rem; max-width: 280px; line-height: 1.55; }
+
+    /* Decline button still needed for non-host who navigated here via link */
+    #declineBtn {
+      padding: 12px 32px; background: rgba(239,68,68,0.15); color: #f87171;
+      border: 1px solid rgba(239,68,68,0.4); border-radius: 999px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      display: none; /* hidden by default, shown for non-hosts if needed */
+    }
+
+    #toast {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: #1e293b; color: white; padding: 10px 20px;
+      border-radius: 8px; font-size: 0.9rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4); opacity: 0;
+      pointer-events: none; transition: opacity 0.3s; z-index: 100; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; }
+
+    #endedScreen {
+      display: none; position: fixed; inset: 0; background: #0a0f1e; z-index: 60;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; text-align: center; padding: 24px;
+    }
+    #endedScreen i { font-size: 4rem; color: #ef4444; }
+    #endedScreen h2 { color: #e2e8f0; font-size: 1.8rem; }
+    #endedScreen p  { color: #94a3b8; }
+    #endedScreen .duration-badge {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      padding: 8px 20px; border-radius: 999px;
+      font-size: 0.9rem; color: #fca5a5;
+    }
+    #backHomeBtn {
+      padding: 13px 36px; background: #3b82f6; color: white; border: none;
+      border-radius: 999px; font-size: 1rem; font-weight: 600; cursor: pointer;
+      margin-top: 10px; transition: all 0.2s;
+    }
+    #backHomeBtn:hover { background: #2563eb; transform: translateY(-1px); }
+
+    #debugLog {
+      display: none;
+      position: fixed; bottom: 90px; left: 8px; right: 8px;
+      background: rgba(0,0,0,0.85); color: #22c55e;
+      font-size: 0.65rem; font-family: monospace;
+      padding: 8px; border-radius: 8px; max-height: 120px;
+      overflow-y: auto; z-index: 100;
+    }
+
+    @media (max-width: 480px) {
+      #localTile { width: 90px; height: 130px; bottom: 90px; }
+      .ctrl-btn { width: 50px; height: 50px; font-size: 1.15rem; }
+      #btnHangup { width: 58px; height: 58px; }
+      #controls { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="topBar">
+  <div>
+    <div id="callTitle">Riverside Call</div>
+    <div id="participantCount">Just you</div>
+  </div>
+  <div id="callTimer">00:00</div>
+</div>
+
+<div id="videoGrid" class="count-1">
+  <div id="emptyState">
+    <i class="fas fa-users"></i>
+    <p>Waiting for others to join…</p>
+  </div>
+</div>
+
+<div id="localTile">
+  <video id="localVideo" autoplay muted playsinline></video>
+  <div class="local-fallback">
+    <div class="lf-icon"><i class="fas fa-user"></i></div>
+    <span>You (cam off)</span>
+  </div>
+  <div class="name-tag">You</div>
+</div>
+
+<div id="controls">
+  <div class="ctrl-wrap">
+    <button class="ctrl-btn on" id="btnMic"><i class="fas fa-microphone"></i></button>
+    <span class="ctrl-label">Mute</span>
+  </div>
+  <div class="ctrl-wrap">
+    <button class="ctrl-btn on" id="btnCam"><i class="fas fa-video"></i></button>
+    <span class="ctrl-label">Camera</span>
+  </div>
+  <div class="ctrl-wrap">
+    <button class="ctrl-btn on" id="btnShare"><i class="fas fa-desktop"></i></button>
+    <span class="ctrl-label">Share</span>
+  </div>
+  <div class="ctrl-wrap">
+    <button class="ctrl-btn" id="btnHangup"><i class="fas fa-phone-slash"></i></button>
+    <span class="ctrl-label">End</span>
+  </div>
+</div>
+
+<!-- Replaces the old lobby — auto-dismissed, no user action needed -->
+<div id="loadingOverlay">
+  <div class="spin"></div>
+  <h2 id="loadingTitle">Joining call…</h2>
+  <p id="loadingDesc">Setting up your camera and microphone</p>
+  <button id="declineBtn"><i class="fas fa-phone-slash"></i> Decline</button>
+</div>
+
+<div id="endedScreen">
+  <i class="fas fa-phone-slash"></i>
+  <h2 id="endedHeading">Call Ended</h2>
+  <div class="duration-badge" id="endedDuration">Duration: 00:00</div>
+  <p id="endedMessage" style="margin-top:4px;"></p>
+  <button id="backHomeBtn">
+    <i class="fas fa-home"></i> Back to Chat
+  </button>
+</div>
+
+<div id="toast"></div>
+<div id="debugLog"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnB7PbhKr9dydL3J3TH9EQy3JgWegPBwSO6YfnCglsW-NAWiOqc0_THR-La0THmVeQ/exec';
+
+const ICE_SERVERS = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302'  },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun.cloudflare.com:3478' }
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════════
+const urlParams   = new URLSearchParams(window.location.search);
+const callId      = urlParams.get('callId');
+const isHost      = urlParams.get('host') === '1';
+const userName    = localStorage.getItem('userName') || '';
+const userPicLink = localStorage.getItem('userPicLink') || '';
+
+// Guard — must have callId and userName
+if (!callId || !userName) {
+  window.location.href = 'home.html';
+}
+
+let localStream     = null;
+let screenStream    = null;
+let peers           = {};   // peerId → { pc, displayName, picUrl }
+let isMuted         = false;
+let isCamOff        = false;
+let isSharingScreen = false;
+let callStartTime   = null;
+let timerInterval   = null;
+let pollingInterval = null;
+let hasEnded        = false; // prevent double-end
+
+// Unique peer ID for this session tab
+const myPeerId = userName + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+
+const knownPeerIds      = new Set([myPeerId]);
+const pendingCandidates = {};   // peerId → RTCIceCandidate[]
+let lastSignalTs        = Date.now();
+
+// ═══════════════════════════════════════════════════════════════════
+//  DEBUG
+// ═══════════════════════════════════════════════════════════════════
+const DEBUG = false;
+function log(...args) {
+  console.log('[Call]', ...args);
+  if (DEBUG) {
+    const el = document.getElementById('debugLog');
+    if (el) { el.style.display = 'block'; el.textContent = args.join(' ') + '\n' + el.textContent; }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════════════════
+function showToast(msg, duration = 2800) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+function extractFileId(url) {
+  if (!url) return '';
+  const m = url.match(/[-\w]{25,}/);
+  return m ? m[0] : '';
+}
+
+function getLh3(url) {
+  const id = extractFileId(url);
+  return id ? `https://lh3.googleusercontent.com/d/${id}` : '';
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60).toString().padStart(2,'0');
+  const s = (secs % 60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PARTICIPANT COUNT  — always 1 (you) + connected remote peers
+// ═══════════════════════════════════════════════════════════════════
+function updateParticipantCount() {
+  const remotePeers = Object.keys(peers).length;
+  const total       = 1 + remotePeers;   // 1 = you
+  const el          = document.getElementById('participantCount');
+  el.textContent    = total === 1
+    ? 'Just you'
+    : `${total} participant${total !== 1 ? 's' : ''}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  VIDEO GRID
+// ═══════════════════════════════════════════════════════════════════
+function updateGrid() {
+  const grid  = document.getElementById('videoGrid');
+  const count = Object.keys(peers).length;
+
+  // Show/hide "waiting" empty state
+  const emptyState = document.getElementById('emptyState');
+  if (emptyState) emptyState.style.display = count === 0 ? 'flex' : 'none';
+
+  grid.className = '';
+  if      (count === 0) grid.classList.add('count-1');   // empty — keep grid happy
+  else if (count === 1) grid.classList.add('count-1');
+  else if (count === 2) grid.classList.add('count-2');
+  else if (count <= 4)  grid.classList.add('count-4');
+  else if (count <= 6)  grid.classList.add('count-6');
+  else                  grid.classList.add('count-many');
+
+  updateParticipantCount();
+}
+
+function ensureTile(peerId, displayName, picUrl) {
+  if (document.getElementById('tile-' + peerId)) return;
+
+  const grid = document.getElementById('videoGrid');
+  const tile = document.createElement('div');
+  tile.className = 'video-tile no-video';
+  tile.id = 'tile-' + peerId;
+
+  const vid = document.createElement('video');
+  vid.autoplay    = true;
+  vid.playsinline = true;
+  vid.muted       = false;   // remote peers must NOT be muted
+  vid.id          = 'video-' + peerId;
+  tile.appendChild(vid);
+
+  // Avatar fallback
+  const fallback = document.createElement('div');
+  fallback.className = 'avatar-fallback';
+  const avatarSrc = picUrl ? getLh3(picUrl) : '';
+  if (avatarSrc) {
+    const img = document.createElement('img');
+    img.src     = avatarSrc;
+    img.onerror = () => img.style.display = 'none';
+    fallback.appendChild(img);
+  } else {
+    const ph = document.createElement('div');
+    ph.className   = 'avatar-placeholder';
+    ph.textContent = (displayName || '?')[0].toUpperCase();
+    fallback.appendChild(ph);
+  }
+  const nameSpan = document.createElement('span');
+  nameSpan.textContent = displayName || peerId.split('_')[0];
+  fallback.appendChild(nameSpan);
+  tile.appendChild(fallback);
+
+  const tag = document.createElement('div');
+  tag.className = 'name-tag';
+  tag.id = 'tag-' + peerId;
+  tag.innerHTML = `<i class="fas fa-microphone mic-icon"></i>${displayName || peerId.split('_')[0]}`;
+  tile.appendChild(tag);
+
+  grid.appendChild(tile);
+  updateGrid();
+  log('Tile created for', peerId, displayName);
+}
+
+function removeTile(peerId) {
+  const tile = document.getElementById('tile-' + peerId);
+  if (tile) tile.remove();
+  if (peers[peerId]) {
+    try { peers[peerId].pc.close(); } catch(e) {}
+    delete peers[peerId];
+  }
+  knownPeerIds.delete(peerId);
+  delete pendingCandidates[peerId];
+  updateGrid();
+  log('Tile removed for', peerId);
+}
+
+function attachStream(peerId, stream) {
+  const vid  = document.getElementById('video-' + peerId);
+  const tile = document.getElementById('tile-' + peerId);
+  if (!vid || !tile) { log('attachStream: tile missing for', peerId); return; }
+  if (vid.srcObject !== stream) {
+    vid.srcObject = stream;
+    vid.play().catch(e => log('play() failed:', e.message));
+    log('Stream attached to', peerId, '| tracks:', stream.getTracks().map(t=>t.kind).join(','));
+  }
+  const hasVideo = stream.getVideoTracks().some(t => t.enabled && t.readyState === 'live');
+  tile.classList.toggle('no-video', !hasVideo);
+}
+
+function refreshTileVideoState(peerId) {
+  const vid  = document.getElementById('video-' + peerId);
+  const tile = document.getElementById('tile-' + peerId);
+  if (!vid || !tile || !vid.srcObject) return;
+  const hasVideo = vid.srcObject.getVideoTracks().some(t => t.enabled && t.readyState === 'live');
+  tile.classList.toggle('no-video', !hasVideo);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  MEDIA
+// ═══════════════════════════════════════════════════════════════════
+async function getLocalMedia() {
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+      audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 48000 }
+    });
+    log('Got video+audio stream');
+  } catch (err) {
+    log('Video+audio failed, trying audio only:', err.message);
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true }
+      });
+      isCamOff = true;
+      updateCamBtn();
+      log('Got audio-only stream');
+    } catch (e) {
+      showToast('Could not access microphone: ' + e.message, 5000);
+      log('Media access denied:', e.message);
+      return false;
+    }
+  }
+  document.getElementById('localVideo').srcObject = localStream;
+  if (isCamOff) document.getElementById('localTile').classList.add('cam-off');
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  WebRTC
+// ═══════════════════════════════════════════════════════════════════
+function getOrCreatePeer(peerId, displayName, picUrl) {
+  if (peers[peerId]) return peers[peerId].pc;
+
+  log('Creating RTCPeerConnection for', peerId);
+  const pc = new RTCPeerConnection(ICE_SERVERS);
+  peers[peerId] = { pc, displayName, picUrl };
+
+  if (localStream) {
+    localStream.getTracks().forEach(track => {
+      pc.addTrack(track, localStream);
+      log('Added local track', track.kind, 'to peer', peerId);
+    });
+  }
+
+  const remoteStream = new MediaStream();
+
+  pc.ontrack = (event) => {
+    log('ontrack from', peerId, '| kind:', event.track.kind);
+    if (event.streams && event.streams[0]) {
+      ensureTile(peerId, displayName, picUrl);
+      attachStream(peerId, event.streams[0]);
+    } else {
+      event.track.onunmute = () => {
+        remoteStream.addTrack(event.track);
+        ensureTile(peerId, displayName, picUrl);
+        attachStream(peerId, remoteStream);
+      };
+    }
+    event.track.onmute   = () => refreshTileVideoState(peerId);
+    event.track.onunmute = () => refreshTileVideoState(peerId);
+  };
+
+  pc.onicecandidate = (event) => {
+    if (event.candidate) {
+      sendSignal({
+        type: 'candidate', callId, from: myPeerId, to: peerId,
+        senderName: userName, senderPic: userPicLink,
+        candidate: event.candidate.toJSON()
+      });
+    }
+  };
+
+  pc.onconnectionstatechange = () => {
+    const state = pc.connectionState;
+    log('Peer', peerId, 'connectionState ->', state);
+    if (state === 'connected') {
+      showToast(`Connected to ${displayName || peerId.split('_')[0]}`);
+      updateGrid(); // refresh count
+    } else if (state === 'failed') {
+      restartIce(peerId);
+    } else if (state === 'disconnected') {
+      setTimeout(() => {
+        if (peers[peerId]?.pc.connectionState === 'disconnected') removeTile(peerId);
+      }, 5000);
+    }
+  };
+
+  pc.onsignalingstatechange = () => log('Peer', peerId, 'signalingState ->', pc.signalingState);
+  pc.oniceconnectionstatechange = () => log('Peer', peerId, 'iceConnectionState ->', pc.iceConnectionState);
+
+  return pc;
+}
+
+async function restartIce(peerId) {
+  const entry = peers[peerId];
+  if (!entry) return;
+  try {
+    const offer = await entry.pc.createOffer({ iceRestart: true });
+    await entry.pc.setLocalDescription(offer);
+    await sendSignal({ type: 'offer', callId, from: myPeerId, to: peerId,
+      senderName: userName, senderPic: userPicLink, sdp: entry.pc.localDescription });
+    log('ICE restart offer sent to', peerId);
+  } catch (e) { log('ICE restart failed:', e.message); }
+}
+
+async function offerToPeer(peerId, displayName, picUrl) {
+  if (peers[peerId]) return;
+  ensureTile(peerId, displayName, picUrl);
+  const pc = getOrCreatePeer(peerId, displayName, picUrl);
+  try {
+    const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+    await pc.setLocalDescription(offer);
+    log('Sending offer to', peerId);
+    await sendSignal({ type: 'offer', callId, from: myPeerId, to: peerId,
+      senderName: userName, senderPic: userPicLink, sdp: pc.localDescription });
+  } catch (e) { log('offerToPeer error:', e.message); }
+}
+
+async function handleOffer(sig) {
+  const { from, sdp, senderName, senderPic } = sig;
+  log('Handling offer from', from);
+  ensureTile(from, senderName || from.split('_')[0], senderPic || '');
+  const pc = getOrCreatePeer(from, senderName || from.split('_')[0], senderPic || '');
+
+  if (pc.signalingState !== 'stable' && pc.signalingState !== 'have-local-offer') {
+    log('Skipping offer — unexpected signalingState:', pc.signalingState); return;
+  }
+  if (pc.signalingState === 'have-local-offer') {
+    if (myPeerId < from) {
+      log('Glare: rolling back');
+      await pc.setLocalDescription({ type: 'rollback' });
+    } else { log('Glare: keeping ours'); return; }
+  }
+
+  try {
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    await flushCandidates(from, pc);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    log('Sending answer to', from);
+    await sendSignal({ type: 'answer', callId, from: myPeerId, to: from,
+      senderName: userName, senderPic: userPicLink, sdp: pc.localDescription });
+  } catch (e) { log('handleOffer error:', e.message); }
+}
+
+async function handleAnswer(sig) {
+  const { from, sdp } = sig;
+  log('Handling answer from', from);
+  const entry = peers[from];
+  if (!entry) return;
+  if (entry.pc.signalingState !== 'have-local-offer') {
+    log('Ignoring answer — signalingState is', entry.pc.signalingState); return;
+  }
+  try {
+    await entry.pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    await flushCandidates(from, entry.pc);
+  } catch (e) { log('handleAnswer error:', e.message); }
+}
+
+async function handleCandidate(sig) {
+  const { from, candidate } = sig;
+  if (!candidate) return;
+  const entry = peers[from];
+  if (entry && entry.pc.remoteDescription) {
+    try { await entry.pc.addIceCandidate(new RTCIceCandidate(candidate)); }
+    catch (e) { log('addIceCandidate error:', e.message); }
+  } else {
+    if (!pendingCandidates[from]) pendingCandidates[from] = [];
+    pendingCandidates[from].push(candidate);
+  }
+}
+
+async function flushCandidates(peerId, pc) {
+  const buffered = pendingCandidates[peerId] || [];
+  delete pendingCandidates[peerId];
+  for (const c of buffered) {
+    try { await pc.addIceCandidate(new RTCIceCandidate(c)); }
+    catch (e) { log('Flush candidate error:', e.message); }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  SIGNALLING
+// ═══════════════════════════════════════════════════════════════════
+async function sendSignal(payload) {
+  try {
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ operation: 'sendCallSignal', ...payload }) });
+  } catch (e) { log('sendSignal failed:', e.message); }
+}
+
+async function pollSignals() {
+  if (hasEnded) return;
+  try {
+    const url = `${SCRIPT_URL}?operation=getCallSignals`
+              + `&callId=${encodeURIComponent(callId)}`
+              + `&peerId=${encodeURIComponent(myPeerId)}`
+              + `&since=${lastSignalTs}`;
+
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (data.status !== 'success') return;
+
+    const signals = data.signals || [];
+
+    for (const sig of signals) {
+      if (sig.timestamp > lastSignalTs) lastSignalTs = sig.timestamp;
+      const { type, from, senderName, senderPic } = sig;
+
+      if (type === 'join' && from !== myPeerId) {
+        if (!knownPeerIds.has(from)) {
+          knownPeerIds.add(from);
+          showToast(`${senderName || from.split('_')[0]} joined`);
+          ensureTile(from, senderName || from.split('_')[0], senderPic || '');
+          await offerToPeer(from, senderName || from.split('_')[0], senderPic || '');
+        }
+      } else if (type === 'offer' && sig.to === myPeerId) {
+        if (!knownPeerIds.has(from)) knownPeerIds.add(from);
+        await handleOffer(sig);
+      } else if (type === 'answer' && sig.to === myPeerId) {
+        await handleAnswer(sig);
+      } else if (type === 'candidate' && sig.to === myPeerId) {
+        await handleCandidate(sig);
+      } else if (type === 'leave' && from !== myPeerId) {
+        showToast(`${senderName || from.split('_')[0]} left`);
+        removeTile(from);
+      } else if (type === 'end_call') {
+        // Only the host's end_call signal should close everyone's call
+        endCallUI('Host ended the call', true);
+        return;
+      }
+    }
+
+    // Update count from server participant list if available
+    // (but server's list may not be perfectly sync'd — our local count is source of truth)
+    updateParticipantCount();
+
+  } catch (e) { log('pollSignals error:', e.message); }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  AUTO-JOIN — runs immediately on page load, no button press needed
+// ═══════════════════════════════════════════════════════════════════
+async function autoJoin() {
+  const loadingTitle = document.getElementById('loadingTitle');
+  const loadingDesc  = document.getElementById('loadingDesc');
+// Play ring tone briefly to signal incoming call
+const ring = new Audio('./ring.mp3'); // add a short ring.mp3 to your repo
+ring.loop  = false;
+ring.play().catch(() => {}); // silently fail if autoplay blocked
+  // 1. Fetch call info to set the title
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?operation=getCallInfo&callId=${encodeURIComponent(callId)}`);
+    const data = await res.json();
+    if (data.status === 'success' && data.callInfo) {
+      const title = data.callInfo.title || 'Riverside Call';
+      document.getElementById('callTitle').textContent = title;
+      loadingTitle.textContent = title;
+      loadingDesc.textContent  = isHost
+        ? 'Starting your call…'
+        : `${data.callInfo.hostName || 'Someone'} called you`;
+    } else {
+      showToast('Call not found', 4000);
+      setTimeout(() => window.location.href = 'home.html', 3000);
+      return;
+    }
+  } catch (e) {
+    log('getCallInfo error:', e.message);
+    // Continue anyway — non-fatal
+  }
+
+  // 2. Get camera/mic
+  loadingDesc.textContent = 'Setting up camera and microphone…';
+  const ok = await getLocalMedia();
+  if (!ok) {
+    // Camera failed but maybe we can still continue with audio-only
+    // If even audio failed getLocalMedia already toasted and returned false
+    loadingDesc.textContent = 'Could not access media. Check permissions.';
+    // Give user a moment to read, then redirect
+    setTimeout(() => window.location.href = 'home.html', 4000);
+    return;
+  }
+
+  // 3. Announce join to signalling server
+  loadingDesc.textContent = 'Connecting to call…';
+  log('Announcing join, callId:', callId, 'peerId:', myPeerId);
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body:   JSON.stringify({
+        operation: 'joinCall',
+        callId,
+        peerId:   myPeerId,
+        username: userName,
+        picLink:  userPicLink
+      })
+    });
+  } catch (e) { log('joinCall announce failed:', e.message); }
+
+  // 4. Set signal timestamp AFTER joining so we don't miss anything
+  lastSignalTs = Date.now() - 3000;
+
+  // 5. Hide loading overlay → user is now in the call
+  document.getElementById('loadingOverlay').style.display = 'none';
+
+  // 6. Start timer
+  callStartTime = Date.now();
+  timerInterval = setInterval(() => {
+    document.getElementById('callTimer').textContent =
+      formatTime(Math.floor((Date.now() - callStartTime) / 1000));
+  }, 1000);
+
+  // 7. Start signal polling
+  pollingInterval = setInterval(pollSignals, 1500);
+  await pollSignals(); // immediate first poll
+
+  log('Joined successfully. myPeerId:', myPeerId);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  HANG UP
+// ═══════════════════════════════════════════════════════════════════
+async function hangUp(endForAll = false) {
+  if (hasEnded) return;
+  hasEnded = true;
+
+  clearInterval(timerInterval);
+  clearInterval(pollingInterval);
+
+  localStream?.getTracks().forEach(t => t.stop());
+  screenStream?.getTracks().forEach(t => t.stop());
+
+  Object.values(peers).forEach(({ pc }) => { try { pc.close(); } catch(e) {} });
+  peers = {};
+
+  const sigType = (isHost && endForAll) ? 'end_call' : 'leave';
+  await sendSignal({ type: sigType, callId, from: myPeerId, senderName: userName });
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body:   JSON.stringify({
+        operation: 'leaveCall',
+        callId,
+        peerId:    myPeerId,
+        username:  userName,
+        ended:     isHost && endForAll
+      })
+    });
+  } catch(e) { log('leaveCall fetch failed:', e.message); }
+
+  // Always go back to home — no "ended screen" dance
+  window.location.href = 'home.html';
+}
+
+function endCallUI(message = '', redirect = false) {
+  if (hasEnded) return;
+  hasEnded = true;
+
+  clearInterval(timerInterval);
+  clearInterval(pollingInterval);
+  localStream?.getTracks().forEach(t => t.stop());
+  screenStream?.getTracks().forEach(t => t.stop());
+
+  const elapsed = callStartTime ? Math.floor((Date.now() - callStartTime) / 1000) : 0;
+
+  if (redirect) {
+    // Non-host getting end_call signal → show brief message then redirect
+    document.getElementById('endedScreen').style.display = 'flex';
+    document.getElementById('endedHeading').textContent  = 'Call Ended';
+    document.getElementById('endedDuration').textContent = `Duration: ${formatTime(elapsed)}`;
+    document.getElementById('endedMessage').textContent  = message;
+    // Auto-redirect after 2.5s
+    setTimeout(() => window.location.href = 'home.html', 2500);
+  } else {
+    window.location.href = 'home.html';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════════════════════════════
+document.getElementById('btnMic').addEventListener('click', () => {
+  if (!localStream) return;
+  isMuted = !isMuted;
+  localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+  const btn = document.getElementById('btnMic');
+  btn.classList.toggle('off', isMuted);
+  btn.classList.toggle('on',  !isMuted);
+  btn.innerHTML = isMuted
+    ? '<i class="fas fa-microphone-slash"></i>'
+    : '<i class="fas fa-microphone"></i>';
+  showToast(isMuted ? 'Muted' : 'Unmuted');
+});
+
+function updateCamBtn() {
+  const btn = document.getElementById('btnCam');
+  btn.classList.toggle('off', isCamOff);
+  btn.classList.toggle('on',  !isCamOff);
+  btn.innerHTML = isCamOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
+  document.getElementById('localTile').classList.toggle('cam-off', isCamOff);
+}
+
+document.getElementById('btnCam').addEventListener('click', () => {
+  if (!localStream) return;
+  isCamOff = !isCamOff;
+  localStream.getVideoTracks().forEach(t => t.enabled = !isCamOff);
+  updateCamBtn();
+  showToast(isCamOff ? 'Camera off' : 'Camera on');
+});
+
+document.getElementById('btnShare').addEventListener('click', async () => {
+  if (isSharingScreen) {
+    screenStream?.getTracks().forEach(t => t.stop());
+    screenStream    = null;
+    isSharingScreen = false;
+    const camTrack  = localStream?.getVideoTracks()[0];
+    Object.values(peers).forEach(({ pc }) => {
+      const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+      if (sender && camTrack) sender.replaceTrack(camTrack);
+    });
+    document.getElementById('localVideo').srcObject = localStream;
+    document.getElementById('btnShare').classList.remove('off');
+    document.getElementById('btnShare').classList.add('on');
+    showToast('Screen sharing stopped');
+  } else {
+    try {
+      screenStream    = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      isSharingScreen = true;
+      const screenTrack = screenStream.getVideoTracks()[0];
+      Object.values(peers).forEach(({ pc }) => {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender) sender.replaceTrack(screenTrack);
+      });
+      document.getElementById('localVideo').srcObject = screenStream;
+      document.getElementById('btnShare').classList.add('off');
+      document.getElementById('btnShare').classList.remove('on');
+      showToast('Sharing screen');
+      screenTrack.onended = () => document.getElementById('btnShare').click();
+    } catch (e) {
+      if (e.name !== 'NotAllowedError') showToast('Screen share failed');
+    }
+  }
+});
+
+document.getElementById('btnHangup').addEventListener('click', () => {
+  if (isHost) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;';
+    overlay.innerHTML = `
+      <div style="background:#1e293b;border-radius:20px;padding:28px;max-width:300px;width:100%;text-align:center;border:1px solid rgba(96,165,250,0.25);box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+        <div style="font-size:2.5rem;margin-bottom:12px;">📞</div>
+        <p style="color:#e2e8f0;margin-bottom:8px;font-size:1.05rem;font-weight:600;">Leave or end call?</p>
+        <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:24px;">Ending will disconnect everyone.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button id="_endAll" style="padding:12px;background:#ef4444;color:white;border:none;border-radius:12px;cursor:pointer;font-weight:700;font-size:0.95rem;">
+            <i class="fas fa-phone-slash"></i> End for Everyone
+          </button>
+          <button id="_justLeave" style="padding:12px;background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.15);border-radius:12px;cursor:pointer;font-weight:600;font-size:0.95rem;">
+            <i class="fas fa-sign-out-alt"></i> Just Leave
+          </button>
+          <button id="_cancelEnd" style="padding:10px;background:none;color:#94a3b8;border:1px solid transparent;border-radius:12px;cursor:pointer;font-size:0.9rem;">
+            Cancel
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#_endAll').onclick    = () => { overlay.remove(); hangUp(true); };
+    overlay.querySelector('#_justLeave').onclick = () => { overlay.remove(); hangUp(false); };
+    overlay.querySelector('#_cancelEnd').onclick = () => overlay.remove();
+    // Tap outside to cancel
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  } else {
+    hangUp(false);
+  }
+});
+
+// Decline button (shown if somehow lobby is visible)
+document.getElementById('declineBtn').addEventListener('click', async () => {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body:   JSON.stringify({ operation: 'declineCall', callId, username: userName })
+    });
+  } catch(e) {}
+  window.location.href = 'home.html';
+});
+
+// Back home button on ended screen
+document.getElementById('backHomeBtn').addEventListener('click', () => {
+  window.location.href = 'home.html';
+});
+
+// ═══════════════════════════════════════════════════════════════════
+//  INIT — auto-join immediately, no user interaction needed
+// ═══════════════════════════════════════════════════════════════════
+autoJoin();
+</script>
+</body>
+</html>
