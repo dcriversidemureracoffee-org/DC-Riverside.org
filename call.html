@@ -103,8 +103,8 @@
     .name-tag .mic-icon { font-size: 0.7rem; margin-right: 4px; }
     .name-tag .mic-icon.muted { color: #ef4444; }
 
-    #localTile {
-      position: absolute; bottom: 100px; right: 12px;
+  #localTile {
+  position: absolute; bottom: 120px; right: 12px;
       width: 110px; height: 155px; border-radius: 12px;
       overflow: hidden; border: 2px solid #60a5fa;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 5;
@@ -129,9 +129,9 @@
       color: white; font-size: 1.3rem;
     }
 
-    #controls {
-      background: rgba(15,23,42,0.98);
-      padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+   #controls {
+  background: rgba(15,23,42,0.98);
+  padding: 14px 0 calc(28px + env(safe-area-inset-bottom, 0px));
       display: flex; justify-content: center; align-items: center;
       gap: 16px; border-top: 1px solid rgba(96,165,250,0.15); flex-shrink: 0;
     }
@@ -218,8 +218,8 @@
       overflow-y: auto; z-index: 100;
     }
 
-    @media (max-width: 480px) {
-      #localTile { width: 90px; height: 130px; bottom: 90px; }
+   @media (max-width: 480px) {
+     #localTile { width: 90px; height: 130px; bottom: 110px; }
       .ctrl-btn { width: 50px; height: 50px; font-size: 1.15rem; }
       #btnHangup { width: 58px; height: 58px; }
       #controls { gap: 10px; }
