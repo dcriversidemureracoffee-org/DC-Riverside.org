@@ -1256,7 +1256,7 @@
 <canvas id="cropCanvas" style="display:none;"></canvas>
 
 <script>
-const scriptUrl = 'https://script.google.com/macros/s/AKfycbygp2-CU0rgs4eOq9vTALV7fFTuPRgIOa6wl2xhbSmoxqXZpXPP7mBMg1hT_PfE8uTs/exec';
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbwQ8jCHWhYO-98TlTKJE5Mz-mjisohtTVZQhYpDY2gREswEIfAzcA0qYueR0KE0b8Br/exec';
 
 let userName = localStorage.getItem('userName');
 let callType = 'all';
@@ -1910,7 +1910,7 @@ if ('serviceWorker' in navigator) {
 
 <!-- ══ FCM PUSH ══ -->
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygp2-CU0rgs4eOq9vTALV7fFTuPRgIOa6wl2xhbSmoxqXZpXPP7mBMg1hT_PfE8uTs/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQ8jCHWhYO-98TlTKJE5Mz-mjisohtTVZQhYpDY2gREswEIfAzcA0qYueR0KE0b8Br/exec';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
@@ -1919,17 +1919,18 @@ if ('serviceWorker' in navigator) {
       const { initializeApp }               = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
       const { getMessaging, getToken, onMessage } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyCuB56TTi5COJnuDmVf6PiGsOjTwvQ0PNo",
-          authDomain: "riverside-connect-a8458.firebaseapp.com",
-          projectId: "riverside-connect-a8458",
-          storageBucket: "riverside-connect-a8458.firebasestorage.app",
-          messagingSenderId: "938830806378",
-          appId: "1:938830806378:web:254ed56cba3dc02290f913"
-        };
+          const firebaseConfig = {
+       apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+  projectId: "dc-riverside-murera-coffee",
+  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+  messagingSenderId: "373863707096",
+  appId: "1:373863707096:web:5e3c703655687b96e442ad"
+      };
+
 
       const messaging = getMessaging(app);
-     const VAPID_KEY = "BLqQIS31O_tuw_UMdReBZHTmy_HNXEcwNaPsor8O8dCt-v0XFepSoGPJmw6P6dYBfh1PDtCaMCxLO4-j7KS4yO8";
+     const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
 
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') return;
