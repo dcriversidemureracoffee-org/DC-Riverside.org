@@ -40,1188 +40,1408 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Riverside Connect chat preview">
 
-  <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            height: 100vh; /* Set a fixed height */
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            color: #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* Prevent the whole page from scrolling */
-        }
-        header {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 14px 20px;
-            border-bottom: 1px solid rgba(96, 165, 250, 0.15);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .header-content {
-            max-width: 900px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        h1 {
-            font-size: 1.5rem;
-            color: #60a5fa;
-            font-weight: 600;
-        }
-        .announcements-container {
-            flex: 1; /* Takes up all available space */
-            max-width: 900px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 20px;
-            overflow-y: auto; /* Scroll happens here */
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem; /* Increased gap for bigger cards */
-        }
-        .announcement {
-            display: flex;
-            align-items: flex-start;
-            max-width: 100%; /* Bigger container */
-            gap: 12px;
-            animation: fadeIn 0.4s ease-out;
-            background: rgba(30, 41, 59, 0.9);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-        .announcement.own {
-            margin-left: auto;
-            flex-direction: row-reverse;
-        }
-        .avatar {
-            width: 48px; /* Slightly larger */
-            height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #60a5fa;
-            flex-shrink: 0;
-            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25);
-        }
-        .announcement-content {
-            background: transparent; /* No separate bg, part of card */
-            padding: 0;
-            max-width: calc(100% - 60px);
-            width: 100%;
-        }
-        .announcement.own .announcement-content {
-            color: white;
-        }
-        .name {
-            font-weight: 600;
-            color: #60a5fa;
-            margin-bottom: 4px;
-            font-size: 1rem;
-        }
-        .announcement.own .name {
-            color: white;
-            opacity: 0.9;
-        }
-        .text {
-            word-break: break-word;
-            line-height: 1.6;
-            white-space: pre-line; /* Preserve paragraphs */
-            margin-bottom: 12px;
-        }
-        .time {
-            font-size: 0.75rem;
-            color: #94a3b8;
-            opacity: 0.8;
-            display: block;
-        }
-        .announcement.own .time {
-            color: rgba(255,255,255,0.7);
-        }
-        .input-area {
-            display: none; /* Remove bottom input */
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Scrollbar styling */
-        .announcements-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        .announcements-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .announcements-container::-webkit-scrollbar-thumb {
-            background: rgba(96, 165, 250, 0.4);
-            border-radius: 3px;
-        }
-        /* Media Rendering in Announcements */
-        .media-content {
-            display: flex;
-            overflow-x: auto;
-            gap: 10px;
-            margin-bottom: 12px;
-            scroll-snap-type: x mandatory;
-            max-width: 100%;
-            padding-bottom: 10px; /* For scrollbar */
-        }
-        .media-item {
-            flex: 0 0 auto;
-            width: 80%; /* Responsive */
-            max-height: 400px;
-            scroll-snap-align: center;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .media-item img, .media-item video {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-        /* Modal for New Announcement */
-        #new-ann-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background: #1e293b;
-            border-radius: 20px;
-            padding: 24px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .modal-header h2 {
-            font-size: 1.4rem;
-            color: #60a5fa;
-        }
-        .close-modal {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        #ann-text {
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.08);
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            resize: vertical;
-            min-height: 120px;
-        }
-        #ann-text:focus {
-            background: rgba(255,255,255,0.14);
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
-        }
-        #ann-text::placeholder {
-            color: #94a3b8;
-        }
-        .file-add {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        #add-file-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: white;
-            border: none;
-            font-size: 1.4rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-       .preview-container {
-    display: flex;
-    overflow-x: auto;
-    gap: 12px;               /* Slightly more breathing room */
-    min-height: 160px;       /* Fixed minimum height */
-    padding: 12px 0;
-    scroll-snap-type: x mandatory;
-    align-items: center;     /* NEW: vertical center alignment */
-}
+ <style>
+    :root {
+      --bg-deep:       #07090f;
+      --bg-surface:    #0d1117;
+      --bg-card:       #111827;
+      --bg-card-hover: #161f2e;
+      --border:        rgba(255,255,255,0.07);
+      --border-accent: rgba(212,175,55,0.35);
+      --gold:          #d4af37;
+      --gold-light:    #f0d060;
+      --gold-dim:      rgba(212,175,55,0.18);
+      --text-primary:  #f0ece4;
+      --text-secondary:#94a3b8;
+      --text-muted:    #4a5568;
+      --blue:          #3b82f6;
+      --red:           #ef4444;
+      --radius-card:   16px;
+      --radius-sm:     8px;
+      --font-display:  'Playfair Display', Georgia, serif;
+      --font-body:     'DM Sans', system-ui, sans-serif;
+      --header-h:      68px;
+    }
 
-.preview-item {
-    position: relative;
-    flex: 0 0 150px;
-    width: 150px;
-    height: 150px;           /* Fixed square size */
-    border-radius: 12px;
-    overflow: hidden;
-    background: rgba(0,0,0,0.25);
-    scroll-snap-align: center;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-}
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-/* Force media to fill the square box (cropped if needed) */
-.preview-item img,
-.preview-item video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;       /* NEW: crops to fill square, no distortion */
-    object-position: center;
-    display: block;
-}
-        .remove-preview {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #send-ann-btn {
-            align-self: flex-end;
-            padding: 12px 24px;
-            border-radius: 24px;
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: white;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        #send-ann-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-        }
-        .msg-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .announcement.own:hover .msg-actions {
-            opacity: 1;
-        }
-        .action-btn {
-            font-size: 0.75rem;
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.6);
-            cursor: pointer;
-            width: auto;
-            height: auto; /* Reset global button styles */
-            padding: 2px 5px;
-        }
-        .action-btn:hover {
-            color: white;
-            transform: none;
-            box-shadow: none; /* Reset global hover */
-        }
-        .delete-btn:hover {
-            color: #f87171;
-        }
-        /* Toast Notifications Container */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .toast {
-            background: #1e293b;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border-left: 4px solid #3b82f6;
-            animation: slideDown 0.3s ease forwards;
-            min-width: 250px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .toast.error {
-            border-left-color: #ef4444;
-        }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Inline Edit Field */
-        .edit-input {
-            width: 100%;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid #60a5fa;
-            color: white;
-            border-radius: 8px;
-            padding: 8px;
-            font-family: inherit;
-            outline: none;
-            margin-bottom: 5px;
-            resize: vertical;
-            min-height: 80px;
-        }
-        .edit-controls {
-            display: flex;
-            gap: 5px;
-        }
+    html, body {
+      height: 100%;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      overflow: hidden;
+    }
 
-        .text {
-    margin-top: 12px;           /* breathing room after media */
-    font-size: 0.98rem;
-    line-height: 1.65;
-}
+    /* ── Noise texture overlay ─────────────────────────────────────── */
+    body::before {
+      content:'';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
 
-/* Loading spinner inside Send button */
-.loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-top: 3px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-}
+    /* ── Header ────────────────────────────────────────────────────── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--header-h);
+      background: rgba(7,9,15,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 20px;
+    }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+    .header-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+    .header-back:hover { color: var(--text-primary); }
+    .header-back i { font-size: 0.85rem; }
 
-/* ==============================================
-   RESPONSIVE ADJUSTMENTS for announce.html
-   Mobile-first - Small phones → Tablets
-   ============================================== */
+    .header-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+    }
 
-/* Very small phones (portrait) - iPhone SE, Galaxy small, etc. (~320–390px) */
-@media (max-width: 390px) {
-  body {
-    font-size: 0.94rem;
-  }
+    .header-brand {
+      flex: 1;
+    }
+    .header-brand h1 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--text-primary);
+    }
+    .header-brand .brand-sub {
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.85;
+      margin-top: 1px;
+    }
 
-  header {
-    padding: 10px 14px;
-  }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
 
-  h1 {
-    font-size: 1.35rem;
-  }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.25);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #f87171;
+    }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.4; transform:scale(0.7); }
+    }
 
-  .header-content {
-    gap: 10px;
-  }
+    .btn-new-ann {
+      display: none; /* hidden until admin check */
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: 999px;
+      background: var(--gold);
+      color: #07090f;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+    .btn-new-ann:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(212,175,55,0.35);
+    }
 
-  .announcements-container {
-    padding: 12px 14px;
-    gap: 1.2rem;
-  }
+    /* ── Layout ─────────────────────────────────────────────────────── */
+    .page-layout {
+      display: flex;
+      height: calc(100vh - var(--header-h));
+      overflow: hidden;
+    }
 
-  .announcement {
-    padding: 14px;
-    border-radius: 14px;
-    gap: 10px;
-  }
+    /* ── Sidebar ─────────────────────────────────────────────────────── */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      background: var(--bg-surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-  .avatar {
-    width: 40px;
-    height: 40px;
-  }
+    .sidebar-label {
+      padding: 20px 20px 12px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
 
-  .announcement-content {
-    max-width: calc(100% - 52px);
-  }
+    .sidebar-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 12px 16px;
+    }
 
-  .name {
-    font-size: 0.95rem;
-  }
+    .sidebar-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-left: 2px solid transparent;
+      margin-bottom: 2px;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.04); }
+    .sidebar-item.active {
+      background: var(--gold-dim);
+      border-left-color: var(--gold);
+    }
 
-  .text {
-    font-size: 0.95rem;
-    line-height: 1.6;
-  }
+    .si-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1.5px solid var(--border);
+    }
 
-  .time {
-    font-size: 0.7rem;
-  }
+    .si-info { flex: 1; min-width: 0; }
+    .si-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .si-preview {
+      font-size: 0.77rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .si-time {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
 
-  .media-content {
-    gap: 8px;
-    padding-bottom: 8px;
-  }
+    .sidebar-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
 
-  .media-item {
-    width: 85%;           /* Take more width on tiny screens */
-    max-height: 280px;
-  }
+    /* ── Main feed ──────────────────────────────────────────────────── */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 24px 60px;
+      scroll-behavior: smooth;
+    }
 
-  /* Modal adjustments */
-  .modal-content {
-    padding: 20px;
-    width: 94%;
-  }
+    .main-content::-webkit-scrollbar { width: 5px; }
+    .main-content::-webkit-scrollbar-track { background: transparent; }
+    .main-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius:3px; }
 
-  .modal-header h2 {
-    font-size: 1.3rem;
-  }
+    .feed-header {
+      max-width: 740px;
+      margin: 0 auto 28px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .feed-header-left h2 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.15;
+    }
+    .feed-header-left p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: 0.03em;
+    }
+    .feed-count {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
 
-  #ann-text {
-    font-size: 0.95rem;
-    min-height: 110px;
-    padding: 12px;
-  }
+    /* ── Announcement card ──────────────────────────────────────────── */
+    .ann-card {
+      max-width: 740px;
+      margin: 0 auto 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      transition: border-color 0.2s, background 0.2s;
+      animation: card-in 0.4s ease-out both;
+      position: relative;
+    }
+    .ann-card:hover {
+      border-color: rgba(212,175,55,0.2);
+      background: var(--bg-card-hover);
+    }
 
-  .preview-container {
-    min-height: 140px;
-  }
+    @keyframes card-in {
+      from { opacity:0; transform: translateY(16px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
 
-  .preview-item {
-    flex: 0 0 130px;
-    width: 130px;
-    height: 130px;
-  }
+    .ann-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 20px 14px;
+    }
 
-  #send-ann-btn {
-    padding: 10px 20px;
-    font-size: 0.95rem;
-  }
+    .ann-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border-accent);
+      flex-shrink: 0;
+    }
 
-  .action-btn {
-    font-size: 0.7rem;
-  }
-}
+    .ann-author-block { flex: 1; }
+    .ann-author-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--gold);
+      letter-spacing: 0.01em;
+    }
+    .ann-time {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      letter-spacing: 0.02em;
+    }
 
-/* Small phones & typical mobile (up to ~480–520px) */
-@media (max-width: 520px) {
-  .announcements-container {
-    padding: 16px 14px;
-  }
+    .ann-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--gold-dim);
+      color: var(--gold);
+      border: 1px solid var(--border-accent);
+    }
 
-  .announcement {
-    max-width: 100%;
-  }
+    /* Gold left accent on card */
+    .ann-card::before {
+      content:'';
+      position: absolute;
+      left: 0;
+      top: 20px;
+      bottom: 20px;
+      width: 3px;
+      background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
+      border-radius: 0 2px 2px 0;
+      opacity: 0.6;
+    }
 
-  .media-item {
-    width: 82%;
-    max-height: 320px;
-  }
+    /* Media */
+    .ann-media {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 0 20px 14px;
+      scroll-snap-type: x mandatory;
+    }
+    .ann-media::-webkit-scrollbar { height: 4px; }
+    .ann-media::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.3); border-radius:2px; }
 
-  .preview-item {
-    flex: 0 0 140px;
-    width: 140px;
-    height: 140px;
-  }
+    .ann-media-item {
+      flex: 0 0 auto;
+      width: 82%;
+      max-height: 380px;
+      scroll-snap-align: start;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .ann-media-item img,
+    .ann-media-item video,
+    .ann-media-item iframe {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
 
-  .file-add {
-    font-size: 0.9rem;
-  }
+    .ann-body {
+      padding: 0 20px 16px;
+      font-size: 0.96rem;
+      line-height: 1.72;
+      color: var(--text-primary);
+      white-space: pre-line;
+      word-break: break-word;
+    }
 
-  .close-modal {
-    font-size: 1.4rem;
-  }
-}
+    .ann-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+    }
 
-/* General mobile / small tablets (up to ~767px) */
-@media (max-width: 767px) {
-  header .header-content {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 12px;
-  }
+    .ann-views {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .ann-views-count {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
 
-  .announcements-container {
-    padding: 18px;
-  }
+    .ann-actions {
+      display: flex;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .ann-card:hover .ann-actions { opacity: 1; }
 
-  .announcement {
-    padding: 16px;
-    border-radius: 16px;
-  }
+    .ann-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid;
+      font-family: var(--font-body);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ann-btn-edit {
+      color: var(--gold);
+      border-color: rgba(212,175,55,0.3);
+      background: transparent;
+    }
+    .ann-btn-edit:hover { background: var(--gold-dim); }
+    .ann-btn-delete {
+      color: #f87171;
+      border-color: rgba(239,68,68,0.25);
+      background: transparent;
+    }
+    .ann-btn-delete:hover { background: rgba(239,68,68,0.12); }
 
-  .avatar {
-    width: 44px;
-    height: 44px;
-  }
+    /* Edit textarea */
+    .edit-textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-accent);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      margin-bottom: 8px;
+    }
+    .edit-row {
+      display: flex;
+      gap: 8px;
+      padding: 0 20px 16px;
+    }
+    .btn-save {
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: none;
+      background: var(--gold);
+      color: #07090f;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.15s;
+    }
+    .btn-save:hover { background: var(--gold-light); }
+    .btn-cancel {
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
 
-  .text {
-    margin-top: 10px;
-    line-height: 1.65;
-  }
+    /* ── Empty / loading states ─────────────────────────────────────── */
+    .state-empty {
+      max-width: 740px;
+      margin: 60px auto;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .state-empty-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 1px solid var(--border-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 1.8rem;
+      color: var(--gold);
+    }
+    .state-empty h3 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+    .state-empty p { font-size: 0.875rem; color: var(--text-muted); }
 
-  .media-content {
-    gap: 10px;
-  }
+    .skeleton-card {
+      max-width: 740px;
+      margin: 0 auto 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 20px;
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%,100%{opacity:0.7} 50%{opacity:0.3} }
+    .skel-row {
+      height: 12px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      margin-bottom: 10px;
+    }
 
-  .media-item {
-    width: 78%;              /* Still scrollable carousel */
-    max-height: 380px;
-  }
+    /* ── Modal ──────────────────────────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 0;
+    }
+    @media (min-width: 600px) {
+      .modal-overlay { align-items: center; padding: 0; }
+    }
 
-  .media-item iframe {
-    height: 280px;           /* Smaller video previews on mobile */
-  }
+    .modal-sheet {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 640px;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 28px 24px 32px;
+      animation: sheet-up 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    @media (min-width: 600px) {
+      .modal-sheet { border-radius: 20px; animation: fade-scale 0.25s ease; }
+    }
+    @keyframes sheet-up { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes fade-scale { from{transform:scale(0.96);opacity:0} to{transform:scale(1);opacity:1} }
 
-  /* Modal - make it feel more spacious on mobile */
-  .modal-content {
-    width: 92%;
-    max-width: 520px;
-    padding: 24px;
-  }
+    .modal-drag {
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      margin: 0 auto 24px;
+    }
+    @media (min-width: 600px) { .modal-drag { display: none; } }
 
-  #ann-text {
-    min-height: 130px;
-  }
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+    }
+    .modal-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+    }
 
-  .preview-container {
-    min-height: 160px;
-  }
+    .modal-textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 0.97rem;
+      line-height: 1.7;
+      padding: 16px;
+      resize: vertical;
+      min-height: 140px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal-textarea:focus { border-color: var(--border-accent); }
+    .modal-textarea::placeholder { color: var(--text-muted); }
 
-  .preview-item {
-    flex: 0 0 150px;
-    width: 150px;
-    height: 150px;
-  }
+    /* Schedule section */
+    .schedule-section {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+    }
+    .schedule-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+    .schedule-toggle-label input[type=checkbox] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+    .schedule-datetime {
+      display: none;
+      margin-top: 12px;
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-accent);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      color-scheme: dark;
+    }
+    .schedule-preview {
+      font-size: 0.8rem;
+      color: var(--gold);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-  /* Better touch targets */
-  button,
-  .action-btn,
-  .remove-preview {
-    min-width: 44px;
-    min-height: 44px;
-  }
-}
+    /* Media add */
+    .media-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .btn-add-media {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-add-media:hover {
+      border-color: var(--border-accent);
+      color: var(--gold);
+    }
 
-/* Tablets & small landscape phones (768px–1024px) */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .announcements-container {
-    padding: 24px;
-    max-width: 760px;
-  }
+    /* Preview strip */
+    .preview-strip {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      margin-top: 14px;
+      padding-bottom: 6px;
+      min-height: 0;
+    }
+    .preview-thumb {
+      position: relative;
+      flex: 0 0 100px;
+      width: 100px;
+      height: 100px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-deep);
+    }
+    .preview-thumb img,
+    .preview-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .preview-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      font-size: 0.65rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-  .announcement {
-    padding: 20px;
-  }
+    /* Modal footer */
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
 
-  .media-item {
-    width: 70%;
-    max-height: 420px;
-  }
+    .btn-post {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 26px;
+      border-radius: 999px;
+      background: var(--gold);
+      color: #07090f;
+      border: none;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 0.875rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+    .btn-post:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(212,175,55,0.35);
+    }
+    .btn-post:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-  .modal-content {
-    width: 80%;
-    max-width: 680px;
-  }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.25);
+      border-top-color: #07090f;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
 
-  .preview-item {
-    flex: 0 0 180px;
-    width: 180px;
-    height: 180px;
-  }
-}
+    /* ── Delete/confirm overlay ────────────────────────────────────── */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: card-in 0.2s ease;
+    }
+    .confirm-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 320px;
+      width: 90%;
+      text-align: center;
+    }
+    .confirm-icon {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 1.3rem;
+      color: #f87171;
+    }
+    .confirm-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .confirm-msg { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 22px; }
+    .confirm-btns { display: flex; gap: 10px; }
+    .btn-confirm-cancel {
+      flex: 1; padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-confirm-delete {
+      flex: 1; padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #ef4444;
+      color: white;
+      font-family: var(--font-body);
+      font-weight: 700;
+      cursor: pointer;
+    }
 
-/* Optional: Prevent iOS zoom on input focus */
-@media (max-width: 767px) {
-  input,
-  textarea,
-  button {
-    font-size: 16px; /* iOS minimum to prevent zoom */
-  }
-}
+    /* ── Toast ──────────────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 400;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      padding: 11px 20px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 0.83rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      animation: toast-in 0.3s ease both;
+      white-space: nowrap;
+    }
+    .toast.success { border-color: rgba(34,197,94,0.3); }
+    .toast.success i { color: #4ade80; }
+    .toast.error { border-color: rgba(239,68,68,0.3); }
+    .toast.error i { color: #f87171; }
+    @keyframes toast-in { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
 
-.view-badge {
-  background: #3b82f6;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: bold;
-  min-width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.8);
-}
-.announcement {
-    margin-bottom: 28px;      /* extra space below each card so the detached badge doesn't overlap the next one */
-    position: relative;       /* important for absolute children */
-}
-.view-badge {
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
-    transform: translateY(4px);   /* slight extra drop */
-}
-      /* Bottom spacer bar */
-.bottom-bar {
-    height: 30px;
-    flex-shrink: 0;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(96, 165, 250, 0.15);
-}
+    /* ── Sidebar scrollbar ─────────────────────────────────── */
+    .sidebar-list::-webkit-scrollbar { width: 4px; }
+    .sidebar-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius:2px; }
 
-      @keyframes shimmer {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-}
-
-
-
-    </style>
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { padding: 20px 16px 60px; }
+      .feed-header { margin-bottom: 20px; }
+      .feed-header-left h2 { font-size: 1.5rem; }
+      .ann-card::before { display: none; }
+      .header-brand .brand-sub { display: none; }
+    }
+    @media (max-width: 480px) {
+      .site-header { padding: 0 16px; }
+      .btn-new-ann span { display: none; }
+      .btn-new-ann { padding: 9px 13px; }
+      .live-badge span { display: none; }
+    }
+  </style>
 </head>
 <body>
-    <div id="toast-container"></div>
-<header>
-    <div class="header-content">
-        <!-- Back Button (left side) -->
-        <a href="index.html" style="
-            color: #60a5fa; 
-            font-size: 1.6rem; 
-            text-decoration: none; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-        ">
-            <i class="fas fa-arrow-left"></i>
-            <span style="font-size: 1.1rem; font-weight: 500;">Home</span>
-        </a>
 
+<div id="toast-container"></div>
 
-        <!-- Title (centered) -->
-        <h1 style="margin: 0; flex: 1; text-align: center;">Announcements</h1>
-
-        <!-- Live indicator + New Announcement button (right side) -->
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <div style="font-size:0.9rem; color:#94a3b8;">
-                <i class="fas fa-users"></i> Live
-            </div>
-            <button id="new-ann-btn" style="
-                background: none; 
-                border: none; 
-                color: #60a5fa; 
-                font-size: 1.5rem; 
-                cursor: pointer;
-            ">
-                <i class="fas fa-plus-circle"></i>
-            </button>
-        </div>
+<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <a href="index.html" class="header-back">
+    <i class="fas fa-arrow-left"></i>
+    <span>Home</span>
+  </a>
+  <div class="header-divider"></div>
+  <div class="header-brand">
+    <h1>Announcements</h1>
+    <div class="brand-sub">Riverside Connect</div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      <span>Live</span>
     </div>
+    <button class="btn-new-ann" id="btnNewAnn">
+      <i class="fas fa-plus"></i>
+      <span>Post</span>
+    </button>
+  </div>
 </header>
-    <div class="announcements-container" id="announcements"></div>
-    
-    <!-- Modal for New Announcement -->
-    <div id="new-ann-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>New Announcement</h2>
-                <button class="close-modal"><i class="fas fa-times"></i></button>
-            </div>
-            <textarea id="ann-text" placeholder="Type your announcement... (supports paragraphs)"></textarea>
-            <div class="file-add">
-                <button id="add-file-btn"><i class="fas fa-plus"></i></button>
-                <span style="color: #94a3b8;">Add images or videos</span>
-            </div>
-            <div class="preview-container" id="preview-container"></div>
-            <button id="send-ann-btn">Post Announcement</button>
-        </div>
+
+<!-- ── Layout ──────────────────────────────────────────────────────────── -->
+<div class="page-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-label">Recent Posts</div>
+    <div class="sidebar-list" id="sidebarList">
+      <div class="skeleton-card" style="padding:14px;">
+        <div class="skel-row" style="width:40%;height:10px;"></div>
+        <div class="skel-row" style="width:80%;margin-top:8px;"></div>
+      </div>
+      <div class="skeleton-card" style="padding:14px;animation-delay:0.2s;">
+        <div class="skel-row" style="width:35%;height:10px;"></div>
+        <div class="skel-row" style="width:70%;margin-top:8px;"></div>
+      </div>
     </div>
-    
-    <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none;">
+  </aside>
 
-     <div class="bottom-bar"></div>
-    <div id="announcements"></div>
-    
-    <script>
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbz7Bav_E5Q5lfUMR5smrFz9EwMFiy_6QNx9gVqDBDcwyEOqrWMyfLQ23SgVw6IxeU-l/exec';
-         let userName = localStorage.getItem('userName');
+  <!-- Main feed -->
+  <main class="main-content" id="mainContent">
+    <div class="feed-header">
+      <div class="feed-header-left">
+        <h2>Board</h2>
+        <p>Official updates from the Riverside team</p>
+      </div>
+      <div class="feed-count" id="feedCount"></div>
+    </div>
 
-        if (!userName) {
-            window.location.href = 'login.html';
-        }
-        const announcementTexts = {};
-        const announcementsDiv = document.getElementById('announcements');
-        const newAnnBtn = document.getElementById('new-ann-btn');
-        const newAnnModal = document.getElementById('new-ann-modal');
-        const closeModal = document.querySelector('.close-modal');
-        const annText = document.getElementById('ann-text');
-        const addFileBtn = document.getElementById('add-file-btn');
-        const fileInput = document.getElementById('file-input');
-        const previewContainer = document.getElementById('preview-container');
-        const sendAnnBtn = document.getElementById('send-ann-btn');
-        
-        let lastAnnouncementCount = 0;
-        let pollingInterval = null;
-        let selectedFiles = []; // Array for multiple files
-        
-        // Open modal
-        newAnnBtn.addEventListener('click', () => {
-            newAnnModal.style.display = 'flex';
-            annText.focus();
-        });
-        
-        // Close modal
-        closeModal.addEventListener('click', () => {
-            resetModal();
-        });
-        
-        // Click outside to close
-        newAnnModal.addEventListener('click', (e) => {
-            if (e.target === newAnnModal) resetModal();
-        });
-        
-        // Trigger file picker
-        addFileBtn.addEventListener('click', () => fileInput.click());
-        
-        // Handle multiple file selection and previews
-        fileInput.addEventListener('change', function() {
-            const files = Array.from(this.files);
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64 = e.target.result.split(',')[1];
-                    selectedFiles.push({ base64, type: file.type, name: file.name });
-                    addPreview(e.target.result, file.type, selectedFiles.length - 1);
-                };
-                reader.readAsDataURL(file);
-            });
-            this.value = ''; // Allow re-selecting same files
-        });
-        
-        // Add preview item
-        function addPreview(dataUrl, type, index) {
-            const previewItem = document.createElement('div');
-            previewItem.className = 'preview-item';
-            const media = type.startsWith('video') ? 
-                `<video src="${dataUrl}" muted></video>` : 
-                `<img src="${dataUrl}">`;
-            previewItem.innerHTML = `
-                ${media}
-                <button class="remove-preview" data-index="${index}"><i class="fas fa-times"></i></button>
-            `;
-            previewContainer.appendChild(previewItem);
-            
-            // Remove preview
-            previewItem.querySelector('.remove-preview').addEventListener('click', (e) => {
-                const idx = parseInt(e.target.dataset.index);
-                selectedFiles.splice(idx, 1);
-                previewContainer.removeChild(previewItem);
-                // Update indices
-                Array.from(previewContainer.children).forEach((child, i) => {
-                    child.querySelector('.remove-preview').dataset.index = i;
-                });
-            });
-        }
-        
-        // Reset modal
-        function resetModal() {
-            newAnnModal.style.display = 'none';
-            annText.value = '';
-            previewContainer.innerHTML = '';
-            selectedFiles = [];
-        }
-        
-       function scrollToTop(force = false) {
-    const isNearTop = announcementsDiv.scrollTop < 150;
-    if (force || isNearTop) {
-        announcementsDiv.scrollTop = 0;
-    }
-}
-        
-        function extractFileId(url) {
-            if (!url) return '';
-            const match = url.match(/[-\w]{25,}/);
-            return match ? match[0] : '';
-        }
-        
-        // Use lh3 for rendering Drive images/videos
-        function getLh3Link(url) {
-            const id = extractFileId(url);
-            return id ? `https://lh3.googleusercontent.com/d/${id}` : '';
-        }
-        
-async function loadAnnouncements(silent = true) {
+    <div id="announcementsFeed">
+      <!-- Skeleton loaders -->
+      <div class="skeleton-card"><div class="skel-row" style="width:30%"></div><div class="skel-row" style="width:90%"></div><div class="skel-row" style="width:65%"></div></div>
+      <div class="skeleton-card" style="animation-delay:0.15s"><div class="skel-row" style="width:25%"></div><div class="skel-row" style="width:85%"></div><div class="skel-row" style="width:50%"></div></div>
+      <div class="skeleton-card" style="animation-delay:0.3s"><div class="skel-row" style="width:35%"></div><div class="skel-row" style="width:75%"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- ── New Announcement Modal ─────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-sheet" id="modalSheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title">New Announcement</div>
+    <div class="modal-subtitle">This will be visible to all members immediately.</div>
+
+    <textarea class="modal-textarea" id="annText" placeholder="Write your announcement here…&#10;&#10;Use paragraphs for clarity. Keep it concise and informative."></textarea>
+
+    <!-- Media -->
+    <div class="media-row">
+      <button class="btn-add-media" id="btnAddMedia">
+        <i class="fas fa-image"></i>
+        Attach media
+      </button>
+      <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none;">
+    </div>
+    <div class="preview-strip" id="previewStrip"></div>
+
+    <!-- Schedule -->
+    <div class="schedule-section">
+      <label class="schedule-toggle-label">
+        <input type="checkbox" id="scheduleToggle">
+        Schedule for later
+      </label>
+      <input type="datetime-local" id="scheduleInput" class="schedule-datetime">
+      <div class="schedule-preview" id="schedulePreview" style="display:none;">
+        <i class="fas fa-calendar-check"></i>
+        <span id="scheduleText"></span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <span class="modal-hint"><kbd>Ctrl + Enter</kbd> to post</span>
+      <button class="btn-post" id="btnPost">
+        <i class="fas fa-paper-plane"></i>
+        Post Announcement
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Config ─────────────────────────────────────────────────────── */
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwQ8jCHWhYO-98TlTKJE5Mz-mjisohtTVZQhYpDY2gREswEIfAzcA0qYueR0KE0b8Br/exec';
+  const userName = localStorage.getItem('userName');
+  if (!userName) window.location.href = 'login.html';
+
+  /* ── State ───────────────────────────────────────────────────────── */
+  let selectedFiles = [];
+  let lastCount = 0;
+  let pollingTimer = null;
+  let isAdmin = false;
+  const announcementTexts = {};
+
+  /* ── DOM refs ────────────────────────────────────────────────────── */
+  const btnNewAnn     = document.getElementById('btnNewAnn');
+  const modalOverlay  = document.getElementById('modalOverlay');
+  const annText       = document.getElementById('annText');
+  const fileInput     = document.getElementById('fileInput');
+  const btnAddMedia   = document.getElementById('btnAddMedia');
+  const previewStrip  = document.getElementById('previewStrip');
+  const btnPost       = document.getElementById('btnPost');
+  const scheduleToggle= document.getElementById('scheduleToggle');
+  const scheduleInput = document.getElementById('scheduleInput');
+  const schedulePreview=document.getElementById('schedulePreview');
+  const scheduleText  = document.getElementById('scheduleText');
+  const feed          = document.getElementById('announcementsFeed');
+  const sidebarList   = document.getElementById('sidebarList');
+  const feedCount     = document.getElementById('feedCount');
+
+  /* ── Admin check ─────────────────────────────────────────────────── */
+  async function checkAdmin() {
     try {
-        // Show skeleton loaders on first load only
-        if (!silent && announcementsDiv.innerHTML === '') {
-            announcementsDiv.innerHTML = [1,2,3].map(() => `
-                <div class="announcement" style="animation:shimmer 1.5s ease-in-out infinite;">
-                    <div style="width:48px;height:48px;border-radius:50%;background:rgba(96,165,250,0.12);flex-shrink:0;"></div>
-                    <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
-                        <div style="height:12px;width:28%;border-radius:6px;background:rgba(96,165,250,0.12);"></div>
-                        <div style="height:10px;width:80%;border-radius:6px;background:rgba(148,163,184,0.1);"></div>
-                        <div style="height:10px;width:55%;border-radius:6px;background:rgba(148,163,184,0.1);"></div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        const response = await fetch(`${scriptUrl}?operation=getData`);
-        const data = await response.json();
-        const viewsResponse = await fetch(`${scriptUrl}?operation=getAnnouncementViewCounts`);
-        const viewsData = await viewsResponse.json();
-        const viewCounts = (viewsData.viewCounts || []).reverse();
-
-        if (silent && data.announcements?.length === lastAnnouncementCount) return;
-
-        lastAnnouncementCount = data.announcements?.length || 0;
-
-        // IMPORTANT: Clear all existing cards before rendering new ones
-        announcementsDiv.innerHTML = '';
-
-        const wasAtTop = announcementsDiv.scrollTop < 150;
-
-        // Show empty state if no announcements
-        if (!data.announcements || data.announcements.length === 0) {
-            announcementsDiv.innerHTML = `
-                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                            padding:60px 24px;gap:16px;text-align:center;margin-top:40px;">
-                    <div style="width:64px;height:64px;border-radius:50%;background:rgba(96,165,250,0.1);
-                                display:flex;align-items:center;justify-content:center;">
-                        <i class="fas fa-bullhorn" style="font-size:24px;color:#60a5fa;opacity:0.6;"></i>
-                    </div>
-                    <p style="color:#e2e8f0;font-size:1rem;font-weight:600;margin:0;">No announcements yet</p>
-                    <p style="color:#94a3b8;font-size:0.875rem;margin:0;">Be the first to post something!</p>
-                </div>
-            `;
-            return;
-        }
-
-        // Render announcements (your existing code, unchanged)
-        data.announcements?.forEach((c, i) => {
-            const isOwn = c.name === userName;
-            const viewCount = viewCounts[i] || 0;
-            const fileLinks = c.fileLink ? c.fileLink.split(',') : [];
-            const fileTypes = c.fileType ? c.fileType.split(',') : [];
-            let mediaHtml = '';
-            if (fileLinks.length > 0) {
-                mediaHtml = '<div class="media-content">';
-                fileLinks.forEach((link, fi) => {  // renamed index to avoid conflict
-                    const mediaLink = getLh3Link(link);
-                    const type = fileTypes[fi] || '';
-                    const isVideo = type.includes('video') || link.match(/\.(mp4|mov|webm)$/i);
-
-                    const mediaItem = isVideo ? 
-                        `<iframe src="${link}" 
-                                 width="100%" 
-                                 height="400" 
-                                 allow="autoplay" 
-                                 frameborder="0" 
-                                 allowfullscreen></iframe>` :
-                        `<img src="${getLh3Link(link)}" loading="lazy">`;
-                    mediaHtml += `<div class="media-item">${mediaItem}</div>`;
-                });
-                mediaHtml += '</div>';
-            }
-            const ann = document.createElement('div');
-            ann.className = `announcement ${isOwn ? 'own' : ''}`;
-           announcementTexts[c.timestamp] = c.comment; // store safely outside HTML
-
-const actionsHtml = isOwn ? `
-    <div class="msg-actions">
-        <button class="action-btn edit-btn" onclick="startEdit('${c.timestamp}')">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="action-btn delete-btn" onclick="deleteMsg('${c.timestamp}')">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-            ` : '';
-
-            ann.innerHTML = `
-                <img src="https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}" class="avatar">
-                
-                <div style="position: relative; width: 100%;">
-                    <div class="announcement-content">
-                        <div class="name">${c.name}</div>
-                        ${mediaHtml}
-                        <div class="text" id="text-${c.timestamp}">${c.comment}</div>
-                    </div>
-
-                    <span class="time" style="
-                        display: block;
-                        margin-top: 12px;
-                        font-size: 0.75rem;
-                        color: #94a3b8;
-                        opacity: 0.8;
-                    ">
-                        ${formatSmartTime(c.timestamp)}
-                    </span>
-
-                    <div style="
-                        position: absolute;
-                        bottom: -20px;
-                        right: 16px;
-                        display: flex;
-                        align-items: center;
-                        gap: 12px;
-                        z-index: 2;
-                    ">
-                        <span class="view-badge">${viewCount}</span>
-                        ${actionsHtml}
-                    </div>
-                </div>
-            `;
-            announcementsDiv.appendChild(ann);
-        });
-
-        if (!silent || wasAtTop) scrollToTop(true);
-    } catch (err) {
-        console.error('Failed to load announcements:', err);
-    }
-}
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
-        
-        async function deleteMsg(timestamp) {
-            // Create a custom app-styled overlay
-            const overlay = document.createElement('div');
-            overlay.style = "position:fixed; inset:0; background:rgba(15, 23, 42, 0.8); backdrop-filter:blur(8px); z-index:2000; display:flex; align-items:center; justify-content:center; animation: fadeIn 0.2s ease;";
-            overlay.innerHTML = `
-                <div style="background:#1e293b; padding:24px; border-radius:16px; border:1px solid rgba(96, 165, 250, 0.2); text-align:center; max-width:300px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-                    <p style="margin-bottom:8px; font-weight:600; color:#f87171; font-size:1.1rem;">Delete Announcement?</p>
-                    <p style="margin-bottom:24px; color:#94a3b8; font-size:0.9rem;">This action cannot be undone.</p>
-                    <div style="display:flex; gap:10px;">
-                        <button id="cancelDel" style="flex:1; padding:10px; border-radius:8px; border:none; background:#334155; color:white; cursor:pointer; font-weight:600;">Cancel</button>
-                        <button id="confirmDel" style="flex:1; padding:10px; border-radius:8px; border:none; background:#ef4444; color:white; cursor:pointer; font-weight:600;">Delete</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            // Button Logic
-            overlay.querySelector('#cancelDel').onclick = () => overlay.remove();
-            overlay.querySelector('#confirmDel').onclick = async () => {
-                overlay.remove(); // Close modal immediately for smooth UX
-                try {
-                    const res = await fetch(scriptUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({ operation: 'deleteAnnouncement', name: userName, timestamp: timestamp })
-                    });
-                    const result = await res.json();
-                    if (result.status === 'success') {
-                        showToast("Announcement deleted");
-                        loadAnnouncements(false);
-                    } else {
-                        showToast(result.message || "Delete failed", "error");
-                    }
-                } catch (err) {
-                    showToast("Connection error", "error");
-                }
-            };
-        }
-        
-       function startEdit(timestamp) {
-    const originalText = announcementTexts[timestamp] || '';
-    const textElement = document.getElementById(`text-${timestamp}`);
-    if (!textElement) return;
-
-    // Safely set value after creating the element, not via innerHTML
-    const textarea = document.createElement('textarea');
-    textarea.className = 'edit-input';
-    textarea.id = `edit-field-${timestamp}`;
-    textarea.value = originalText;
-
-    const controls = document.createElement('div');
-    controls.className = 'edit-controls';
-    controls.innerHTML = `
-        <button class="action-btn" style="background:#22c55e;color:white;border-radius:4px;padding:4px 8px;" onclick="saveEdit('${timestamp}')">Save</button>
-        <button class="action-btn" style="background:#ef4444;color:white;border-radius:4px;padding:4px 8px;" onclick="loadAnnouncements(false)">Cancel</button>
-    `;
-
-    textElement.innerHTML = '';
-    textElement.appendChild(textarea);
-    textElement.appendChild(controls);
-
-    // Focus cursor at end
-    textarea.focus();
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-}
-        
-        async function saveEdit(timestamp) {
-            const newText = document.getElementById(`edit-field-${timestamp}`).value.trim();
-            if (!newText) return;
-            try {
-                const res = await fetch(scriptUrl, {
-                    method: 'POST',
-                   body: JSON.stringify({ operation: 'editAnnouncement', name: userName, timestamp: timestamp, newText: newText })
-                });
-                const result = await res.json();
-                if (result.status === 'success') {
-                    showToast("Announcement updated");
-                    loadAnnouncements(false);
-                } else {
-                    showToast(result.message || "Update failed", "error");
-                }
-            } catch (err) {
-                showToast("Connection error", "error");
-            }
-        }
-        
-       async function sendAnnouncement() {
-  const text = annText.value.trim();
-  if (!text && selectedFiles.length === 0) return;
-
-  // Disable button & show spinner
-  sendAnnBtn.disabled = true;
-  sendAnnBtn.innerHTML = '<span class="loading-spinner"></span> Posting...';
-
-  try {
-    const res = await fetch(scriptUrl, {
-      method: 'POST',
-      body: JSON.stringify({ 
-        operation: 'postAnnouncement', 
-        name: userName, 
-        comment: text, 
-        files: selectedFiles 
-      })
-    });
-    const result = await res.json();
-
-    if (result.status === 'success') {
-      resetModal();
-      await loadAnnouncements(false);
-      showToast("Announcement posted!", 'success');
-    } else {
-      showToast(result.message || 'Failed to post', 'error');
-    }
-  } catch (err) {
-    showToast('Network error', 'error');
-  } finally {
-    // Restore button
-    sendAnnBtn.disabled = false;
-    sendAnnBtn.innerHTML = 'Post Announcement';
+      const r = await fetch(`${scriptUrl}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
+      const d = await r.json();
+      if (d.status === 'success' && d.userStatus === 'approved' && d.isAdmin === true) {
+        isAdmin = true;
+        btnNewAnn.style.display = 'flex';
+      }
+    } catch(e) { /* silent */ }
   }
-}
-        
-        sendAnnBtn.addEventListener('click', sendAnnouncement);
-        
-        // Allow Enter to send (with Shift for new line)
-annText.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        // If user holds Ctrl (or Command on Mac) → send
-        if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            sendAnnouncement();
-        }
-        // Otherwise (plain Enter or Shift+Enter) → just normal new line
-        // We don't need to do anything — browser handles it automatically
-    }
-});
-        
-        loadAnnouncements(false);
-        function formatSmartTime(timestamp) {
-    const date = new Date(timestamp);
-    const now = new Date();
-    
-    const isToday = date.toDateString() === now.toDateString();
-    const isYesterday = date.toDateString() === new Date(now.setDate(now.getDate() - 1)).toDateString();
-    
-    let dayPart;
-    if (isToday) {
-        dayPart = "Today";
-    } else if (isYesterday) {
-        dayPart = "Yesterday";
-    } else {
-        dayPart = date.toLocaleDateString([], { 
-            weekday: 'short', 
-            month: 'short', 
-            day: 'numeric' 
-        }); // e.g. "Wed, Jan 15"
-    }
-    
-    const timePart = date.toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-    
-    return `${dayPart} • ${timePart}`;
-}
-        
-        function startPolling() {
-            if (pollingInterval) clearInterval(pollingInterval);
-            pollingInterval = setInterval(() => loadAnnouncements(true), 8000);
-        }
 
-        // When announcements page is loaded → mark all current announcements as seen
-async function markAnnSeen() {
-  try {
-    const response = await fetch(`${scriptUrl}?operation=getData`);
-    const data = await response.json();
-    const currentTotal = data.announcements?.length || 0;
-    await fetch(scriptUrl, {
-      method: 'POST',
-      body: JSON.stringify({ operation: 'markAnnouncementsSeen', name: userName, seenUpTo: currentTotal })
-    });
-    localStorage.setItem('lastSeenAnnCount', currentTotal); // Fallback
-  } catch (err) {
-    console.error("Failed to mark announcements as seen", err);
+  /* ── Helpers ─────────────────────────────────────────────────────── */
+  function extractFileId(url) {
+    if (!url) return '';
+    const m = url.match(/[-\w]{25,}/);
+    return m ? m[0] : '';
   }
-}
+  function getLh3(url) {
+    const id = extractFileId(url);
+    return id ? `https://lh3.googleusercontent.com/d/${id}` : '';
+  }
+  function formatTime(ts) {
+    const d = new Date(ts), now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const isYest  = d.toDateString() === new Date(now.setDate(now.getDate()-1)).toDateString();
+    const day = isToday ? 'Today' : isYest ? 'Yesterday' : d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+    return `${day} · ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+  }
+  function showToast(msg, type='success') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> <span>${msg}</span>`;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity 0.4s'; setTimeout(()=>el.remove(),400); }, 3200);
+  }
 
-// Run it on page load
-markAnnSeen();
-        
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                if (pollingInterval) clearInterval(pollingInterval);
-            } else {
-                loadAnnouncements(true);
-                startPolling();
-            }
-        });
-        
-        if (!document.hidden) startPolling();
-    </script>
+  /* ── Modal ───────────────────────────────────────────────────────── */
+  btnNewAnn.addEventListener('click', () => {
+    modalOverlay.style.display = 'flex';
+    annText.focus();
+  });
+
+  modalOverlay.addEventListener('click', e => {
+    if (e.target === modalOverlay) closeModal();
+  });
+
+  function closeModal() {
+    modalOverlay.style.display = 'none';
+    annText.value = '';
+    previewStrip.innerHTML = '';
+    selectedFiles = [];
+    scheduleToggle.checked = false;
+    scheduleInput.style.display = 'none';
+    scheduleInput.value = '';
+    schedulePreview.style.display = 'none';
+    scheduleText.textContent = '';
+  }
+
+  /* ── Media ───────────────────────────────────────────────────────── */
+  btnAddMedia.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', function() {
+    Array.from(this.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const b64 = e.target.result.split(',')[1];
+        selectedFiles.push({ base64: b64, type: file.type, name: file.name });
+        addThumb(e.target.result, file.type, selectedFiles.length - 1);
+      };
+      reader.readAsDataURL(file);
+    });
+    this.value = '';
+  });
+
+  function addThumb(dataUrl, type, idx) {
+    const thumb = document.createElement('div');
+    thumb.className = 'preview-thumb';
+    thumb.innerHTML = (type.startsWith('video')
+      ? `<video src="${dataUrl}" muted></video>`
+      : `<img src="${dataUrl}">`)
+      + `<button class="preview-remove" data-idx="${idx}"><i class="fas fa-times"></i></button>`;
+    thumb.querySelector('.preview-remove').addEventListener('click', e => {
+      const i = parseInt(e.currentTarget.dataset.idx);
+      selectedFiles.splice(i,1);
+      previewStrip.removeChild(thumb);
+      previewStrip.querySelectorAll('.preview-remove').forEach((b,j) => b.dataset.idx = j);
+    });
+    previewStrip.appendChild(thumb);
+  }
+
+  /* ── Schedule ────────────────────────────────────────────────────── */
+  scheduleToggle.addEventListener('change', () => {
+    if (scheduleToggle.checked) {
+      const now = new Date(Date.now() + 5*60*1000);
+      const pad = n => String(n).padStart(2,'0');
+      scheduleInput.min = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      scheduleInput.style.display = 'block';
+      scheduleInput.focus();
+    } else {
+      scheduleInput.style.display = 'none';
+      scheduleInput.value = '';
+      schedulePreview.style.display = 'none';
+    }
+  });
+  scheduleInput.addEventListener('change', () => {
+    if (!scheduleInput.value) { schedulePreview.style.display='none'; return; }
+    const d = new Date(scheduleInput.value);
+    scheduleText.textContent = `Will post: ${d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    schedulePreview.style.display = 'flex';
+  });
+
+  /* ── Ctrl+Enter to post ──────────────────────────────────────────── */
+  annText.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); postAnnouncement(); }
+  });
+
+  /* ── Post ────────────────────────────────────────────────────────── */
+  btnPost.addEventListener('click', postAnnouncement);
+
+  async function postAnnouncement() {
+    const text = annText.value.trim();
+    if (!text && selectedFiles.length === 0) return;
+
+    let scheduledTime = null;
+    if (scheduleToggle.checked) {
+      if (!scheduleInput.value) { showToast('Please pick a date and time','error'); return; }
+      const [dp,tp] = scheduleInput.value.split('T');
+      const [y,mo,d] = dp.split('-').map(Number);
+      const [h,mi] = tp.split(':').map(Number);
+      const picked = new Date(y,mo-1,d,h,mi);
+      if (isNaN(picked.getTime())) { showToast('Invalid date/time','error'); return; }
+      if (picked <= new Date()) { showToast('Scheduled time must be in the future','error'); return; }
+      scheduledTime = picked.toISOString();
+    }
+
+    btnPost.disabled = true;
+    btnPost.innerHTML = `<span class="spinner"></span> ${scheduledTime ? 'Scheduling…' : 'Posting…'}`;
+
+    try {
+      const res = await fetch(scriptUrl, {
+        method: 'POST',
+        body: JSON.stringify({ operation:'postAnnouncement', name:userName, comment:text, files:selectedFiles, scheduledTime })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        closeModal();
+        if (data.scheduled) {
+          showToast('✓ Scheduled successfully', 'success');
+        } else {
+          showToast('Announcement posted', 'success');
+          await loadAnnouncements(false);
+        }
+      } else {
+        showToast(data.message || 'Failed to post', 'error');
+      }
+    } catch(e) {
+      showToast('Network error', 'error');
+    } finally {
+      btnPost.disabled = false;
+      btnPost.innerHTML = '<i class="fas fa-paper-plane"></i> Post Announcement';
+    }
+  }
+
+  /* ── Delete ──────────────────────────────────────────────────────── */
+  async function deleteAnn(timestamp) {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-card">
+        <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
+        <div class="confirm-title">Delete Announcement?</div>
+        <div class="confirm-msg">This action is permanent and cannot be undone.</div>
+        <div class="confirm-btns">
+          <button class="btn-confirm-cancel">Cancel</button>
+          <button class="btn-confirm-delete">Delete</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.btn-confirm-cancel').onclick = () => overlay.remove();
+    overlay.querySelector('.btn-confirm-delete').onclick = async () => {
+      overlay.remove();
+      try {
+        const res = await fetch(scriptUrl,{method:'POST',body:JSON.stringify({operation:'deleteAnnouncement',name:userName,timestamp})});
+        const d = await res.json();
+        if (d.status==='success') { showToast('Announcement deleted'); loadAnnouncements(false); }
+        else showToast(d.message||'Delete failed','error');
+      } catch(e) { showToast('Connection error','error'); }
+    };
+  }
+
+  /* ── Edit ────────────────────────────────────────────────────────── */
+  function startEdit(timestamp) {
+    const orig = announcementTexts[timestamp] || '';
+    const bodyEl = document.getElementById(`body-${timestamp}`);
+    if (!bodyEl) return;
+
+    const ta = document.createElement('textarea');
+    ta.className = 'edit-textarea';
+    ta.id = `edit-${timestamp}`;
+    ta.value = orig;
+
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <button class="btn-save" onclick="saveEdit('${timestamp}')"><i class="fas fa-check"></i> Save</button>
+      <button class="btn-cancel" onclick="loadAnnouncements(false)">Cancel</button>`;
+
+    bodyEl.parentNode.insertBefore(ta, bodyEl);
+    bodyEl.parentNode.insertBefore(row, bodyEl);
+    bodyEl.style.display = 'none';
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+  }
+
+  async function saveEdit(timestamp) {
+    const newText = document.getElementById(`edit-${timestamp}`)?.value?.trim();
+    if (!newText) return;
+    try {
+      const res = await fetch(scriptUrl,{method:'POST',body:JSON.stringify({operation:'editAnnouncement',name:userName,timestamp,newText})});
+      const d = await res.json();
+      if (d.status==='success') { showToast('Updated'); loadAnnouncements(false); }
+      else showToast(d.message||'Update failed','error');
+    } catch(e) { showToast('Connection error','error'); }
+  }
+
+  /* ── Render ──────────────────────────────────────────────────────── */
+  async function loadAnnouncements(silent=true) {
+    try {
+      const [annRes, viewsRes] = await Promise.all([
+        fetch(`${scriptUrl}?operation=getData`),
+        fetch(`${scriptUrl}?operation=getAnnouncementViewCounts`)
+      ]);
+      const [annData, viewsData] = await Promise.all([annRes.json(), viewsRes.json()]);
+
+      const list = annData.announcements || [];
+      const viewCounts = viewsData.viewCounts || [];
+
+      if (silent && list.length === lastCount) return;
+      lastCount = list.length;
+
+      feed.innerHTML = '';
+      sidebarList.innerHTML = '';
+
+      if (list.length === 0) {
+        feedCount.textContent = '';
+        feed.innerHTML = `
+          <div class="state-empty">
+            <div class="state-empty-icon"><i class="fas fa-bullhorn"></i></div>
+            <h3>Nothing here yet</h3>
+            <p>Official announcements will appear here when posted by the team.</p>
+          </div>`;
+        sidebarList.innerHTML = '<div class="sidebar-empty">No announcements yet</div>';
+        return;
+      }
+
+      feedCount.textContent = `${list.length} post${list.length!==1?'s':''}`;
+
+      list.forEach((c, i) => {
+        const isOwn = c.name === userName && isAdmin;
+        announcementTexts[c.timestamp] = c.comment;
+        const viewCount = viewCounts[i] || 0;
+
+        /* Media HTML */
+        const links = c.fileLink ? c.fileLink.split(',') : [];
+        const types = c.fileType ? c.fileType.split(',') : [];
+        let mediaHtml = '';
+        if (links.length > 0) {
+          mediaHtml = '<div class="ann-media">';
+          links.forEach((lk,fi) => {
+            const t = types[fi] || '';
+            const isVid = t.includes('video') || lk.match(/\.(mp4|mov|webm)$/i);
+            mediaHtml += `<div class="ann-media-item">${isVid
+              ? `<iframe src="${lk}" height="320" frameborder="0" allowfullscreen></iframe>`
+              : `<img src="${getLh3(lk)}" loading="lazy">`
+            }</div>`;
+          });
+          mediaHtml += '</div>';
+        }
+
+        /* Card */
+        const card = document.createElement('div');
+        card.className = 'ann-card';
+        card.style.animationDelay = `${i*0.05}s`;
+        card.innerHTML = `
+          <div class="ann-card-header">
+            <img class="ann-avatar" src="${getLh3(c.picLink) || 'https://via.placeholder.com/44'}" onerror="this.src='https://picsum.photos/id/64/44/44'" alt="">
+            <div class="ann-author-block">
+              <div class="ann-author-name">${c.name}</div>
+              <div class="ann-time">${formatTime(c.timestamp)}</div>
+            </div>
+            <div class="ann-badge">Official</div>
+          </div>
+          ${mediaHtml}
+          <div class="ann-body" id="body-${c.timestamp}">${c.comment}</div>
+          <div class="ann-footer">
+            <div class="ann-views">
+              <i class="far fa-eye"></i>
+              <span class="ann-views-count">${viewCount}</span>
+              <span>views</span>
+            </div>
+            ${isOwn ? `
+            <div class="ann-actions">
+              <button class="ann-btn ann-btn-edit" onclick="startEdit('${c.timestamp}')">
+                <i class="fas fa-pen"></i> Edit
+              </button>
+              <button class="ann-btn ann-btn-delete" onclick="deleteAnn('${c.timestamp}')">
+                <i class="fas fa-trash-alt"></i> Delete
+              </button>
+            </div>` : ''}
+          </div>`;
+        feed.appendChild(card);
+
+        /* Sidebar item */
+        const si = document.createElement('div');
+        si.className = 'sidebar-item';
+        si.innerHTML = `
+          <img class="si-avatar" src="${getLh3(c.picLink)||'https://via.placeholder.com/36'}" onerror="this.src='https://picsum.photos/id/64/36/36'" alt="">
+          <div class="si-info">
+            <div class="si-name">${c.name}</div>
+            <div class="si-preview">${(c.comment||'').replace(/\n/g,' ').substring(0,42)}${c.comment?.length>42?'…':''}</div>
+          </div>
+          <div class="si-time">${new Date(c.timestamp).toLocaleDateString([],{month:'short',day:'numeric'})}</div>`;
+        si.onclick = () => {
+          document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
+          si.classList.add('active');
+          card.scrollIntoView({behavior:'smooth',block:'start'});
+        };
+        sidebarList.appendChild(si);
+      });
+
+      if (!silent) document.getElementById('mainContent').scrollTop = 0;
+    } catch(e) {
+      console.error('Load error',e);
+    }
+  }
+
+  /* ── Mark seen ───────────────────────────────────────────────────── */
+  async function markSeen() {
+    try {
+      const r = await fetch(`${scriptUrl}?operation=getData`);
+      const d = await r.json();
+      const n = d.announcements?.length || 0;
+      await fetch(scriptUrl,{method:'POST',body:JSON.stringify({operation:'markAnnouncementsSeen',name:userName,seenUpTo:n})});
+      localStorage.setItem('lastSeenAnnCount',n);
+    } catch(e){}
+  }
+
+  /* ── Polling ─────────────────────────────────────────────────────── */
+  function startPolling() {
+    if (pollingTimer) clearInterval(pollingTimer);
+    pollingTimer = setInterval(() => loadAnnouncements(true), 9000);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { clearInterval(pollingTimer); }
+    else { loadAnnouncements(true); startPolling(); }
+  });
+
+  /* ── Init ────────────────────────────────────────────────────────── */
+  (async () => {
+    await checkAdmin();
+    await loadAnnouncements(false);
+    markSeen();
+    startPolling();
+  })();
+</script>
 
 <script>
   if ('serviceWorker' in navigator) {
-  // Use './' to stay inside the /The-Riverside-Connect/ subfolder
-  navigator.serviceWorker.register('./sw.js', { scope: './' })
-    .then(reg => console.log('✅ SW registered in subfolder scope'))
-    .catch(err => console.error('❌ SW registration failed:', err));
-}
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(() => console.log('SW registered'))
+      .catch(e => console.error('SW error', e));
+  }
 </script>
-   
+
 </body>
 </html>
