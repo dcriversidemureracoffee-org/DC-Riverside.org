@@ -21,410 +21,642 @@
   <meta property="og:description" content="Join the conversation – real-time Christian community">
   <meta property="og:image" content="https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/maskable_icon_x192.png">
   <meta property="og:url" content="https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/The-Riverside-Connect/">
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+ <style>
+    :root {
+      --brand: #3b82f6;
+      --brand-soft: rgba(59,130,246,0.12);
+      --brand-glow: rgba(59,130,246,0.25);
+      --surface-0: #0a0f1e;
+      --surface-1: #0f172a;
+      --surface-2: #1a2540;
+      --surface-3: #243055;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(59,130,246,0.35);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 26px;
+      --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
     }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
     html, body {
       height: 100dvh;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--surface-0);
+      color: var(--text-primary);
       overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      min-height: -webkit-fill-available;
-    }
+    body { display:flex; flex-direction:column; min-height:-webkit-fill-available; }
 
+    /* ── HEADER ── */
     header {
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(10px);
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(96, 165, 250, 0.18);
+      background: rgba(10,15,30,0.8);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 64px;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 100;
+      flex-shrink: 0;
     }
 
-    .header-content {
+    @supports (padding-top: env(safe-area-inset-top)) {
+      header {
+        padding-top: env(safe-area-inset-top);
+        height: calc(64px + env(safe-area-inset-top));
+      }
+    }
+
+    .header-inner {
       max-width: 640px;
       margin: 0 auto;
+      height: 64px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      color: #60a5fa;
-      font-weight: 600;
-    }
+    .header-left { display:flex; align-items:center; gap:10px; }
 
+    .split-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: var(--brand-soft);
+      border: 1px solid var(--border-hover);
+      border-radius: 100px;
+      color: var(--brand);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .split-pill:hover { background: rgba(59,130,246,0.2); transform: translateY(-1px); }
+    .split-pill:active { transform: translateY(0); }
+
+    .wordmark {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .wordmark span { color: var(--brand); }
+
+    .header-actions { display:flex; align-items:center; gap: 6px; }
+
+    .icon-btn {
+      width: 38px; height: 38px;
+      display: flex; align-items:center; justify-content:center;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: var(--transition);
+    }
+    .icon-btn:hover { background: var(--surface-2); color: var(--text-primary); }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .avatar-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--brand);
+      object-fit: cover;
+      cursor: pointer;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+    .avatar-btn:hover { border-color: #93c5fd; transform: scale(1.06); }
+
+    /* ── SCROLL CONTAINER ── */
     main {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px;
       overflow-y: auto;
       overflow-x: hidden;
-      gap: 32px;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+    main::-webkit-scrollbar { width: 0; }
+
+    .page-wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
     }
 
-    .welcome {
-      text-align: center;
-      max-width: 480px;
-    }
-
-    .welcome h2 {
-      font-size: 1.9rem;
-      margin-bottom: 12px;
-      color: #60a5fa;
-    }
-
-    .welcome p {
-      font-size: 1.05rem;
-      color: #cbd5e1;
-      line-height: 1.5;
-    }
-
-    .button-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-      width: 100%;
-      max-width: 420px;
-      padding: 0 12px;
-    }
-
-    .big-btn {
+    /* ── HERO ── */
+    .hero {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 14px;
-      padding: 18px 24px;
-      font-size: 1.15rem;
-      font-weight: 600;
-      color: white;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      border: none;
-      border-radius: 16px;
+      gap: 16px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.03));
+      border: 1px solid rgba(59,130,246,0.18);
+      border-radius: var(--radius-lg);
+    }
+    .hero-icon {
+      width: 52px; height: 52px;
+      background: var(--brand-soft);
+      border-radius: var(--radius-md);
+      display: flex; align-items:center; justify-content:center;
+      font-size: 1.5rem;
+      color: var(--brand);
+      flex-shrink: 0;
+    }
+    .hero-text h2 { font-size:1.2rem; font-weight:700; color:var(--text-primary); line-height:1.3; }
+    .hero-text p { font-size:0.875rem; color:var(--text-secondary); margin-top:3px; line-height:1.5; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 4px;
+    }
+
+    /* ── NAV GRID ── */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .nav-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 16px;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       text-decoration: none;
-      transition: all 0.22s ease;
-      box-shadow: 0 6px 20px rgba(59,130,246,0.35);
       cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      min-height: 100px;
     }
-
-    .big-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(59,130,246,0.5);
+    .nav-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--card-accent, rgba(59,130,246,0.06)), transparent 60%);
+      opacity: 0;
+      transition: var(--transition);
     }
+    .nav-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+    .nav-card:hover::before { opacity: 1; }
+    .nav-card:active { transform: translateY(0) scale(0.98); }
 
-    .section-title {
-      color: #94a3b8;
-      font-size: 1.1rem;
+    .nav-card.full-width { grid-column: 1 / -1; flex-direction: row; align-items: center; min-height: 64px; }
+
+    .nav-card-icon {
+      width: 38px; height: 38px;
+      background: var(--card-icon-bg, var(--brand-soft));
+      border-radius: var(--radius-sm);
+      display: flex; align-items:center; justify-content:center;
+      font-size: 1rem;
+      color: var(--card-icon-color, var(--brand));
+      flex-shrink: 0;
+    }
+    .nav-card-label {
+      font-size: 0.875rem;
       font-weight: 600;
-      margin: 0 0 16px 8px;
-      align-self: flex-start;
-      width: 100%;
-      max-width: 480px;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .nav-card-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
-   .circle-scroll-container {
-  width: 100%;
-  max-width: 480px;                    /* or whatever max width you want */
-  overflow-x: auto;                    /* ← enables horizontal scroll */
-  overflow-y: hidden;                  /* ← prevents vertical scroll */
-  -webkit-overflow-scrolling: touch;   /* smooth momentum on iOS */
-  scrollbar-width: thin;               /* Firefox */
-  scrollbar-color: #60a5fa #1e293b;
-  padding: 0 0 16px 0;                 /* bottom padding for scrollbar */
-  margin: 0 auto;
-  scroll-snap-type: x proximity;       /* nice snap to items */
-}
+    /* Notification toggle specific */
+    .notif-card { cursor: pointer; border: none; width:100%; text-align:left; }
+    .notif-state {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 100px;
+      background: rgba(16,185,129,0.15);
+      color: #34d399;
+      margin-left: auto;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+    .notif-state.off {
+      background: rgba(100,116,139,0.2);
+      color: var(--text-muted);
+    }
 
-.circle-scroll-container::-webkit-scrollbar {
-  height: 6px;
-}
+    /* Badge */
+    .badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      min-width: 20px; height: 20px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+      border-radius: 100px;
+      display: flex; align-items:center; justify-content:center;
+      padding: 0 5px;
+      border: 2px solid var(--surface-1);
+    }
 
-.circle-scroll-container::-webkit-scrollbar-track {
-  background: transparent;
-}
+    /* ── CIRCLES (Channels) ── */
+    .circles-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      margin: 0 -16px;
+      padding: 0 16px 4px;
+    }
+    .circles-scroll::-webkit-scrollbar { display: none; }
 
-.circle-scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(96, 165, 250, 0.5);
-  border-radius: 3px;
-}
+    .circles-row {
+      display: inline-flex;
+      gap: 20px;
+      padding-right: 16px;
+      min-width: 100%;
+    }
 
-.circle-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #60a5fa;
-}
-
-/* Keep this — makes items stay in one row */
-.circle-grid {
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: nowrap;          /* ← critical: no wrapping */
-  gap: 28px;
-  padding: 0 16px;
-  min-width: 100%;            /* ensures it can be wider than container */
-}
     .circle-item {
-      flex: 0 0 90px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      text-align: center;
-      position: relative;
+      gap: 8px;
       cursor: pointer;
-      transition: transform 0.18s ease;
       text-decoration: none;
       color: inherit;
+      flex-shrink: 0;
+      transition: var(--transition);
     }
+    .circle-item:hover { transform: translateY(-3px); }
+    .circle-item:active { transform: scale(0.95); }
 
-    .circle-item:hover {
-      transform: scale(1.08);
+    .circle-avatar-wrap {
+      position: relative;
+      width: 68px; height: 68px;
     }
+    .circle-avatar-wrap::after {
+      content: '';
+      position: absolute; inset: -3px;
+      border-radius: 50%;
+      border: 2px solid rgba(59,130,246,0.3);
+      transition: var(--transition);
+    }
+    .circle-item:hover .circle-avatar-wrap::after { border-color: rgba(59,130,246,0.7); }
 
     .circle-avatar {
-      width: 76px;
-      height: 76px;
+      width: 68px; height: 68px;
       border-radius: 50%;
       object-fit: cover;
-      background: #1e293b;
-      border: 3px solid rgba(96,165,250,0.45);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.45);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.1rem;
+      background: var(--surface-2);
+      display: flex; align-items:center; justify-content:center;
+      font-size: 1.6rem;
+      font-weight: 700;
       color: white;
-      font-weight: bold;
     }
-
     .circle-label {
-      margin-top: 10px;
-      font-size: 0.95rem;
+      font-size: 0.72rem;
       font-weight: 500;
-      max-width: 90px;
+      color: var(--text-secondary);
+      max-width: 72px;
+      text-align: center;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .empty-section {
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 28px 16px;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+    .empty-state i { font-size: 2rem; opacity:0.4; }
+
+    /* ── PENDING / ERROR STATE ── */
+    .status-card {
+      padding: 24px;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       text-align: center;
-      color: #94a3b8;
-      padding: 60px 20px;
-      font-size: 1.05rem;
+    }
+    .status-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 8px; }
+    .status-card p { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; }
+    .badge-pill {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(245,158,11,0.15);
+      color: #fbbf24;
+      margin-bottom: 12px;
     }
 
-    .install-area {
-      padding: 20px 24px;
-      background: rgba(15,23,42,0.6);
-      border-top: 1px solid rgba(96,165,250,0.15);
-      text-align: center;
+    /* ── INSTALL BAR ── */
+    .install-bar {
+      padding: 14px 20px;
+      background: rgba(10,15,30,0.6);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .install-bar { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
     }
 
-    #installAppBtn {
-      padding: 14px 28px;
-      font-size: 1.05rem;
-      background: rgba(96,165,250,0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(96,165,250,0.4);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    #installAppBtn:hover {
-      background: rgba(96,165,250,0.25);
-    }
-
-    #installAppBtn.hidden {
-      display: none;
-    }
-
-    .status-pending {
-      color: #f59e0b;
+    .install-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
       font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .install-btn:hover { background: rgba(59,130,246,0.18); }
+    .install-btn.hidden { display: none; }
+
+    /* ── MODAL ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-sheet {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      animation: slideUp 0.28s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    .modal-sheet h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .modal-sheet p { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 24px; }
+    .modal-actions { display:flex; gap:10px; }
+
+    .btn-primary {
+      flex: 1; padding: 13px;
+      background: var(--brand);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-primary:hover { background: #2563eb; }
+
+    .btn-ghost {
+      flex: 1; padding: 13px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-ghost:hover { background: var(--surface-2); color: var(--text-primary); }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface-1) 25%, var(--surface-2) 50%, var(--surface-1) 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s ease infinite;
+      border-radius: var(--radius-md);
+    }
+    @keyframes shimmer {
+      0%   { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
     }
 
-    @media (max-width: 500px) {
-      .welcome h2 { font-size: 1.7rem; }
-      .circle-avatar { width: 68px; height: 68px; font-size: 1.9rem; }
-      .circle-label { font-size: 0.9rem; }
+    .skeleton-hero { height: 92px; margin-bottom: 0; }
+    .skeleton-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .skeleton-card { height: 100px; }
+    .skeleton-card.wide { grid-column: 1/-1; height: 64px; }
+    .skeleton-circles { display: flex; gap: 20px; overflow: hidden; padding: 4px 0; }
+    .skeleton-circle { width: 68px; height: 90px; flex-shrink:0; }
+
+    /* ── TOAST ── */
+    #toast-container {
+      position: fixed;
+      bottom: 90px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      align-items: center;
+    }
+    .toast {
+      padding: 11px 20px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+      white-space: nowrap;
+      animation: toastIn 0.25s ease forwards;
+      pointer-events: auto;
+    }
+    .toast.success { background: rgba(16,185,129,0.9); }
+    .toast.error   { background: rgba(239,68,68,0.9); }
+    .toast.info    { background: rgba(59,130,246,0.9); }
+    @keyframes toastIn {
+      from { opacity:0; transform: translateY(10px) scale(0.95); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
     }
 
-    @supports (padding-top: env(safe-area-inset-top)) {
-      header { padding-top: calc(16px + env(safe-area-inset-top)); }
-      .install-area { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+    @media (max-width:380px) {
+      .wordmark { font-size: 0.95rem; }
+      .nav-grid { grid-template-columns: 1fr; }
+      .nav-card.full-width { grid-column: 1; }
     }
-
-    .badge {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  background: #ef4444;
-  color: white;
-  font-size: 0.68rem;
-  font-weight: bold;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.6);
-  pointer-events: none;           /* doesn't block button click */
-  transform: translate(50%, -50%); /* fine-tune position */
-}
-
-.big-btn {
-  position: relative;              /* ← important! makes badge position relative to button */
-}
-
-    /* Split Button */
-.split-btn {
-  width: 52px;
-  height: 52px;
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  font-size: 1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.split-btn:hover {
-  transform: scale(1.12);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-}
-
-.split-btn:active {
-  transform: scale(0.95);
-}
-
   </style>
 </head>
 <body>
 
+<!-- ─── HEADER ─── -->
 <header>
-  <div class="header-content">
-      <!-- Split Button -->
-    <button onclick="openSplit()" class="split-btn" title="Open CashSplit">
-      <span>SPLIT</span>
-    </button>
-     <h1>Riverside Connect</h1>
-   <div>
-    <div style="display:flex; align-items:center; gap:16px;">
-      <!-- Refresh button -->
-      <button id="refresh-btn" 
-              title="Refresh dashboard"
-              style="
-                background:none; 
-                border:none; 
-                color:#60a5fa; 
-                font-size:1.4rem; 
-                cursor:pointer; 
-                padding:8px; 
-                border-radius:50%; 
-                transition:all 0.2s;
-              "
-              onclick="refreshDashboard()">
-        <i class="fas fa-sync-alt"></i>
+  <div class="header-inner">
+    <div class="header-left">
+      <button class="split-pill" onclick="openSplit()" title="Open CashSplit">
+        <i class="fas fa-arrows-split-up-and-left" style="font-size:0.75rem;"></i> SPLIT
       </button>
-  <img 
-    id="user-avatar" 
-    class="avatar" 
-    src="" 
-    alt="Profile" 
-    loading="lazy"
-    onclick="window.location.href='user.html'"
-    style="
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 2px solid #60a5fa;
-      object-fit: cover;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    "
-    onerror="this.src='https://via.placeholder.com/44?text=@'"
-  >
-</div>
+      <span class="wordmark">Riverside <span>Connect</span></span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="refresh-btn" onclick="refreshDashboard()" title="Refresh">
+        <i class="fas fa-rotate-right" id="refresh-icon"></i>
+      </button>
+      <img id="user-avatar" class="avatar-btn" src="" alt="Profile"
+           onclick="window.location.href='user.html'"
+           onerror="this.src='https://ui-avatars.com/api/?background=3b82f6&color=fff&name=RC'">
+    </div>
   </div>
 </header>
 
-<main>
+<!-- ─── MAIN ─── -->
+<main id="main-scroll">
+  <div class="page-wrap" id="page-wrap">
+    <!-- Skeleton shown on first load -->
+    <div id="skeleton-view">
+      <div class="skeleton skeleton-hero"></div>
+      <div class="section-label" style="margin-top:4px;">Quick access</div>
+      <div class="skeleton-grid">
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card wide"></div>
+      </div>
+      <div class="section-label">Channels</div>
+      <div class="skeleton-circles">
+        <div class="skeleton skeleton-circle"></div>
+        <div class="skeleton skeleton-circle"></div>
+        <div class="skeleton skeleton-circle"></div>
+        <div class="skeleton skeleton-circle"></div>
+      </div>
+    </div>
 
-  <div class="welcome" id="welcome-message">
-    <h2>Welcome!</h2>
-    <p>Loading your status...</p>
+    <!-- Real content injected here -->
+    <div id="dashboard-view" style="display:none; display:none; flex-direction:column; gap:28px;"></div>
   </div>
-
-  <div class="button-grid" id="button-container">
-    <!-- Buttons will be injected here by JS -->
-  </div>
-
 </main>
 
-<div class="install-area">
-  <button id="installAppBtn">
-    <i class="fas fa-download"></i> Install App
+<!-- ─── INSTALL BAR ─── -->
+<div class="install-bar">
+  <button class="install-btn hidden" id="installAppBtn">
+    <i class="fas fa-download"></i> Add to Home Screen
   </button>
 </div>
 
-<!-- Minimal Install Modal / Toast support -->
-<div id="installModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center;">
-  <div style="background:rgba(30,41,59,0.95); padding:28px; border-radius:16px; max-width:340px; text-align:center; border:1px solid rgba(96,165,250,0.25);">
-    <h3 style="color:#60a5fa; margin-bottom:16px;">Add to Home Screen?</h3>
-    <p style="color:#cbd5e1; margin-bottom:24px; line-height:1.45;">Install Riverside Connect for quicker access and better experience.</p>
-    <div style="display:flex; gap:12px;">
-      <button id="installYes" style="flex:1; padding:14px; background:#3b82f6; color:white; border:none; border-radius:12px; font-weight:600;">Yes</button>
-      <button id="installNo"  style="flex:1; padding:14px; background:transparent; color:white; border:1px solid #60a5fa; border-radius:12px;">Later</button>
+<!-- ─── INSTALL MODAL ─── -->
+<div class="modal-backdrop" id="installModal">
+  <div class="modal-sheet">
+    <h3>Install Riverside Connect</h3>
+    <p>Get faster access and a better experience by adding this app to your home screen.</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="installNo">Later</button>
+      <button class="btn-primary" id="installYes">Install</button>
     </div>
   </div>
 </div>
 
+<!-- ─── TOAST ─── -->
+<div id="toast-container"></div>
+
 <script>
-// ────────────────────────────────────────────────
-//  BASIC SETUP
-// ────────────────────────────────────────────────
-const scriptUrl = 'https://script.google.com/macros/s/AKfycbwQ8jCHWhYO-98TlTKJE5Mz-mjisohtTVZQhYpDY2gREswEIfAzcA0qYueR0KE0b8Br/exec';
-const userName   = localStorage.getItem('userName');
+/* =========================================================
+   CONFIG & GLOBALS
+   ========================================================= */
+const scriptUrl   = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+const userName    = localStorage.getItem('userName');
+const CACHE_TTL   = 5 * 60 * 1000; // 5 minutes
 
-if (!userName) {
-  window.location.href = 'login.html';
+if (!userName) window.location.href = 'login.html';
+
+let isNotificationEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+(function() {
+  const avatar  = document.getElementById('user-avatar');
+  const picLink = localStorage.getItem('userPicLink');
+  if (picLink) {
+    const id = picLink.match(/[-\w]{25,}/)?.[0];
+    avatar.src = id ? `https://lh3.googleusercontent.com/d/${id}` : picLink;
+  } else {
+    avatar.src = `https://ui-avatars.com/api/?background=3b82f6&color=fff&name=${encodeURIComponent(userName?.charAt(0)||'R')}`;
+  }
+})();
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+function showToast(msg, type = 'info') {
+  const tc = document.getElementById('toast-container');
+  const t  = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  tc.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'scale(0.9)'; t.style.transition = '0.25s'; setTimeout(() => t.remove(), 280); }, 2800);
 }
 
-// Avatar
-const avatar = document.getElementById('user-avatar');
-const picLink = localStorage.getItem('userPicLink');
-if (picLink) {
-  const id = picLink.match(/[-\w]{25,}/)?.[0];
-  avatar.src = id ? `https://lh3.googleusercontent.com/d/${id}` : picLink;
-} else {
-  avatar.src = 'https://via.placeholder.com/44?text=@';
+/* =========================================================
+   CACHE HELPERS
+   ========================================================= */
+function cacheSet(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+}
+function cacheGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Date.now() - parsed.ts > CACHE_TTL) return null;
+    return parsed.data;
+  } catch { return null; }
 }
 
-// ────────────────────────────────────────────────
-//  INSTALL BUTTON LOGIC
-// ────────────────────────────────────────────────
+/* =========================================================
+   INSTALL LOGIC
+   ========================================================= */
 let deferredPrompt;
 const installBtn   = document.getElementById('installAppBtn');
 const installModal = document.getElementById('installModal');
@@ -439,9 +671,7 @@ window.addEventListener('beforeinstallprompt', e => {
   installBtn.classList.remove('hidden');
 });
 
-installBtn.addEventListener('click', () => {
-  installModal.style.display = 'flex';
-});
+installBtn.addEventListener('click', () => installModal.classList.add('open'));
 
 document.getElementById('installYes').addEventListener('click', async () => {
   if (deferredPrompt) {
@@ -450,268 +680,74 @@ document.getElementById('installYes').addEventListener('click', async () => {
     if (outcome === 'accepted') installBtn.classList.add('hidden');
     deferredPrompt = null;
   }
-  installModal.style.display = 'none';
+  installModal.classList.remove('open');
 });
 
-document.getElementById('installNo').addEventListener('click', () => {
-  installModal.style.display = 'none';
-});
+document.getElementById('installNo').addEventListener('click', () => installModal.classList.remove('open'));
+installModal.addEventListener('click', e => { if (e.target === installModal) installModal.classList.remove('open'); });
+window.addEventListener('appinstalled', () => { installBtn.classList.add('hidden'); });
 
-window.addEventListener('appinstalled', () => {
-  installBtn.classList.add('hidden');
-  installModal.style.display = 'none';
-});
-
-async function updateAnnBadge() {
-  const badge = document.getElementById('ann-badge');
-  if (!badge) return;  // page not fully loaded yet or user not approved
-
-  try {
-    const res = await fetch(`${scriptUrl}?operation=getUnseenAnnCount&name=${encodeURIComponent(userName)}`);
-    const data = await res.json();
-
-    if (data.status === 'error') throw new Error();
-
-    const unseen = data.unseenCount || 0;
-
-    if (unseen > 0) {
-      badge.textContent = unseen > 99 ? '99+' : unseen;
-      badge.style.display = 'flex';
-    } else {
-      badge.style.display = 'none';
-    }
-
-    // Optional: keep local fallback
-    localStorage.setItem('lastSeenAnnCount', data.seenUpTo || '0');
-
-  } catch (err) {
-    console.warn("Couldn't get unseen count", err);
-    // Optional simple fallback (less accurate)
-    badge.style.display = 'none';
-  }
-}
-
-async function refreshDashboard() {
-  const btn = document.getElementById('refresh-btn');
-  if (!btn) return;
-
-  // Visual feedback: spinning icon + disable during load
-  btn.disabled = true;
-  btn.style.opacity = '0.6';
-  btn.querySelector('i').className = 'fas fa-sync-alt fa-spin';
-
-  try {
-    await loadDashboard();
-    // Optional: brief success flash
-    btn.style.color = '#34d399';
-    setTimeout(() => { btn.style.color = '#60a5fa'; }, 1200);
-  } catch (err) {
-    console.warn("Refresh failed", err);
-  } finally {
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.querySelector('i').className = 'fas fa-sync-alt';
-  }
-}
-// ────────────────────────────────────────────────
-//  DASHBOARD – NO BADGES, CLEAN CIRCLES
-// ────────────────────────────────────────────────
-async function loadDashboard() {
-  try {
-    console.log("Loading dashboard for:", userName);
-
-    const res = await fetch(`${scriptUrl}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
-    const data = await res.json();
-
-    if (data.status !== 'success') throw new Error("User status failed");
-
-    const isApproved = data.userStatus?.toLowerCase() === 'approved';
-    const userRole = data.role || "";
-    const welcomeEl = document.getElementById('welcome-message');
-    const btnContainer = document.getElementById('button-container');
-
-    if (isApproved) {
-      welcomeEl.innerHTML = `
-        <h2>Hello, ${userName}!</h2>
-        <p>Choose where you'd like to go</p>
-      `;
-
-        btnContainer.innerHTML = `
-  <div style="width:100%; max-width:420px; margin:0 auto 32px auto;">
-    <div class="button-grid">
-      <a href="home.html" class="big-btn"><i class="fas fa-home"></i> Home</a>
-      
-      <a href="announce.html" class="big-btn" id="announcements-btn">
-        <i class="fas fa-bullhorn"></i> Announcements
-        <span id="ann-badge" class="badge" style="display:none;">0</span>
-      </a>
-
-      <!-- New Notification Toggle Button -->
-      <button id="notification-toggle-btn" class="big-btn">
-        <i class="fas fa-bell" id="notification-icon"></i> 
-        <span id="notification-text">Notifications</span>
-      </button>
-    </div>
-  </div>
-
-  <h3 class="section-title" style="margin-top:40px;">Channels</h3>
-  <div class="circle-scroll-container">
-    <div id="channels-grid" class="circle-grid"></div>
-  </div>
-  
-  <h3 class="section-title">Q&A Space</h3>
-  <div class="circle-scroll-container">
-    <div id="qna-spaces-grid" class="circle-grid"></div>
-  </div>
-`;
-      // Fetch Q&A channels
-      const qnaRes = await fetch(`${scriptUrl}?operation=getAllQnAChannels`);
-      const qnaData = await qnaRes.json();
-      const qnaChannels = qnaData.channels || [];
-
-      const qnaGrid = document.getElementById('qna-spaces-grid');
-      qnaGrid.innerHTML = qnaChannels.length === 0
-        ? `<div class="empty-section"><i class="far fa-question-circle" style="font-size:3.2rem; opacity:0.5;"></i><br><br>No Q&A spaces yet</div>`
-        : qnaChannels.map(ch => {
-            const initial = ch.name.charAt(0).toUpperCase();
-            const avatarSrc = ch.picLink ? getLh3Link(ch.picLink) : '';
-            const bgColor = avatarSrc ? '' : `background:#${Math.floor(Math.random()*16777215).toString(16)};`;
-
-            return `
-              <a href="Q&A.html?channelId=${encodeURIComponent(ch.id)}" class="circle-item">
-                <div style="position:relative;">
-                  ${avatarSrc 
-                    ? `<img src="${avatarSrc}" class="circle-avatar" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
-                    : `<div class="circle-avatar" style="${bgColor}">${initial}</div>`
-                  }
-                  <div class="circle-avatar" style="display:${avatarSrc ? 'none' : 'flex'};${bgColor}">${initial}</div>
-                </div>
-                <div class="circle-label">${ch.name}</div>
-              </a>
-            `;
-          }).join('');
-
-      // Fetch regular channels
-      const chRes = await fetch(`${scriptUrl}?operation=getAllChannels`);
-      const chData = await chRes.json();
-      const channels = chData.channels || [];
-
-      const chGrid = document.getElementById('channels-grid');
-      chGrid.innerHTML = channels.length === 0
-        ? `<div class="empty-section"><i class="far fa-layer-group" style="font-size:3.2rem; opacity:0.5;"></i><br><br>No channels yet</div>`
-        : channels.map(ch => {
-            const initial = ch.name.charAt(0).toUpperCase();
-            const avatarSrc = ch.picLink ? getLh3Link(ch.picLink) : '';
-            const bgColor = avatarSrc ? '' : `background:#${Math.floor(Math.random()*16777215).toString(16)};`;
-
-            return `
-              <a href="channel.html?channelId=${encodeURIComponent(ch.id)}" class="circle-item">
-                <div style="position:relative;">
-                  ${avatarSrc 
-                    ? `<img src="${avatarSrc}" class="circle-avatar" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
-                    : `<div class="circle-avatar" style="${bgColor}">${initial}</div>`
-                  }
-                  <div class="circle-avatar" style="display:${avatarSrc ? 'none' : 'flex'};${bgColor}">${initial}</div>
-                </div>
-                <div class="circle-label">${ch.name}</div>
-              </a>
-            `;
-          }).join('');
-
-   } else {
-  const statusText = data.userStatus?.toLowerCase() === 'pending' 
-    ? 'pending approval' 
-    : 'not active';
-
-  welcomeEl.innerHTML = `
-    <h2>Welcome, ${userName}</h2>
-    <p>Your account is currently <span class="status-pending">${statusText}</span>.</p>
-    <p style="margin-top: 1.2rem; color: #94a3b8; font-size: 1.05rem;">
-      Full access (Home, Announcements, Channels, Q&A) will be available once approved.
-    </p>
-  `;
-
-  // ─── Most important line ───
-  btnContainer.innerHTML = '';   // ← removes all buttons / content
-}
-  } catch (err) {
-    console.error("Dashboard load failed:", err);
-    document.getElementById('welcome-message').innerHTML = `
-      <h2 style="color:#f87171;">Connection issue</h2>
-      <p>Please check your internet and try again.</p>
-    `;
-  }
-}
-
-
-
+/* =========================================================
+   HELPERS
+   ========================================================= */
 function getLh3Link(url) {
   if (!url) return '';
   const id = url.match(/[-\w]{25,}/)?.[0];
   return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
 }
 
-// Load immediately
-// Load immediately
-loadDashboard().then(() => {
-  // Only try to show badge if we rendered the buttons (approved user)
-  if (document.getElementById('ann-badge')) {
-    updateAnnBadge();                    // show right away
-    setInterval(updateAnnBadge, 20000);  // refresh every 20 seconds
-  }
-});
-</script>
-
-  <!-- ====================== NOTIFICATION TOGGLE ====================== -->
-<script>
-// Notification Toggle for index.html
-let isNotificationEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
-
-function updateToggleUI() {
-  const toggleBtn = document.getElementById('notification-toggle-btn');
-  const iconEl    = document.getElementById('notification-icon');
-  const textEl    = document.getElementById('notification-text');
-
-  if (!toggleBtn || !iconEl || !textEl) return;
-
-  if (isNotificationEnabled) {
-    iconEl.className = 'fas fa-bell';
-    textEl.textContent = 'Notifications On';
-    toggleBtn.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
-  } else {
-    iconEl.className = 'fas fa-bell-slash';
-    textEl.textContent = 'Notifications Off';
-    toggleBtn.style.background = 'linear-gradient(135deg, #64748b, #94a3b8)';
-  }
+function openSplit() {
+  window.location.href = 'split.html';
 }
 
-  function openSplit() {
-  document.documentElement.style.transition = 'transform 0.4s ease';
-  document.documentElement.style.transform = 'translateX(-100%)';
+/* =========================================================
+   ANNOUNCEMENT BADGE
+   ========================================================= */
+async function updateAnnBadge() {
+  const badge = document.getElementById('ann-badge');
+  if (!badge) return;
+  try {
+    const res = await fetch(`${scriptUrl}?operation=getUnseenAnnCount&name=${encodeURIComponent(userName)}`);
+    const data = await res.json();
+    if (data.status === 'error') throw new Error();
+    const n = data.unseenCount || 0;
+    badge.textContent = n > 99 ? '99+' : n;
+    badge.style.display = n > 0 ? 'flex' : 'none';
+    localStorage.setItem('lastSeenAnnCount', data.seenUpTo || '0');
+  } catch { badge.style.display = 'none'; }
+}
 
-  setTimeout(() => {
-    window.location.href = 'split.html';
-  }, 300);
+/* =========================================================
+   NOTIFICATION TOGGLE
+   ========================================================= */
+function updateNotifUI() {
+  const btn  = document.getElementById('notif-toggle');
+  const pill = document.getElementById('notif-state');
+  if (!btn || !pill) return;
+  if (isNotificationEnabled) {
+    document.getElementById('notif-icon').className = 'fas fa-bell';
+    pill.textContent = 'ON';
+    pill.className = 'notif-state';
+  } else {
+    document.getElementById('notif-icon').className = 'fas fa-bell-slash';
+    pill.textContent = 'OFF';
+    pill.className = 'notif-state off';
+  }
 }
 
 async function toggleNotifications() {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-    alert("Notifications are not supported in this browser.");
-    return;
+    showToast('Notifications not supported in this browser', 'error'); return;
   }
-
   isNotificationEnabled = !isNotificationEnabled;
   localStorage.setItem('notificationsEnabled', isNotificationEnabled.toString());
-
-  updateToggleUI();
+  updateNotifUI();
 
   if (isNotificationEnabled) {
-    // === TURN ON ===
     try {
       const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
       const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
-
-      const firebaseConfig = {
+     const firebaseConfig = {
        apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
   authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
   projectId: "dc-riverside-murera-coffee",
@@ -720,83 +756,262 @@ async function toggleNotifications() {
   appId: "1:373863707096:web:5e3c703655687b96e442ad"
       };
 
-      const app = initializeApp(firebaseConfig);
-      const messaging = getMessaging(app);
-      const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
-
+     const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
+      const app  = initializeApp(firebaseConfig);
+      const msg  = getMessaging(app);
       const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        alert("Notification permission was denied.");
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        showToast('Permission denied', 'error');
         isNotificationEnabled = false;
         localStorage.setItem('notificationsEnabled', 'false');
-        updateToggleUI();
-        return;
+        updateNotifUI(); return;
       }
-
-      const token = await getToken(messaging, { 
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: swReg 
-      });
-
+      const token = await getToken(msg, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
       if (token) {
-        console.log("✅ FCM Token obtained:", token.substring(0, 40) + "...");
-
-        await fetch(scriptUrl, {
-          method: "POST",
-          body: JSON.stringify({
-            operation: "saveFcmToken",
-            username: userName,
-            fcmToken: token
-          })
-        });
-
-        localStorage.setItem('fcmTokenSaved', 'true');
-        if (typeof showToast === "function") {
-          showToast("Notifications enabled successfully!", "success");
-        } else {
-          alert("Notifications enabled successfully!");
-        }
+        await fetch(scriptUrl, { method: 'POST', body: JSON.stringify({ operation: 'saveFcmToken', username: userName, fcmToken: token }) });
+        showToast('Notifications enabled', 'success');
       }
     } catch (err) {
-      console.error("❌ Failed to enable notifications:", err);
-      if (typeof showToast === "function") {
-        showToast("Failed to enable notifications", "error");
-      } else {
-        alert("Failed to enable notifications");
-      }
+      console.error(err);
+      showToast('Failed to enable notifications', 'error');
       isNotificationEnabled = false;
       localStorage.setItem('notificationsEnabled', 'false');
-      updateToggleUI();
+      updateNotifUI();
     }
   } else {
-    // === TURN OFF ===
-    if (typeof showToast === "function") {
-      showToast("Notifications turned off", "info");
-    } else {
-      alert("Notifications turned off");
-    }
-    console.log("🛑 Notifications disabled by user");
+    showToast('Notifications turned off', 'info');
   }
 }
 
-// Initialize everything after dashboard loads
-loadDashboard().then(() => {
-  // Badge logic
-  if (document.getElementById('ann-badge')) {
+/* =========================================================
+   RENDER CIRCLES
+   ========================================================= */
+function renderCircles(channels, baseUrl) {
+  if (!channels.length) return `
+    <div class="empty-state">
+      <i class="fas fa-layer-group"></i>
+      <span>No channels yet</span>
+    </div>`;
+
+  return `<div class="circles-scroll"><div class="circles-row">` +
+    channels.map(ch => {
+      const initial    = ch.name.charAt(0).toUpperCase();
+      const avatarSrc  = ch.picLink ? getLh3Link(ch.picLink) : '';
+      const bgColors   = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'];
+      const randomBg   = bgColors[ch.name.charCodeAt(0) % bgColors.length];
+      const avatarHtml = avatarSrc
+        ? `<img src="${avatarSrc}" class="circle-avatar" style="width:68px;height:68px;border-radius:50%;object-fit:cover;" onerror="this.outerHTML='<div class=\\'circle-avatar\\' style=\\'background:${randomBg};\\'>${initial}</div>'">`
+        : `<div class="circle-avatar" style="background:${randomBg};">${initial}</div>`;
+      return `
+        <a href="${baseUrl}?channelId=${encodeURIComponent(ch.id)}" class="circle-item">
+          <div class="circle-avatar-wrap">${avatarHtml}</div>
+          <div class="circle-label">${ch.name}</div>
+        </a>`;
+    }).join('') + `</div></div>`;
+}
+
+/* =========================================================
+   RENDER APPROVED DASHBOARD
+   ========================================================= */
+function renderApproved(channels, qnaChannels) {
+  return `
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-icon"><i class="fas fa-church"></i></div>
+      <div class="hero-text">
+        <h2>Welcome back, ${userName}</h2>
+        <p>Stay connected with your community</p>
+      </div>
+    </div>
+
+    <!-- Quick Access -->
+    <div class="section-label">Quick access</div>
+    <div class="nav-grid">
+
+      <a href="home.html" class="nav-card" style="--card-accent:rgba(59,130,246,0.08);">
+        <div class="nav-card-icon"><i class="fas fa-home"></i></div>
+        <div>
+          <div class="nav-card-label">Home</div>
+          <div class="nav-card-sub">Your feed</div>
+        </div>
+      </a>
+
+      <a href="announce.html" class="nav-card" id="ann-card" style="--card-accent:rgba(245,158,11,0.08);--card-icon-bg:rgba(245,158,11,0.12);--card-icon-color:#f59e0b;">
+        <span id="ann-badge" class="badge" style="display:none;">0</span>
+        <div class="nav-card-icon"><i class="fas fa-bullhorn"></i></div>
+        <div>
+          <div class="nav-card-label">Announcements</div>
+          <div class="nav-card-sub">Church updates</div>
+        </div>
+      </a>
+
+    
+
+      <a href="camera.html" class="nav-card" style="--card-accent:rgba(6,182,212,0.08);--card-icon-bg:rgba(6,182,212,0.12);--card-icon-color:#22d3ee;">
+        <div class="nav-card-icon"><i class="fas fa-camera"></i></div>
+        <div>
+          <div class="nav-card-label">My Camera</div>
+          <div class="nav-card-sub">Capture moments</div>
+        </div>
+      </a>
+
+      <button id="notif-toggle" class="nav-card notif-card" onclick="toggleNotifications()" style="--card-accent:rgba(16,185,129,0.08);--card-icon-bg:rgba(16,185,129,0.12);--card-icon-color:#34d399;">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <div class="nav-card-icon"><i id="notif-icon" class="fas fa-bell"></i></div>
+          <span id="notif-state" class="notif-state">ON</span>
+        </div>
+        <div style="text-align:left;">
+          <div class="nav-card-label">Notifications</div>
+          <div class="nav-card-sub">Push alerts</div>
+        </div>
+      </button>
+
+    </div>
+
+    <!-- Channels -->
+    <div class="section-label">Channels</div>
+    ${renderCircles(channels, 'channel.html')}
+
+    <!-- Q&A Spaces -->
+    <div class="section-label">Q&amp;A Spaces</div>
+    ${renderCircles(qnaChannels, 'Q&A.html')}
+  `;
+}
+
+/* =========================================================
+   RENDER PENDING
+   ========================================================= */
+function renderPending(statusText) {
+  return `
+    <div class="hero">
+      <div class="hero-icon"><i class="fas fa-church"></i></div>
+      <div class="hero-text">
+        <h2>Hi, ${userName}</h2>
+        <p>Welcome to Riverside Connect</p>
+      </div>
+    </div>
+    <div class="status-card">
+      <div class="badge-pill">${statusText === 'pending' ? 'Pending Approval' : 'Account Inactive'}</div>
+      <h3>${statusText === 'pending' ? 'Your account is under review' : 'Access restricted'}</h3>
+      <p>Full access to Home, Announcements, Channels, and Q&amp;A will be available once your account is approved.</p>
+    </div>`;
+}
+
+/* =========================================================
+   LOAD DASHBOARD (with caching)
+   ========================================================= */
+async function loadDashboard(forceRefresh = false) {
+  const dashView  = document.getElementById('dashboard-view');
+  const skelView  = document.getElementById('skeleton-view');
+
+  /* 1. Try cache first (skip skeleton if we have cached data) */
+  const cachedStatus   = cacheGet(`status_${userName}`);
+  const cachedChannels = cacheGet('channels');
+  const cachedQna      = cacheGet('qnaChannels');
+
+  if (!forceRefresh && cachedStatus && cachedChannels && cachedQna) {
+    skelView.style.display = 'none';
+    dashView.style.display = 'flex';
+    renderFromData(cachedStatus, cachedChannels, cachedQna, dashView);
+    /* Silently refresh in background */
+    fetchAndRender(dashView, skelView, true);
+    return;
+  }
+
+  /* 2. No cache — show skeleton, then fetch */
+  skelView.style.display = 'flex';
+  skelView.style.flexDirection = 'column';
+  skelView.style.gap = '28px';
+  dashView.style.display = 'none';
+  await fetchAndRender(dashView, skelView, false);
+}
+
+async function fetchAndRender(dashView, skelView, silent) {
+  try {
+    const [statusRes, chRes, qnaRes] = await Promise.all([
+      fetch(`${scriptUrl}?operation=getUserStatus&name=${encodeURIComponent(userName)}`),
+      fetch(`${scriptUrl}?operation=getAllChannels`),
+      fetch(`${scriptUrl}?operation=getAllQnAChannels`)
+    ]);
+
+    const statusData = await statusRes.json();
+    const chData     = await chRes.json();
+    const qnaData    = await qnaRes.json();
+
+    if (statusData.status !== 'success') throw new Error('Status fetch failed');
+
+    /* Cache results */
+    cacheSet(`status_${userName}`, statusData);
+    cacheSet('channels', chData.channels || []);
+    cacheSet('qnaChannels', qnaData.channels || []);
+
+    if (!silent) {
+      skelView.style.display = 'none';
+      dashView.style.display = 'flex';
+    }
+    renderFromData(statusData, chData.channels || [], qnaData.channels || [], dashView);
+
+  } catch (err) {
+    console.error('Dashboard load failed:', err);
+    if (!silent) {
+      skelView.style.display = 'none';
+      dashView.style.display = 'flex';
+      dashView.innerHTML = `
+        <div class="status-card">
+          <div class="badge-pill" style="background:rgba(239,68,68,0.15);color:#f87171;">Connection Error</div>
+          <h3>Couldn't load dashboard</h3>
+          <p>Check your internet connection and try refreshing.</p>
+        </div>`;
+    }
+  }
+}
+
+function renderFromData(statusData, channels, qnaChannels, dashView) {
+  const isApproved = statusData.userStatus?.toLowerCase() === 'approved';
+
+  if (isApproved) {
+    dashView.innerHTML = renderApproved(channels, qnaChannels);
+    updateNotifUI();
     updateAnnBadge();
-    setInterval(updateAnnBadge, 20000);
+    if (typeof annBadgeInterval !== 'undefined') clearInterval(annBadgeInterval);
+    window.annBadgeInterval = setInterval(updateAnnBadge, 20000);
+  } else {
+    const st = statusData.userStatus?.toLowerCase() === 'pending' ? 'pending' : 'inactive';
+    dashView.innerHTML = renderPending(st);
   }
+}
 
-  // Notification toggle logic
-  const toggleBtn = document.getElementById('notification-toggle-btn');
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', toggleNotifications);
-    updateToggleUI();           // Set correct initial state
+/* =========================================================
+   REFRESH
+   ========================================================= */
+async function refreshDashboard() {
+  const btn  = document.getElementById('refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  icon.className = 'fas fa-rotate-right fa-spin';
+
+  /* Clear cache so we always re-fetch on manual refresh */
+  try { localStorage.removeItem(`status_${userName}`); } catch {}
+  try { localStorage.removeItem('channels'); } catch {}
+  try { localStorage.removeItem('qnaChannels'); } catch {}
+
+  try {
+    await loadDashboard(true);
+    showToast('Dashboard refreshed', 'success');
+  } catch { showToast('Refresh failed', 'error'); }
+  finally {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    icon.className = 'fas fa-rotate-right';
   }
-});
+}
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+loadDashboard();
 </script>
-
 </body>
 </html>
