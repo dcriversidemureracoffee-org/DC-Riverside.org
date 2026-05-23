@@ -5,1116 +5,1413 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Play Q&A Game · Riverside</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #e2e8f0;
-      min-height: 100dvh;
-      padding: 16px;
-    }
-    .container {
-      max-width: 640px;
-      margin: 0 auto;
-    }
-    header {
-      text-align: center;
-      padding: 16px 0 20px;
-      position: relative;
-    }
-    .back-btn {
-      position: absolute;
-      left: 8px;
-      top: 16px;
-      font-size: 1.6rem;
-      color: #60a5fa;
-      background: rgba(96,165,250,0.15);
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-    }
-    h1 {
-      color: #60a5fa;
-      font-size: 1.9rem;
-      margin-bottom: 8px;
-    }
-    .header-actions {
-      margin-top: 12px;
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .leaderboard-btn {
-      padding: 10px 24px;
-      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-      color: white;
-      border: none;
-      border-radius: 999px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
-    }
-    .leaderboard-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(139,92,246,0.3);
-    }
-   /* Add this to <style> if not already present */
-#timerDisplay.warning {
-  color: #f59e0b;      /* yellow/orange near end */
-}
-#timerDisplay.danger {
-  color: #ef4444;      /* red in last 10 seconds */
-  animation: pulse 1s infinite;
-}
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
-}
-    .question-slide {
-      background: rgba(30,41,59,0.88);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid rgba(96,165,250,0.2);
-    }
-    .question-text {
-      font-size: 1.28rem;
-      line-height: 1.45;
-      margin-bottom: 20px;
-    }
-    .question-image {
-      max-width: 100%;
-      border-radius: 12px;
-      margin: 16px 0;
-      display: block;
-    }
-    .choices {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin: 20px 0;
-    }
-    .choice-btn {
-      padding: 14px 18px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(96,165,250,0.35);
-      color: white;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1.05rem;
-      text-align: left;
-      transition: all 0.18s;
-    }
-    .choice-btn:hover:not(:disabled) {
-      background: rgba(96,165,250,0.18);
-      border-color: #60a5fa;
-    }
-    .choice-btn:disabled {
-      opacity: 0.7;
-    }
-   /* Quiz correct (green) */
-.choice-btn.correct {
-  background: #10b981 !important;
-  border-color: #34d399 !important;
-  color: white !important;
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   RIVERSIDE PLAY — channels.html design system, system-ui font
+═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ink:        #e2e8f0;
+  --paper:      #0f172a;
+  --cream:      #1e293b;
+  --wire:       rgba(96,165,250,0.18);
+  --steel:      #94a3b8;
+  --lead:       #cbd5e1;
+  --accent:     #ef4444;
+  --accent2:    #60a5fa;
+  --gold:       #facc15;
+  --green:      #10b981;
+  --purple:     #a78bfa;
+  --white:      #f8fafc;
+
+  --font-body:  system-ui, -apple-system, sans-serif;
+
+  --bar-h:      56px;
 }
 
-/* Quiz incorrect (red) */
-.choice-btn.incorrect {
-  background: #ef4444 !important;
-  border-color: #f87171 !important;
-  color: white !important;
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* Survey selected choice - different color (e.g. blue-ish) */
-.choice-btn.selected {
-  background: #3b82f6 !important;       /* blue - you can change this color */
-  border-color: #60a5fa !important;
-  color: white !important;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.4);
-}
-    .reason {
-      margin-top: 20px;
-      padding: 14px;
-      background: rgba(30,41,59,0.6);
-      border-radius: 12px;
-      line-height: 1.5;
-      display: none;
-    }
-    .next-btn {
-      padding: 12px 32px;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: white;
-      border: none;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 1.1rem;
-      cursor: pointer;
-      margin: 16px auto 0;
-      display: none;
-      width: fit-content;
-    }
-    .score-final {
-      text-align: center;
-      font-size: 2.2rem;
-      margin: 32px 0;
-      color: #60a5fa;
-    }
-    .empty, .loading {
-      text-align: center;
-      padding: 120px 24px;
-      color: #94a3b8;
-    }
-
-    /* Leaderboard styles */
-    #leaderboardSection {
-      margin-top: 32px;
-      display: none;           /* hidden by default */
-    }
-    .leaderboard-list {
-      background: rgba(15,23,42,0.7);
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid rgba(96,165,250,0.25);
-    }
-    .leader-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      transition: background 0.2s;
-    }
-    .leader-item:hover {
-      background: rgba(96,165,250,0.12);
-    }
-    .leader-rank {
-      font-size: 1.4rem;
-      font-weight: bold;
-      min-width: 40px;
-      text-align: center;
-      color: #94a3b8;
-    }
-    .leader-rank.top-1 { color: #ffd700; }
-    .leader-rank.top-2 { color: #c0c0c0; }
-    .leader-rank.top-3 { color: #cd7f32; }
-    .leader-name {
-      flex: 1;
-      font-weight: 600;
-    }
-    .leader-score {
-      font-size: 1.1rem;
-      color: #60a5fa;
-    }
-    .no-leaders {
-      text-align: center;
-      padding: 40px 20px;
-      color: #94a3b8;
-    }
-
-    @media (max-width: 500px) {
-      .question-slide { padding: 18px; }
-      .question-text { font-size: 1.18rem; }
-      .choice-btn { font-size: 1rem; padding: 12px 16px; }
-      .header-actions { flex-direction: column; gap: 12px; }
-    }
-
-    /* Question image - make it smaller and centered */
-.question-image {
-  max-width: 280px;          /* ← smaller than full width */
-  max-height: 180px;         /* prevents very tall images */
-  width: auto;
-  height: auto;
-  display: block;
-  margin: 16px auto;         /* centered with breathing room */
-  border-radius: 10px;
-  border: 1px solid rgba(96, 165, 250, 0.25);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  object-fit: contain;       /* keeps aspect ratio, no cropping */
+/* ═══════════════════════════════════════════════════════════════════════
+   MASTHEAD
+═══════════════════════════════════════════════════════════════════════ */
+#masthead {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--bar-h);
+  background: rgba(15,23,42,0.96);
+  border-bottom: 1px solid rgba(96,165,250,0.22);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
 }
 
-/* Choice images - even smaller, inline-friendly */
-.choice-btn img {
-  max-width: 140px;          /* ← noticeably smaller than question image */
-  max-height: 100px;
-  width: auto;
-  height: auto;
-  display: block;
-  margin: 10px auto 4px;     /* centered inside button + small spacing */
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+.mh-back {
+  height: 100%;
+  width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--wire);
+  color: var(--accent2);
+  text-decoration: none;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.mh-back:hover { background: var(--cream); }
+
+.mh-info {
+  flex: 1;
+  min-width: 0;
+  padding: 0 16px;
+  overflow: hidden;
+}
+.mh-game-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+.mh-game-meta {
+  font-size: 0.7rem;
+  color: var(--steel);
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mh-tools {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex-shrink: 0;
+  border-left: 1px solid var(--wire);
+}
+.mh-btn {
+  height: 100%;
+  width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--wire);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s, color 0.15s;
+}
+.mh-btn:last-child { border-right: none; }
+.mh-btn:hover { background: var(--cream); color: var(--accent2); }
+
+/* Timer in masthead */
+.mh-timer {
+  height: 100%;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-right: 1px solid var(--wire);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent2);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  transition: color 0.3s;
+}
+.mh-timer.warning { color: var(--gold); }
+.mh-timer.danger  {
+  color: var(--accent);
+  animation: timerPulse 0.9s ease-in-out infinite;
+}
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROGRESS BAR
+═══════════════════════════════════════════════════════════════════════ */
+#progress-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(96,165,250,0.12);
+  z-index: 900;
+}
+#progress-fill {
+  height: 100%;
+  background: var(--accent2);
+  width: 0%;
+  transition: width 0.35s ease;
+}
+
+/* Question counter */
+#q-counter {
+  position: fixed;
+  bottom: 10px;
+  right: 14px;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--steel);
+  z-index: 800;
+  pointer-events: none;
+  background: rgba(15,23,42,0.8);
+  padding: 3px 8px;
+  border: 1px solid var(--wire);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   STAGE
+═══════════════════════════════════════════════════════════════════════ */
+#stage {
+  padding-top: calc(var(--bar-h) + 20px);
+  padding-bottom: 100px;
+  min-height: 100%;
+}
+
+.stage-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 0 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   QUESTION CARD
+═══════════════════════════════════════════════════════════════════════ */
+#question-wrap {
+  background: rgba(30,41,59,0.7);
+  border-bottom: 1px solid var(--wire);
+  border-top: 1px solid var(--wire);
+  animation: fadeQ 0.25s ease;
+}
+@keyframes fadeQ {
+  from { opacity:0; transform: translateY(10px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+@media (min-width: 640px) {
+  #question-wrap {
+    border: 1px solid var(--wire);
+    margin: 0 16px;
+  }
+}
+
+.q-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--wire);
+  background: rgba(15,23,42,0.6);
+}
+.q-num {
+  background: rgba(96,165,250,0.15);
+  border: 1px solid rgba(96,165,250,0.3);
+  color: var(--accent2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.q-text {
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--ink);
+  flex: 1;
+}
+
+.q-image-wrap {
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+  border-bottom: 1px solid var(--wire);
+  display: none;
+}
+.q-image-wrap img {
+  width: 100%;
+  max-height: 280px;
   object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
-/* Make sure the choice button adapts nicely when it has an image */
-.choice-btn {
-  padding: 14px 18px;
-  min-height: 48px;          /* prevents squashing when no image */
+/* ═══════════════════════════════════════════════════════════════════════
+   CHOICES
+═══════════════════════════════════════════════════════════════════════ */
+.choices-list {
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  gap: 10px;
+}
+
+.choice-btn {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(96,165,250,0.28);
+  color: var(--ink);
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: var(--font-body);
   text-align: left;
+  transition: all 0.18s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+.choice-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: transparent;
+  transition: background 0.18s;
+}
+.choice-btn:hover:not(:disabled) {
+  background: rgba(96,165,250,0.1);
+  border-color: var(--accent2);
+}
+.choice-btn:hover:not(:disabled)::before { background: var(--accent2); }
+
+.choice-btn:disabled { cursor: default; }
+
+.choice-btn.correct {
+  background: rgba(16,185,129,0.15) !important;
+  border-color: #34d399 !important;
+  color: #6ee7b7 !important;
+}
+.choice-btn.correct::before { background: var(--green) !important; }
+
+.choice-btn.incorrect {
+  background: rgba(239,68,68,0.12) !important;
+  border-color: #f87171 !important;
+  color: #fca5a5 !important;
+}
+.choice-btn.incorrect::before { background: var(--accent) !important; }
+
+.choice-btn.selected {
+  background: rgba(96,165,250,0.14) !important;
+  border-color: var(--accent2) !important;
+}
+.choice-btn.selected::before { background: var(--accent2) !important; }
+
+.choice-btn img {
+  max-width: 160px;
+  max-height: 110px;
+  object-fit: contain;
+  border: 1px solid var(--wire);
+  align-self: flex-start;
 }
 
-/* Optional: smaller on mobile */
-@media (max-width: 500px) {
-  .question-image {
-    max-width: 240px;
-    max-height: 160px;
-  }
-  
-  .choice-btn img {
-    max-width: 120px;
-    max-height: 90px;
-  }
+/* ═══════════════════════════════════════════════════════════════════════
+   REASON BOX
+═══════════════════════════════════════════════════════════════════════ */
+#reason-box {
+  margin: 0 20px 16px;
+  padding: 14px 16px;
+  background: rgba(96,165,250,0.06);
+  border: 1px solid rgba(96,165,250,0.2);
+  border-left: 3px solid var(--accent2);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--lead);
+  display: none;
+}
+#reason-box strong {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin-bottom: 6px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   NAV FOOT
+═══════════════════════════════════════════════════════════════════════ */
+.nav-foot {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--wire);
+  border-bottom: 1px solid var(--wire);
+  background: rgba(15,23,42,0.7);
+  height: 50px;
+  margin-top: 0;
+}
+@media (min-width: 640px) {
+  .nav-foot { margin: 0 16px; border: 1px solid var(--wire); border-top: none; }
+}
 
-  </style>
+.nav-btn {
+  flex: 1;
+  height: 100%;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--wire);
+  color: var(--steel);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+.nav-btn:last-child { border-right: none; }
+.nav-btn:hover:not(:disabled) { background: var(--cream); color: var(--ink); }
+.nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.nav-btn.primary {
+  color: var(--accent2);
+  flex: 2;
+}
+.nav-btn.primary:hover:not(:disabled) { background: rgba(96,165,250,0.12); }
+.nav-btn.submit-btn {
+  color: var(--green);
+}
+.nav-btn.submit-btn:hover:not(:disabled) { background: rgba(16,185,129,0.1); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FINAL SCREEN
+═══════════════════════════════════════════════════════════════════════ */
+#final-screen {
+  display: none;
+  padding: 0;
+}
+
+.final-card {
+  background: rgba(30,41,59,0.7);
+  border-top: 1px solid var(--wire);
+  border-bottom: 1px solid var(--wire);
+  padding: 40px 28px;
+  text-align: center;
+}
+@media (min-width: 640px) {
+  .final-card { margin: 0 16px; border: 1px solid var(--wire); }
+}
+
+.final-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  display: block;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.final-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
+}
+.final-score {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--accent2);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 16px 0 8px;
+}
+.final-score-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: var(--steel);
+  text-transform: uppercase;
+}
+.final-sub {
+  font-size: 0.92rem;
+  color: var(--steel);
+  line-height: 1.55;
+  margin-top: 16px;
+}
+.final-sub a {
+  color: var(--accent2);
+  text-decoration: none;
+  font-weight: 600;
+}
+.final-sub a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOADING / EMPTY
+═══════════════════════════════════════════════════════════════════════ */
+.state-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 32px;
+  text-align: center;
+  color: var(--steel);
+}
+.state-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(96,165,250,0.2);
+  border-top-color: var(--accent2);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--steel);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LEADERBOARD / SURVEY BOTTOM SHEET
+═══════════════════════════════════════════════════════════════════════ */
+#board-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 980;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+#board-overlay.open { display: flex; }
+
+.board-sheet {
+  background: rgba(15,23,42,0.98);
+  border-top: 1px solid rgba(96,165,250,0.3);
+  width: 100%;
+  max-width: 640px;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  border-radius: 16px 16px 0 0;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--wire);
+  flex-shrink: 0;
+}
+.board-head-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent2);
+  text-transform: uppercase;
+}
+.board-close {
+  background: none; border: none;
+  font-size: 1.2rem; cursor: pointer;
+  color: var(--steel); width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: color 0.15s;
+}
+.board-close:hover { color: var(--accent2); }
+
+.board-body {
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(96,165,250,0.4) transparent;
+}
+
+/* Leaderboard rows */
+.leader-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--wire);
+  transition: background 0.15s;
+}
+.leader-row:hover { background: var(--cream); }
+
+.leader-rank {
+  font-size: 1.2rem;
+  font-weight: 800;
+  width: 32px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--steel);
+}
+.leader-rank.r1 { color: #ffd700; }
+.leader-rank.r2 { color: #c0c0c0; }
+.leader-rank.r3 { color: #cd7f32; }
+
+.leader-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+.leader-score {
+  font-size: 0.85rem;
+  color: var(--accent2);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Survey carousel */
+.survey-carousel {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.survey-slides {
+  display: flex;
+  transition: transform 0.35s ease;
+  height: 100%;
+}
+.survey-slide {
+  flex: 0 0 100%;
+  overflow-y: auto;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+.survey-q-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.survey-q-meta {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--steel);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.survey-bar-row { margin-bottom: 10px; }
+.survey-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  margin-bottom: 5px;
+  color: var(--lead);
+}
+.survey-bar-label span:last-child {
+  color: var(--purple);
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+.survey-bar-track {
+  height: 7px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.survey-bar-fill {
+  height: 100%;
+  background: var(--purple);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  width: 0;
+}
+.survey-q-image {
+  max-width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  display: block;
+  border-radius: 8px;
+  border: 1px solid var(--wire);
+  margin-bottom: 16px;
+}
+
+.participants-section { padding: 20px; }
+.participants-title {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  color: var(--steel);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.participants-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.participant-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.participant-chip img {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(167,139,250,0.35);
+}
+.participant-chip span {
+  font-size: 0.7rem;
+  color: var(--steel);
+  letter-spacing: 0.04em;
+  text-align: center;
+  max-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Carousel dots */
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--wire);
+}
+.carousel-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: all 0.25s;
+  cursor: pointer;
+}
+.carousel-dot.active {
+  background: var(--accent2);
+  transform: scale(1.25);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════════════════ */
+#toast-area {
+  position: fixed;
+  top: calc(var(--bar-h) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast-msg {
+  pointer-events: auto;
+  background: rgba(15,23,42,0.96);
+  color: var(--ink);
+  padding: 10px 18px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  animation: toastIn 0.3s ease;
+  max-width: 90vw;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.toast-msg.err     { border-left: 3px solid var(--accent); }
+.toast-msg.ok      { border-left: 3px solid var(--green); }
+.toast-msg.info    { border-left: 3px solid var(--accent2); }
+@keyframes toastIn {
+  from { opacity:0; transform: translateY(-12px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+</style>
 </head>
 <body>
 
-<div class="container">
+<!-- ═══ MASTHEAD ═══════════════════════════════════════════════════════════ -->
+<header id="masthead">
+  <a href="Q&A.html" class="mh-back" title="Back to games">
+    <i class="fas fa-arrow-left"></i>
+  </a>
 
-  <header>
-    <a href="Q&A.html" class="back-btn" title="Back to games"><i class="fas fa-arrow-left"></i></a>
-    <h1 id="gameTitle">Loading game...</h1>
-    <div class="header-actions" id="headerActions">
-  <!-- Buttons will be injected here by JS -->
-</div>
+  <div class="mh-info">
+    <div class="mh-game-name" id="mh-game-name">LOADING GAME...</div>
+    <div class="mh-game-meta" id="mh-game-meta">&nbsp;</div>
+  </div>
 
-    <!-- Leaderboard area – hidden until button clicked -->
-  <div id="leaderboardSection">
-    <h2 style="text-align:center; color:#60a5fa; margin-bottom:20px;">Leaderboard</h2>
-    <div id="leaderboardList" class="leaderboard-list">
-      <div class="no-leaders">Click "Leaderboard" to load rankings</div>
+  <div class="mh-tools">
+    <div class="mh-timer" id="mh-timer" style="display:none;">
+      <i class="fas fa-clock" style="font-size:0.75rem; opacity:0.7;"></i>
+      <span id="timer-val">--:--</span>
     </div>
+    <button class="mh-btn" id="btn-board" title="Leaderboard / Results" style="display:none;">
+      <i class="fas fa-trophy"></i>
+    </button>
   </div>
+</header>
 
-<div id="timerDisplay" style="
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #60a5fa;
-  background: rgba(15,23,42,0.6);
-  padding: 8px 16px;
-  border-radius: 12px;
-  min-width: 90px;
-  text-align: center;
-  margin: 12px auto 20px;
-">
-  --:--
+<!-- ═══ STAGE ══════════════════════════════════════════════════════════════ -->
+<div id="stage">
+  <div class="stage-inner">
+
+    <!-- Loading state -->
+    <div class="state-view" id="loading-state">
+      <div class="state-spinner"></div>
+      <div class="state-label">Loading game...</div>
+    </div>
+
+    <!-- Question area -->
+    <div id="question-wrap" style="display:none;">
+      <div class="q-header">
+        <div class="q-num" id="q-num">Q1</div>
+        <div class="q-text" id="q-text"></div>
+      </div>
+      <div class="q-image-wrap" id="q-image-wrap">
+        <img id="q-image" src="" alt="" loading="lazy"
+             onerror="this.closest('.q-image-wrap').style.display='none'">
+      </div>
+      <div class="choices-list" id="choices-list"></div>
+      <div id="reason-box">
+        <strong>EXPLANATION</strong>
+        <span id="reason-text"></span>
+      </div>
+    </div>
+
+    <!-- Nav footer -->
+    <div class="nav-foot" id="nav-foot" style="display:none;">
+      <button class="nav-btn" id="btn-back" disabled>
+        <i class="fas fa-chevron-left"></i> Back
+      </button>
+      <button class="nav-btn primary" id="btn-next">
+        Next <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Final screen -->
+    <div id="final-screen">
+      <div class="final-card" id="final-card"></div>
+    </div>
+
+  </div>
 </div>
 
-  </header>
+<!-- Progress bar -->
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div id="q-counter"></div>
 
-  <div id="currentQuestion" class="question-slide"></div>
-
-  <div id="finalScreen" style="display:none;">
-    <div class="score-final">Game Over!</div>
-    <p id="scoreText" style="text-align:center; font-size:1.4rem; margin:16px 0;"></p>
+<!-- ═══ BOARD OVERLAY ══════════════════════════════════════════════════════ -->
+<div id="board-overlay">
+  <div class="board-sheet">
+    <div class="board-head">
+      <span class="board-head-title" id="board-title">LEADERBOARD</span>
+      <button class="board-close" id="board-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="board-body" id="board-body"></div>
+    <div class="carousel-dots" id="carousel-dots" style="display:none;"></div>
   </div>
-
-  
-
- <button id="backButton" class="next-btn" style="background: linear-gradient(135deg, #6b7280, #9ca3af); margin-right: 12px; display: none;">
-  Back
-</button>
-<button id="nextButton" class="next-btn">Next</button>
 </div>
 
+<div id="toast-area"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════════════ -->
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHIx3R3eU-2A9rSIMxRX8hoHfY5rehFclVkUiGI5tSl12UM7h9fg4Q_kZhMskw5rrX/exec';
+'use strict';
 
-const urlParams = new URLSearchParams(window.location.search);
-const gameId = urlParams.get('gameId');
-const username = localStorage.getItem("userName") || "";
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
 
-let currentGame = null;
-let currentQuestionIndex = 0;
-let score = 0;
-let timerInterval = null;
-let leaderboardLoaded = false;
-let surveyResponses = {};  // { questionIndex: chosenChoiceIndex }
-let hasAlreadySubmitted = false;  // Will be set after checking on load
-let quizResponses = {};   // { questionIndex: chosenChoiceIndex }
+const gameId  = new URLSearchParams(location.search).get('gameId');
+const username = localStorage.getItem('userName') || '';
 
-document.getElementById("backButton").addEventListener("click", () => {
-  if (currentQuestionIndex > 0) {
-    showQuestion(currentQuestionIndex - 1);
-  }
-});
+if (!username) location.href = 'index.html';
 
-if (!gameId || !username) {
-  document.getElementById("currentQuestion").innerHTML = '<div class="empty">Invalid game or not logged in</div>';
-} else {
-  loadGame();
-}
+let currentGame     = null;
+let currentIdx      = 0;
+let score           = 0;
+let timerInterval   = null;
+let quizResponses   = {};   // { idx: choiceIndex }
+let surveyResponses = {};   // { idx: choiceIndex }
+let hasSubmitted    = false;
+let boardLoaded     = false;
+let boardMode       = 'leaderboard'; // or 'survey'
+let surveySlideIdx  = 0;
+let surveySlides    = [];
 
-// Toggle leaderboard visibility
-document.getElementById("showLeaderboardBtn").addEventListener("click", () => {
-  const section = document.getElementById("leaderboardSection");
-  if (section.style.display === "block") {
-    section.style.display = "none";
-  } else {
-    section.style.display = "block";
-    if (!leaderboardLoaded) {
-      loadLeaderboard();
-      leaderboardLoaded = true;
-    }
-  }
-});
-
-function showToast(message, type = "info") {
-  const toast = document.createElement("div");
-  toast.textContent = message;
-  toast.style.cssText = `
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    padding: 12px 24px; border-radius: 8px; color: white; font-weight: 500;
-    z-index: 9999; min-width: 240px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  `;
-
-  if (type === "success") toast.style.background = "#10b981";
-  else if (type === "error")   toast.style.background = "#ef4444";
-  else if (type === "info")    toast.style.background = "#3b82f6";
-  else                         toast.style.background = "#6b7280";
-
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transition = "opacity 0.6s";
-    setTimeout(() => toast.remove(), 600);
-  }, 2800);
-}
-
-function getLh3Link(url) {
+/* ── UTILITY ─────────────────────────────────────────────────────── */
+function lh3(url) {
   if (!url) return '';
-  const id = url.match(/[-\w]{25,}/)?.[0];
-  return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
+  const m = url.match(/[-\w]{25,}/);
+  return m ? `https://lh3.googleusercontent.com/d/${m[0]}` : url;
 }
 
+function fallbackAvatar(name) {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=60a5fa&size=88`;
+}
+
+/* ── TOAST ──────────────────────────────────────────────────────── */
+function toast(msg, type = 'info', dur = 3400) {
+  const area = document.getElementById('toast-area');
+  const el = document.createElement('div');
+  el.className = `toast-msg ${type}`;
+  el.textContent = msg;
+  area.appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+/* ── API ─────────────────────────────────────────────────────────── */
+async function api(params) {
+  const r = await fetch(`${SCRIPT_URL}?${new URLSearchParams(params)}`);
+  return r.json();
+}
+
+async function postData(body) {
+  const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(body) });
+  return r.json();
+}
+
+/* ── LOAD GAME ───────────────────────────────────────────────────── */
 async function loadGame() {
-  try {
-    // Step 1: Get game metadata (name, timer, etc.)
-    const gameRes = await fetch(`${SCRIPT_URL}?operation=getQnAGame&gameId=${gameId}&username=${encodeURIComponent(username)}`);
-    const gameData = await gameRes.json();
-    if (gameData.status !== "success") {
-      document.getElementById("currentQuestion").innerHTML = '<div class="empty">Failed to load game</div>';
-      return;
-    }
-    currentGame = gameData.game;
-
-    // ── Check if user already submitted this survey ────────────────────────
-if (currentGame.mode === "survey") {
-  try {
-    const checkRes = await fetch(
-      `${SCRIPT_URL}?operation=hasUserSubmittedSurvey&gameId=${gameId}&username=${encodeURIComponent(username)}`
-    );
-    const checkData = await checkRes.json();
-
-    if (checkData.status === "success") {
-      hasAlreadySubmitted = !!checkData.submitted;  // true/false from backend
-    } else {
-      console.warn("Submission check failed:", checkData.message);
-    }
-  } catch (err) {
-    console.warn("Could not check if already submitted:", err);
-    // Assume not submitted if check fails (safer default)
-    hasAlreadySubmitted = false;
+  if (!gameId) {
+    showError('No game ID provided.');
+    return;
   }
-}
-// Dynamically create the correct button
-const actionsDiv = document.getElementById("headerActions");
-actionsDiv.innerHTML = ""; // clear
 
-if (currentGame.mode === "survey") {
-  const resultsBtn = document.createElement("button");
-  resultsBtn.className = "leaderboard-btn"; // reuse style, or make new class
-  resultsBtn.innerHTML = '<i class="fas fa-chart-bar"></i> View Results';
-  resultsBtn.onclick = () => showSurveyResults();
-  actionsDiv.appendChild(resultsBtn);
-} else {
-  const lbBtn = document.createElement("button");
-  lbBtn.id = "showLeaderboardBtn";
-  lbBtn.className = "leaderboard-btn";
-  lbBtn.innerHTML = '<i class="fas fa-trophy"></i> Leaderboard';
-  lbBtn.onclick = () => {
-    const section = document.getElementById("leaderboardSection");
-    section.style.display = section.style.display === "block" ? "none" : "block";
-    if (section.style.display === "block" && !leaderboardLoaded) {
-      loadLeaderboard();
-      leaderboardLoaded = true;
-    }
-  };
-  actionsDiv.appendChild(lbBtn);
-}
+  try {
+    const [gameRes, qRes] = await Promise.all([
+      api({ operation: 'getQnAGame', gameId, username }),
+      api({ operation: 'getQnAQuestionsAndChoices', gameId })
+    ]);
 
-    // Step 2: Get ALL questions + choices for this game (you'll need a new backend function)
-    const qRes = await fetch(`${SCRIPT_URL}?operation=getQnAQuestionsAndChoices&gameId=${gameId}`);
-    const qData = await qRes.json();
-    if (qData.status !== "success") {
-      document.getElementById("currentQuestion").innerHTML = '<div class="empty">Failed to load questions</div>';
-      return;
+    if (gameRes.status !== 'success') { showError('Failed to load game.'); return; }
+    if (qRes.status  !== 'success')  { showError('Failed to load questions.'); return; }
+
+    currentGame = { ...gameRes.game, questions: qRes.questions || [] };
+
+    // Check survey submission status
+    if (currentGame.mode === 'survey') {
+      try {
+        const chk = await api({ operation: 'hasUserSubmittedSurvey', gameId, username });
+        hasSubmitted = chk.status === 'success' && !!chk.submitted;
+      } catch {}
     }
 
-    // Combine: attach questions with their choices
-    currentGame.questions = qData.questions.map(q => ({
-      ...q,
-      choices: q.choices || []   // already array from backend
-    }));
+    // Masthead
+    document.getElementById('mh-game-name').textContent = currentGame.name;
+    const modeLabel = currentGame.mode === 'survey' ? 'SURVEY' : 'QUIZ';
+    document.getElementById('mh-game-meta').textContent = `${modeLabel} · ${currentGame.questions.length} QUESTION${currentGame.questions.length !== 1 ? 'S' : ''}`;
 
-    document.getElementById("gameTitle").textContent = currentGame.name;
+    // Board button
+    const btnBoard = document.getElementById('btn-board');
+    btnBoard.style.display = 'flex';
+    btnBoard.querySelector('i').className = currentGame.mode === 'survey' ? 'fas fa-chart-bar' : 'fas fa-trophy';
+    btnBoard.addEventListener('click', openBoard);
 
-    // Show timer only if it exists
-    const timerEl = document.getElementById("timerDisplay");
+    // Timer
     if (currentGame.timer && currentGame.timer > 0) {
-      timerEl.style.display = "block";
+      document.getElementById('mh-timer').style.display = 'flex';
       startTimer(currentGame.timer);
-    } else {
-      timerEl.style.display = "none";
     }
 
+    // Hide loading, show question
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('question-wrap').style.display = 'block';
+    document.getElementById('nav-foot').style.display = 'flex';
     showQuestion(0);
+
   } catch (err) {
     console.error(err);
-    document.getElementById("currentQuestion").innerHTML = '<div class="empty">Network error</div>';
+    showError('Network error — check connection.');
   }
 }
 
-function showQuestion(index) {
-  currentQuestionIndex = index;
-  const q = currentGame.questions[index];
-  const container = document.getElementById("currentQuestion");
+function showError(msg) {
+  document.getElementById('loading-state').innerHTML = `
+    <div style="color:var(--accent);font-size:1.1rem;font-weight:600;">${msg}</div>
+    <div style="font-size:0.8rem;color:var(--steel);letter-spacing:0.06em;margin-top:8px;">
+      <a href="Q&A.html" style="color:var(--accent2);">← BACK TO GAMES</a>
+    </div>`;
+}
 
-  let questionHTML = `<div class="question-text">${q.text || "Question missing"}</div>`;
+/* ── SHOW QUESTION ────────────────────────────────────────────────── */
+function showQuestion(idx) {
+  currentIdx = idx;
+  const q     = currentGame.questions[idx];
+  const total = currentGame.questions.length;
+  const isSurvey = currentGame.mode === 'survey';
 
+  // Q header
+  document.getElementById('q-num').textContent = `Q${idx + 1}`;
+  document.getElementById('q-text').textContent = q.text || 'Question missing';
+
+  // Image
+  const imgWrap = document.getElementById('q-image-wrap');
+  const imgEl   = document.getElementById('q-image');
   if (q.imageLink) {
-    const safeUrl = getLh3Link(q.imageLink);
-    questionHTML += `
-      <img class="question-image"
-           src="${safeUrl}"
-           onerror="this.src='https://via.placeholder.com/320?text=Image+Not+Available'; this.style.opacity=0.7;"
-           alt="Question image">
-    `;
+    imgEl.src = lh3(q.imageLink);
+    imgWrap.style.display = 'block';
+  } else {
+    imgWrap.style.display = 'none';
   }
 
-  questionHTML += `
-    <div class="choices" id="choices"></div>
-    <div class="reason" id="reason">${q.reason || ''}</div>
-  `;
-  container.innerHTML = questionHTML;
-
-  const choicesDiv = document.getElementById("choices");
-
+  // Choices
+  const list = document.getElementById('choices-list');
+  list.innerHTML = '';
   (q.choices || []).forEach((choice, i) => {
-    const btn = document.createElement("button");
-    btn.className = "choice-btn";
-    let html = choice.text || "";
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+
+    let inner = `<span>${choice.text || ''}</span>`;
     if (choice.imageLink) {
-      const safeChoiceUrl = getLh3Link(choice.imageLink);
-      html += `
-        <br>
-        <img src="${safeChoiceUrl}"
-             style="max-width:100%; margin-top:8px; border-radius:8px;"
-             onerror="this.src='https://via.placeholder.com/200?text=Choice+Failed'; this.style.opacity=0.7;"
-             alt="Choice image">
-      `;
+      inner += `<img src="${lh3(choice.imageLink)}" loading="lazy"
+                    onerror="this.style.display='none'" alt="">`;
     }
-    btn.innerHTML = html;
-    btn.onclick = () => selectChoice(i);
-    choicesDiv.appendChild(btn);
+    btn.innerHTML = inner;
+    btn.addEventListener('click', () => selectChoice(i));
+    list.appendChild(btn);
   });
 
-  // ────────────────────────────────────────────────────────────────
-  // Navigation: Back & Next
-  // ────────────────────────────────────────────────────────────────
-  const nextBtn = document.getElementById("nextButton");
-  const backBtn = document.getElementById("backButton");
+  // Reason
+  const reasonBox  = document.getElementById('reason-box');
+  const reasonText = document.getElementById('reason-text');
+  reasonBox.style.display = 'none';
+  reasonText.textContent  = q.reason || '';
 
-  // Back: always visible when not on first question
-  backBtn.style.display = currentQuestionIndex > 0 ? "inline-block" : "none";
-
-  // Default: Next button is visible in survey always, in quiz only if answered
-  let showNext = currentGame.mode === "survey" || quizResponses[index] !== undefined;
-  nextBtn.style.display = showNext ? "inline-block" : "none";
-
-  // ────────────────────────────────────────────────────────────────
-  // IMPORTANT: Button text & behavior depends on whether this is the last question
-  // ────────────────────────────────────────────────────────────────
-  const isLastQuestion = currentQuestionIndex === currentGame.questions.length - 1;
-
-  if (isLastQuestion) {
-    // Last question → special text & action
-    if (currentGame.mode === "survey") {
-      if (hasAlreadySubmitted) {
-        nextBtn.textContent = "Already Submitted";
-        nextBtn.disabled = true;
-        nextBtn.style.opacity = "0.6";
-        nextBtn.onclick = () => showToast("You have already completed this survey", "info");
-      } else {
-        nextBtn.textContent = "Submit Responses";
-        nextBtn.disabled = false;
-        nextBtn.style.opacity = "1";
-        nextBtn.onclick = finishGame;
-      }
-    } else {
-      // Quiz
-      nextBtn.textContent = "Complete Game";
-      nextBtn.disabled = false;
-      nextBtn.onclick = finishGame;
-    }
-  } else {
-    // Not last question → always "Next" when visible
-    nextBtn.textContent = "Next";
-    nextBtn.disabled = false;
-    nextBtn.onclick = () => {
-      if (currentQuestionIndex + 1 < currentGame.questions.length) {
-        showQuestion(currentQuestionIndex + 1);
-      }
-    };
+  // Restore previous answer
+  const prev = isSurvey ? surveyResponses[idx] : quizResponses[idx];
+  if (prev !== undefined) {
+    restoreAnswer(idx, prev, false);
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // Restore previous answer & visual state
-  // ────────────────────────────────────────────────────────────────
-  document.getElementById("reason").style.display = "none";
+  // Progress
+  updateProgress(idx, total);
 
-  const previousChoice = currentGame.mode === "survey"
-    ? surveyResponses[index]
-    : quizResponses[index];
-
-  if (previousChoice !== undefined) {
-    const buttons = document.querySelectorAll("#choices .choice-btn");
-
-    buttons.forEach((btn, i) => {
-      btn.classList.remove("correct", "incorrect", "selected");
-
-      if (i === previousChoice) {
-        btn.classList.add("selected");
-      }
-
-      if (currentGame.mode === "survey") {
-        btn.disabled = false;
-      } else {
-        btn.disabled = true;
-        if (i === q.correctIndex) {
-          btn.classList.add("correct");
-        }
-        if (i === previousChoice && q.correctIndex !== previousChoice) {
-          btn.classList.add("incorrect");
-        }
-        document.getElementById("reason").style.display = "block";
-      }
-    });
-  }
-
-  // Optional survey hint
-  /*
-  if (currentGame.mode === "survey") {
-    const hint = document.createElement("p");
-    hint.style.cssText = "margin-top:16px; color:#94a3b8; font-size:0.95rem; text-align:center;";
-    hint.textContent = "You can change your answer anytime before submitting";
-    choicesDiv.after(hint);
-  }
-  */
+  // Nav buttons
+  updateNavButtons(idx, total);
 }
-function selectChoice(choiceIndex) {
-  const q = currentGame.questions[currentQuestionIndex];
 
-  // ── Remember the choice in BOTH modes ─────────────────────────────
-  // We need this so we can restore the selection when going back
-  if (currentGame.mode === "survey") {
-    surveyResponses[currentQuestionIndex] = choiceIndex;
+/* ── SELECT CHOICE ────────────────────────────────────────────────── */
+function selectChoice(choiceIdx) {
+  const q       = currentGame.questions[currentIdx];
+  const isSurvey = currentGame.mode === 'survey';
+
+  if (isSurvey) {
+    surveyResponses[currentIdx] = choiceIdx;
   } else {
-    // Quiz: remember what was chosen (for restore), but score only once
-    if (quizResponses[currentQuestionIndex] === undefined) {  // only first time
-      quizResponses[currentQuestionIndex] = choiceIndex;
-      const correct = q.correctIndex === choiceIndex;
-      if (correct) score++;
+    if (quizResponses[currentIdx] === undefined) {
+      quizResponses[currentIdx] = choiceIdx;
+      if (q.correctIndex === choiceIdx) score++;
     }
-    // Note: after first answer, further clicks do nothing to score
   }
 
-  // ── Visual update ─────────────────────────────────────────────────
-  const buttons = document.querySelectorAll("#choices .choice-btn");
+  restoreAnswer(currentIdx, isSurvey ? surveyResponses[currentIdx] : quizResponses[currentIdx], true);
+  updateNavButtons(currentIdx, currentGame.questions.length);
+}
 
-  buttons.forEach((btn, i) => {
-    // Clear previous visual states
-    btn.classList.remove("correct", "incorrect", "selected");
+/* ── RESTORE ANSWER (visual) ─────────────────────────────────────── */
+function restoreAnswer(idx, chosen, animate) {
+  const q = currentGame.questions[idx];
+  const isSurvey = currentGame.mode === 'survey';
+  const btns = document.querySelectorAll('#choices-list .choice-btn');
 
-    if (currentGame.mode === "survey") {
-      // Survey: highlight current selection, buttons stay clickable
-      if (i === surveyResponses[currentQuestionIndex]) {
-        btn.classList.add("selected");
-      }
+  btns.forEach((btn, i) => {
+    btn.classList.remove('correct', 'incorrect', 'selected');
+    if (isSurvey) {
       btn.disabled = false;
+      if (i === chosen) btn.classList.add('selected');
     } else {
-      // Quiz: show feedback, disable buttons, but keep selected visible
       btn.disabled = true;
-
-      const chosen = quizResponses[currentQuestionIndex];
-
-      if (chosen !== undefined) {
-        // Show what was actually chosen
-        if (i === chosen) {
-          btn.classList.add("selected");
-        }
-        // Show correct answer
-        if (i === q.correctIndex) {
-          btn.classList.add("correct");
-        }
-        // Mark incorrect if wrong choice was made
-        if (i === chosen && q.correctIndex !== chosen) {
-          btn.classList.add("incorrect");
-        }
-      }
+      if (i === chosen) btn.classList.add('selected');
+      if (i === q.correctIndex) btn.classList.add('correct');
+      if (i === chosen && chosen !== q.correctIndex) btn.classList.add('incorrect');
     }
   });
 
-  // Reason only for quiz
-  document.getElementById("reason").style.display = 
-    currentGame.mode === "survey" ? "none" : "block";
+  if (!isSurvey && q.reason) {
+    const box = document.getElementById('reason-box');
+    box.style.display = 'block';
+    if (animate) {
+      box.style.animation = 'none';
+      box.offsetHeight;
+      box.style.animation = '';
+    }
+  }
+}
 
-  // Always show Next / Submit button in survey (even if changed many times)
-  const nextBtn = document.getElementById("nextButton");
-  nextBtn.style.display = "block";
+/* ── NAV BUTTONS ─────────────────────────────────────────────────── */
+function updateNavButtons(idx, total) {
+  const isSurvey  = currentGame.mode === 'survey';
+  const isLast    = idx === total - 1;
+  const btnBack   = document.getElementById('btn-back');
+  const btnNext   = document.getElementById('btn-next');
+  const answered  = isSurvey ? surveyResponses[idx] !== undefined : quizResponses[idx] !== undefined;
 
-  // ── Last question logic ───────────────────────────────────────────
-  if (currentQuestionIndex === currentGame.questions.length - 1) {
-    if (currentGame.mode === "survey") {
-      if (hasAlreadySubmitted) {
-        nextBtn.textContent = "Already Submitted";
-        nextBtn.disabled = true;
-        nextBtn.style.opacity = "0.6";
-        nextBtn.onclick = () => showToast("You have already completed this survey", "info");
+  btnBack.disabled = idx === 0;
+
+  btnBack.onclick = () => showQuestion(idx - 1);
+
+  // Next / Submit button
+  btnNext.classList.remove('primary', 'submit-btn');
+
+  if (isLast) {
+    if (isSurvey) {
+      btnNext.classList.add('submit-btn');
+      if (hasSubmitted) {
+        btnNext.innerHTML = '<i class="fas fa-check"></i> ALREADY SUBMITTED';
+        btnNext.disabled = true;
       } else {
-        nextBtn.textContent = "Submit Responses";
-        nextBtn.disabled = false;
-        nextBtn.style.opacity = "1";
-        nextBtn.onclick = finishGame;
+        btnNext.innerHTML = '<i class="fas fa-paper-plane"></i> SUBMIT RESPONSES';
+        btnNext.disabled = false;
+        btnNext.onclick = finishGame;
       }
     } else {
-      // Quiz
-      nextBtn.textContent = "Complete Game";
-      nextBtn.disabled = false;
-      nextBtn.onclick = finishGame;
+      btnNext.classList.add('primary');
+      btnNext.innerHTML = '<i class="fas fa-flag-checkered"></i> COMPLETE GAME';
+      btnNext.disabled = !answered;
+      btnNext.onclick = finishGame;
     }
   } else {
-    nextBtn.textContent = "Next";
-    nextBtn.disabled = false;
-    nextBtn.onclick = () => {
-      if (currentQuestionIndex + 1 < currentGame.questions.length) {
-        showQuestion(currentQuestionIndex + 1);
-      }
-    };
+    btnNext.classList.add('primary');
+    btnNext.innerHTML = 'NEXT <i class="fas fa-chevron-right"></i>';
+    if (isSurvey) {
+      btnNext.disabled = false;
+    } else {
+      btnNext.disabled = !answered;
+    }
+    btnNext.onclick = () => showQuestion(idx + 1);
   }
 }
-async function finishGame() {
-  clearInterval(timerInterval);
 
-  const nextBtn = document.getElementById("nextButton");
-  const originalText = nextBtn.textContent;
-
-  nextBtn.disabled = true;
-  nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-
-  // Prevent infinite loading — timeout after 12 seconds
-  const TIMEOUT_MS = 12000;
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS)
-  );
-
-  try {
-    if (currentGame.mode === "survey") {
-      await Promise.race([submitSurveyResponses(), timeoutPromise]);
-
-      showToast("Responses submitted successfully!", "success");
-
-      document.getElementById("scoreText").innerHTML = `
-        <div style="color:#10b981; font-size:1.4rem; margin:16px 0;">
-          <i class="fas fa-check-circle"></i> Thank you!
-        </div>
-        Your responses have been recorded.<br>
-        <small style="color:#94a3b8;">You can now view the aggregated results.</small>
-      `;
-    } else {
-      await Promise.race([submitScore(), timeoutPromise]);
-
-      document.getElementById("scoreText").innerHTML = 
-        `Game completed!<br>Your score: <b>${score} / ${currentGame.questions.length}</b>`;
-    }
-
-    document.getElementById("currentQuestion").style.display = "none";
-    nextBtn.style.display = "none";
-    document.getElementById("finalScreen").style.display = "block";
-
-  } catch (err) {
-    console.error("Finish failed:", err);
-
-    let toastMsg = "Failed to submit – please try again";
-    let finalMsg = "";
-
-    if (err.message === "timeout") {
-      toastMsg = "Submission timed out. Check your connection.";
-    } else if (err.message.includes("already_submitted")) {
-      toastMsg = "You have already submitted this survey.";
-      finalMsg = `
-        <div style="color:#10b981; font-size:1.3rem; margin:16px 0;">
-          <i class="fas fa-check-circle"></i> Already submitted
-        </div>
-        You completed this survey earlier.<br>
-        Feel free to view the results.
-      `;
-      hasAlreadySubmitted = true; // Remember for next time
-    }
-
-    showToast(toastMsg, err.message.includes("already") ? "info" : "error");
-
-    if (finalMsg) {
-      document.getElementById("scoreText").innerHTML = finalMsg;
-      document.getElementById("finalScreen").style.display = "block";
-      nextBtn.style.display = "none";
-    } else {
-      // Allow retry
-      nextBtn.disabled = false;
-      nextBtn.innerHTML = originalText;
-    }
-  }
-}
-async function submitScore() {
-  try {
-    await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        operation: "submitQnAScore",
-        gameId,
-        username,
-        score
-      })
-    });
-  } catch {}
+/* ── PROGRESS ─────────────────────────────────────────────────────── */
+function updateProgress(idx, total) {
+  const pct = total > 1 ? (idx / (total - 1)) * 100 : 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('q-counter').textContent = total ? `${idx + 1} / ${total}` : '';
 }
 
+/* ── TIMER ───────────────────────────────────────────────────────── */
 function startTimer(seconds) {
   let remaining = seconds;
-  const display = document.getElementById("timerDisplay");
+  const timerEl = document.getElementById('mh-timer');
+  const valEl   = document.getElementById('timer-val');
 
-  // Initial display
-  updateTimerDisplay(remaining);
+  const update = () => {
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    valEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    timerEl.classList.toggle('warning', remaining <= 30 && remaining > 10);
+    timerEl.classList.toggle('danger',  remaining <= 10);
+  };
 
+  update();
   timerInterval = setInterval(() => {
     remaining--;
-    updateTimerDisplay(remaining);
-
-    if (remaining <= 10) {
-      display.classList.add("danger");
-    } else if (remaining <= 30) {
-      display.classList.add("warning");
-    }
-
+    update();
     if (remaining <= 0) {
       clearInterval(timerInterval);
-      display.textContent = "Time's up!";
+      valEl.textContent = "TIME'S UP";
       finishGame();
     }
   }, 1000);
 }
 
-async function submitSurveyResponses() {
-  if (Object.keys(surveyResponses).length === 0) {
-    console.warn("No responses to submit");
-    return;
-  }
+/* ── FINISH GAME ─────────────────────────────────────────────────── */
+async function finishGame() {
+  clearInterval(timerInterval);
 
-  console.log(`Submitting ${Object.keys(surveyResponses).length} survey answers...`);
-
-  for (const [qIdxStr, cIdx] of Object.entries(surveyResponses)) {
-    const qIndex = Number(qIdxStr);
-    const question = currentGame.questions[qIndex];
-    const questionId = question.questionId || `${gameId}-q${qIndex + 1}`;
-
-    // ── NEW: Get the actual text of the chosen answer ───────────────────────
-    let choiceText = "";
-    const selectedChoice = question.choices[Number(cIdx)];
-    if (selectedChoice && selectedChoice.text) {
-      choiceText = selectedChoice.text.trim();
-    } else {
-      console.warn(`No text found for choice ${cIdx} on question ${qIndex + 1}`);
-      // Optional: fallback or skip — but better to send empty string
-    }
-
-    try {
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          operation: "recordSurveyResponse",
-          gameId,
-          username,
-          questionId,
-          choiceIndex: Number(cIdx),
-          choiceText: choiceText   // ← ADD THIS LINE
-        })
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} – server error`);
-      }
-
-      const data = await res.json();
-
-      if (data.status !== "success") {
-        if (data.message?.toLowerCase().includes("already submitted") ||
-            data.message?.toLowerCase().includes("duplicate") ||
-            data.message?.toLowerCase().includes("already answered")) {
-          throw new Error("already_submitted");
-        }
-        throw new Error(data.message || "Backend rejected submission");
-      }
-
-      console.log(`Q${qIndex + 1} submitted OK`);
-    } catch (err) {
-      console.error(`Failed Q${qIndex + 1}:`, err);
-      throw err; // Stop on first real error
-    }
-  }
-
-  console.log("All responses submitted successfully");
-}
-function updateTimerDisplay(seconds) {
-  const display = document.getElementById("timerDisplay");
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  display.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-}
-async function loadLeaderboard() {
-  const list = document.getElementById("leaderboardList");
-  list.innerHTML = '<div class="no-leaders">Loading leaderboard...</div>';
+  const btnNext = document.getElementById('btn-next');
+  btnNext.disabled = true;
+  btnNext.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SUBMITTING...';
 
   try {
-    const r = await fetch(`${SCRIPT_URL}?operation=getQnALeaderboard&gameId=${gameId}`);
-    const data = await r.json();
-
-    if (data.status !== "success") {
-      list.innerHTML = '<div class="no-leaders">Could not load leaderboard</div>';
-      return;
+    if (currentGame.mode === 'survey') {
+      await submitSurvey();
+      showFinal('survey');
+      toast('Responses submitted!', 'ok');
+    } else {
+      await postData({ operation: 'submitQnAScore', gameId, username, score });
+      showFinal('quiz');
+      toast('Score saved!', 'ok');
     }
 
+    document.getElementById('question-wrap').style.display = 'none';
+    document.getElementById('nav-foot').style.display = 'none';
+    document.getElementById('final-screen').style.display = 'block';
+
+  } catch (err) {
+    console.error(err);
+    const alreadyDone = err.message?.toLowerCase().includes('already');
+    if (alreadyDone) {
+      hasSubmitted = true;
+      showFinal('survey', true);
+      document.getElementById('question-wrap').style.display = 'none';
+      document.getElementById('nav-foot').style.display = 'none';
+      document.getElementById('final-screen').style.display = 'block';
+      toast('You already submitted this survey', 'info');
+    } else {
+      toast('Submission failed — try again', 'err');
+      btnNext.disabled = false;
+      updateNavButtons(currentIdx, currentGame.questions.length);
+    }
+  }
+}
+
+function showFinal(mode, alreadyDone = false) {
+  const total = currentGame.questions.length;
+  const card = document.getElementById('final-card');
+
+  if (mode === 'quiz') {
+    const pct = Math.round((score / total) * 100);
+    const icon = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '📚';
+    card.innerHTML = `
+      <span class="final-icon">${icon}</span>
+      <div class="final-title">Game Complete</div>
+      <div class="final-score">${score}<span style="font-size:1.4rem;color:var(--steel);">/${total}</span></div>
+      <div class="final-score-label">CORRECT ANSWERS</div>
+      <div class="final-sub">
+        You scored ${pct}%<br>
+        <a href="Q&A.html">← Back to games</a>
+      </div>
+    `;
+  } else {
+    card.innerHTML = `
+      <span class="final-icon">${alreadyDone ? '✅' : '🙏'}</span>
+      <div class="final-title">${alreadyDone ? 'Already Submitted' : 'Thank You!'}</div>
+      <div class="final-sub" style="margin-top:12px;">
+        ${alreadyDone ? 'You completed this survey earlier.' : 'Your responses have been recorded.'}<br>
+        <a href="Q&A.html">← Back to games</a>
+      </div>
+    `;
+  }
+}
+
+/* ── SUBMIT SURVEY ───────────────────────────────────────────────── */
+async function submitSurvey() {
+  for (const [qIdxStr, cIdx] of Object.entries(surveyResponses)) {
+    const qIndex   = Number(qIdxStr);
+    const question = currentGame.questions[qIndex];
+    const questionId = question.questionId || `${gameId}-q${qIndex + 1}`;
+    const choiceText = (question.choices[Number(cIdx)]?.text || '').trim();
+
+    const data = await postData({
+      operation: 'recordSurveyResponses',
+      gameId, username, questionId,
+      choiceIndex: Number(cIdx),
+      choiceText
+    });
+
+    if (data.status !== 'success') {
+      const msg = data.message?.toLowerCase() || '';
+      if (msg.includes('already') || msg.includes('duplicate')) {
+        throw new Error('already_submitted');
+      }
+      throw new Error(data.message || 'Backend error');
+    }
+  }
+}
+
+/* ── BOARD ───────────────────────────────────────────────────────── */
+function openBoard() {
+  const overlay = document.getElementById('board-overlay');
+  const body    = document.getElementById('board-body');
+  const dots    = document.getElementById('carousel-dots');
+  const title   = document.getElementById('board-title');
+
+  if (currentGame.mode === 'survey') {
+    title.textContent = 'SURVEY RESULTS';
+    dots.style.display = 'flex';
+    body.innerHTML = `
+      <div class="state-view" style="padding:40px;">
+        <div class="state-spinner"></div>
+        <div class="state-label">Loading results...</div>
+      </div>`;
+    overlay.classList.add('open');
+    loadSurveyResults();
+  } else {
+    title.textContent = 'LEADERBOARD';
+    dots.style.display = 'none';
+    body.innerHTML = `
+      <div class="state-view" style="padding:40px;">
+        <div class="state-spinner"></div>
+        <div class="state-label">Loading...</div>
+      </div>`;
+    overlay.classList.add('open');
+    loadLeaderboard();
+  }
+}
+
+document.getElementById('board-close').addEventListener('click', () => {
+  document.getElementById('board-overlay').classList.remove('open');
+});
+document.getElementById('board-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('board-overlay'))
+    document.getElementById('board-overlay').classList.remove('open');
+});
+
+async function loadLeaderboard() {
+  const body = document.getElementById('board-body');
+  try {
+    const data = await api({ operation: 'getQnALeaderboard', gameId });
     const leaders = data.leaders || [];
     if (leaders.length === 0) {
-      list.innerHTML = '<div class="no-leaders">No scores yet — be the first!</div>';
+      body.innerHTML = '<div class="state-view" style="padding:40px;"><div class="state-label">NO SCORES YET</div></div>';
       return;
     }
-
-    list.innerHTML = '';
-    leaders.forEach((l, index) => {
-      const item = document.createElement('div');
-      item.className = 'leader-item';
-
-      const rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
-
-      item.innerHTML = `
-        <div class="leader-rank ${rankClass}">${index + 1}</div>
+    body.innerHTML = '';
+    const colors = ['r1', 'r2', 'r3'];
+    leaders.forEach((l, i) => {
+      const row = document.createElement('div');
+      row.className = 'leader-row';
+      row.innerHTML = `
+        <div class="leader-rank ${colors[i] || ''}">${i + 1}</div>
         <div class="leader-name">${l.username}</div>
         <div class="leader-score">${l.score}</div>
       `;
-      list.appendChild(item);
+      body.appendChild(row);
     });
-  } catch (err) {
-    list.innerHTML = '<div class="no-leaders">Error loading leaderboard</div>';
+  } catch {
+    body.innerHTML = '<div class="state-view" style="padding:40px;"><div class="state-label">FAILED TO LOAD</div></div>';
   }
 }
 
-function showSurveyResults() {
-  // Create or reuse modal
-  let modal = document.getElementById("surveyResultsModal");
-  if (!modal) {
-    modal = document.createElement("div");
-    modal.id = "surveyResultsModal";
-    modal.style.cssText = `
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,0.85); display: none;
-      overflow: hidden; touch-action: pan-x;
-    `;
-    document.body.appendChild(modal);
-  }
+async function loadSurveyResults() {
+  const body  = document.getElementById('board-body');
+  const dots  = document.getElementById('carousel-dots');
 
-  modal.innerHTML = `
-    <div style="height:100%; width:100%; position:relative;">
-      <button onclick="document.getElementById('surveyResultsModal').style.display='none'" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#60a5fa; font-size:2.2rem; cursor:pointer; z-index:10;">×</button>
-      
-      <div id="resultsCarousel" style="
-        display:flex; height:100%; transition: transform 0.4s ease;
-        touch-action: pan-x; user-select: none;
-      "></div>
+  try {
+    const [rRes, pRes] = await Promise.all([
+      api({ operation: 'getSurveyResults', gameId }),
+      api({ operation: 'getSurveyParticipants', gameId })
+    ]);
 
-      <div id="carouselDots" style="
-        position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
-        display:flex; gap:12px; z-index:10;
-      "></div>
-    </div>
-  `;
-  modal.style.display = "block";
+    const results      = rRes.results || [];
+    const participants = pRes.participants || [];
 
-  // Loading
-  document.getElementById("resultsCarousel").innerHTML = `
-    <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem;">
-      Loading Survey Results...
-    </div>
-  `;
-
-  // Fetch results + participants
-  Promise.all([
-    fetch(`${SCRIPT_URL}?operation=getSurveyResults&gameId=${gameId}`).then(r => r.json()),
-    fetch(`${SCRIPT_URL}?operation=getSurveyParticipants&gameId=${gameId}`).then(r => r.json())
-  ])
-  .then(([resultsData, participantsData]) => {
-    const results = resultsData.results || [];
-    const participants = participantsData.participants || [];
-
-    if (resultsData.status !== "success") {
-      document.getElementById("resultsCarousel").innerHTML = `
-        <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1.3rem; text-align:center; padding:20px;">
-          ${resultsData.message || "Failed to load results"}
-        </div>
-      `;
+    if (!results.length) {
+      body.innerHTML = '<div class="state-view" style="padding:40px;"><div class="state-label">NO RESPONSES YET</div></div>';
+      dots.style.display = 'none';
       return;
     }
 
-    let slidesHTML = "";
-    let dotsHTML = "";
+    // Build slides
+    surveySlides = [];
+    surveySlideIdx = 0;
 
-    // Questions slides
-    results.forEach((q, qIndex) => {
-      let choicesHTML = "";
-      q.choices.forEach(c => {
-        const percent = c.percent;
-        choicesHTML += `
-          <div style="margin:12px 0;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:1.1rem;">
-              <span>${c.text}</span>
-              <span style="color:#60a5fa; font-weight:600;">${percent}% (${c.count})</span>
-            </div>
-            <div style="background:rgba(255,255,255,0.1); border-radius:8px; height:14px; overflow:hidden;">
-              <div style="background:#3b82f6; height:100%; width:${percent}%; transition:width 0.6s;"></div>
-            </div>
+    // Question slides
+    results.forEach(q => {
+      const slide = document.createElement('div');
+      slide.className = 'survey-slide';
+      let barsHtml = q.choices.map(c => `
+        <div class="survey-bar-row">
+          <div class="survey-bar-label">
+            <span>${c.text}</span>
+            <span>${Math.round(c.percent || 0)}% (${c.count})</span>
           </div>
-        `;
-      });
+          <div class="survey-bar-track">
+            <div class="survey-bar-fill" style="width:${Math.round(c.percent || 0)}%"></div>
+          </div>
+        </div>`).join('');
 
-      slidesHTML += `
-        <div style="flex:0 0 100%; padding:60px 20px 100px; overflow-y:auto; color:white;">
-          <h2 style="margin:0 0 20px; color:#60a5fa; font-size:1.6rem; text-align:center;">${q.questionText}</h2>
-          ${q.questionImage ? `<img src="${getLh3Link(q.questionImage)}" style="max-width:100%; border-radius:12px; margin:0 auto 24px; display:block; max-height:260px;">` : ''}
-          <p style="text-align:center; font-weight:600; margin-bottom:24px; font-size:1.1rem;">Total responses: ${q.totalResponses}</p>
-          <div style="max-width:520px; margin:0 auto;">${choicesHTML}</div>
-        </div>
+      slide.innerHTML = `
+        <div class="survey-q-title">${q.questionText}</div>
+        <div class="survey-q-meta">${q.totalResponses} RESPONSE${q.totalResponses !== 1 ? 'S' : ''}</div>
+        ${q.questionImage ? `<img class="survey-q-image" src="${lh3(q.questionImage)}" loading="lazy" onerror="this.style.display='none'" alt="">` : ''}
+        ${barsHtml}
       `;
-      dotsHTML += `<div style="width:12px; height:12px; border-radius:50%; background:${qIndex===0?'#60a5fa':'rgba(255,255,255,0.3)'}; transition:all 0.3s;"></div>`;
+      surveySlides.push(slide);
     });
 
-    // Participants slide (last one)
-    let participantsHTML = `
-      <div style="flex:0 0 100%; padding:60px 20px 100px; overflow-y:auto; color:white; text-align:center;">
-        <h2 style="margin:0 0 32px; color:#60a5fa; font-size:1.6rem;">Participants (${participants.length})</h2>
-        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:24px; max-width:600px; margin:0 auto;">
-    `;
-    if (participants.length === 0) {
-      participantsHTML += `<p style="color:#94a3b8; font-size:1.2rem;">No participants yet.</p>`;
+    // Participants slide
+    const pSlide = document.createElement('div');
+    pSlide.className = 'survey-slide participants-section';
+    pSlide.innerHTML = `<div class="participants-title">PARTICIPANTS (${participants.length})</div>`;
+    const grid = document.createElement('div');
+    grid.className = 'participants-grid';
+    if (!participants.length) {
+      grid.innerHTML = '<span style="font-size:0.8rem;color:var(--steel);letter-spacing:0.06em;">NONE YET</span>';
     } else {
       participants.forEach(p => {
-        const pic = p.picLink ? getLh3Link(p.picLink) : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username)}&background=60a5fa&color=fff&size=128`;
-        participantsHTML += `
-          <div style="text-align:center;">
-            <img src="${pic}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid #60a5fa; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
-            <div style="margin-top:8px; font-size:1rem; color:#e2e8f0;">${p.username}</div>
-          </div>
-        `;
+        const av = p.picLink ? lh3(p.picLink) : fallbackAvatar(p.username);
+        const chip = document.createElement('div');
+        chip.className = 'participant-chip';
+        chip.innerHTML = `<img src="${av}" onerror="this.src='${fallbackAvatar(p.username)}'" alt=""><span>${p.username}</span>`;
+        grid.appendChild(chip);
       });
     }
-    participantsHTML += `</div></div>`;
+    pSlide.appendChild(grid);
+    surveySlides.push(pSlide);
 
-    slidesHTML += participantsHTML;
-    dotsHTML += `<div style="width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.3); transition:all 0.3s;"></div>`;
+    // Build carousel
+    const slidesWrap = document.createElement('div');
+    slidesWrap.className = 'survey-slides';
+    slidesWrap.id = 'survey-slides';
+    surveySlides.forEach(s => slidesWrap.appendChild(s));
 
-    document.getElementById("resultsCarousel").innerHTML = slidesHTML;
-    document.getElementById("carouselDots").innerHTML = dotsHTML;
+    const carousel = document.createElement('div');
+    carousel.className = 'survey-carousel';
+    carousel.appendChild(slidesWrap);
 
-    // Swipe logic (touch + mouse)
-    const carousel = document.getElementById("resultsCarousel");
-    let isDragging = false, startX = 0, currentTranslate = 0, prevTranslate = 0, currentIndex = 0;
-    const totalSlides = results.length + 1;
+    body.innerHTML = '';
+    body.appendChild(carousel);
 
-    const updateDots = (index) => {
-      document.querySelectorAll("#carouselDots > div").forEach((dot, i) => {
-        dot.style.background = i === index ? "#60a5fa" : "rgba(255,255,255,0.3)";
-      });
-    };
+    // Dots
+    dots.innerHTML = '';
+    surveySlides.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goToSlide(i));
+      dots.appendChild(dot);
+    });
 
-    const setPositionByIndex = () => {
-      currentTranslate = currentIndex * -100;
-      prevTranslate = currentTranslate;
-      carousel.style.transform = `translateX(${currentTranslate}%)`;
-      updateDots(currentIndex);
-    };
+    // Touch / swipe
+    let startX = 0, isDragging = false;
+    const track = slidesWrap;
 
-    // Mouse + touch events
-    const pointerDown = (e) => {
-      isDragging = true;
-      startX = e.type.includes("mouse") ? e.pageX : e.touches[0].clientX;
-      carousel.style.transition = "none";
-    };
-
-    const pointerMove = (e) => {
-      if (!isDragging) return;
-      const currentPosition = e.type.includes("mouse") ? e.pageX : e.touches[0].clientX;
-      const diff = currentPosition - startX;
-      currentTranslate = prevTranslate + diff;
-      carousel.style.transform = `translateX(${currentTranslate}%)`;
-    };
-
-    const pointerUp = () => {
+    carousel.addEventListener('touchstart',  e => { isDragging = true;  startX = e.touches[0].clientX; }, { passive: true });
+    carousel.addEventListener('touchend',    e => {
       if (!isDragging) return;
       isDragging = false;
-      carousel.style.transition = "transform 0.4s ease";
+      const diff = e.changedTouches[0].clientX - startX;
+      if (diff < -50 && surveySlideIdx < surveySlides.length - 1) goToSlide(surveySlideIdx + 1);
+      if (diff >  50 && surveySlideIdx > 0)                        goToSlide(surveySlideIdx - 1);
+    });
 
-      const movedBy = currentTranslate - prevTranslate;
-      if (movedBy < -60 && currentIndex < totalSlides - 1) currentIndex++;
-      if (movedBy > 60 && currentIndex > 0) currentIndex--;
+  } catch {
+    body.innerHTML = '<div class="state-view" style="padding:40px;"><div class="state-label">FAILED TO LOAD</div></div>';
+  }
+}
 
-      setPositionByIndex();
-    };
-
-    carousel.addEventListener("mousedown", pointerDown);
-    carousel.addEventListener("mousemove", pointerMove);
-    carousel.addEventListener("mouseup", pointerUp);
-    carousel.addEventListener("mouseleave", pointerUp);
-
-    carousel.addEventListener("touchstart", pointerDown);
-    carousel.addEventListener("touchmove", pointerMove);
-    carousel.addEventListener("touchend", pointerUp);
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("resultsCarousel").innerHTML = `
-      <div style="flex:0 0 100%; display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:1.3rem;">
-        Network error — try again
-      </div>
-    `;
+function goToSlide(idx) {
+  surveySlideIdx = idx;
+  const track = document.getElementById('survey-slides');
+  if (track) track.style.transform = `translateX(-${idx * 100}%)`;
+  document.querySelectorAll('.carousel-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
   });
 }
+
+/* ── INIT ─────────────────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', loadGame);
 </script>
 </body>
-
 </html>
