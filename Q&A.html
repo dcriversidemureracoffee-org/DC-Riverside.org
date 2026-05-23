@@ -35,2018 +35,2241 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Riverside Connect chat preview">
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #e2e8f0;
-  min-height: 100dvh;
-  display: flex;
-  overflow: hidden; /* keep this */
+ <style>
+/* ═══════════════════════════════════════════════════════════════════════
+   RIVERSIDE Q&A — Matching channels.html design system
+═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ink:        #e2e8f0;
+  --paper:      #0f172a;
+  --cream:      #1e293b;
+  --wire:       rgba(96,165,250,0.18);
+  --steel:      #94a3b8;
+  --lead:       #cbd5e1;
+  --accent:     #ef4444;
+  --accent2:    #60a5fa;
+  --gold:       #facc15;
+  --white:      #f8fafc;
+  --purple:     #a78bfa;
+
+  --font-head:  'Bebas Neue', sans-serif;
+  --font-body:  'DM Sans', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+
+  --bar-h:      56px;
+  --ticker-h:   36px;
+  --total-top:  calc(var(--bar-h) + var(--ticker-h));
 }
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
 html, body {
   height: 100%;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
 }
-    .sidebar {
-      width: 280px;
-      background: rgba(15,23,42,0.94);
-      backdrop-filter: blur(14px);
-      border-right: 1px solid rgba(96,165,250,0.18);
-      overflow-y: auto;
-      flex-shrink: 0;
-      padding: 16px;
-    }
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(96,165,250,0.2);
-      margin-bottom: 16px;
-    }
-    .back-btn {
-      color: #60a5fa;
-      font-size: 1.5rem;
-      text-decoration: none;
-      padding: 8px;
-      border-radius: 50%;
-    }
-    .sidebar h1 {
-      font-size: 1.4rem;
-      color: #60a5fa;
-      font-weight: 700;
-      flex: 1;
-    }
-    .channel-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .channel-tab {
-      padding: 12px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      background: rgba(30,41,59,0.4);
-      transition: all 0.2s;
-    }
-    .channel-tab:hover, .channel-tab.active {
-      background: rgba(96,165,250,0.3);
-    }
-    .channel-tab.active { border-left: 4px solid #60a5fa; }
-    .channel-tab-name { font-weight: 600; font-size: 1.05rem; }
-    .channel-tab-desc { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
-.main {
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MASTHEAD
+═══════════════════════════════════════════════════════════════════════ */
+#masthead {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--bar-h);
+  background: rgba(15,23,42,0.96);
+  border-bottom: 1px solid rgba(96,165,250,0.22);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+}
+
+.mh-back {
+  height: 100%;
+  width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--wire);
+  color: var(--accent2);
+  text-decoration: none;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.mh-back:hover { background: var(--cream); }
+
+.mh-channel-info {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+  overflow: hidden;
+}
+
+.mh-channel-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(96,165,250,0.4);
+  flex-shrink: 0;
+  background: var(--cream);
+}
+
+.mh-channel-name {
+  font-family: var(--font-head);
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  color: var(--accent2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+.mh-channel-meta {
+  font-size: 0.72rem;
+  color: var(--steel);
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mh-tools {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex-shrink: 0;
+  border-left: 1px solid var(--wire);
+}
+
+.mh-btn {
+  height: 100%;
+  width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--wire);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+.mh-btn:last-child { border-right: none; }
+.mh-btn:hover { background: var(--cream); color: var(--accent2); }
+.mh-btn.active { color: var(--accent2); background: var(--cream); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CHANNEL TICKER
+═══════════════════════════════════════════════════════════════════════ */
+#channel-ticker {
+  position: fixed;
+  top: var(--bar-h);
+  left: 0; right: 0;
+  height: var(--ticker-h);
+  background: rgba(15,23,42,0.98);
+  border-bottom: 1px solid rgba(96,165,250,0.15);
+  z-index: 899;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.ticker-label {
+  height: 100%;
+  padding: 0 14px;
+  background: var(--purple);
+  color: var(--paper);
+  font-family: var(--font-head);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ticker-scroll {
+  flex: 1;
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.ticker-scroll::-webkit-scrollbar { display: none; }
+
+.ticker-ch {
+  height: var(--ticker-h);
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.55);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.ticker-ch:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.07); }
+.ticker-ch.active {
+  color: #fff;
+  background: rgba(167,139,250,0.15);
+  border-bottom: 2px solid var(--gold);
+}
+.ticker-ch-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--steel);
+  flex-shrink: 0;
+}
+.ticker-ch.active .ticker-ch-dot { background: var(--gold); }
+
+.ticker-add {
+  height: var(--ticker-h);
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  border-left: 1px solid rgba(255,255,255,0.08);
+}
+.ticker-add:hover { color: var(--gold); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MAIN STAGE — vertical game feed
+═══════════════════════════════════════════════════════════════════════ */
+#stage {
+  position: fixed;
+  top: var(--total-top);
+  left: 0; right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167,139,250,0.4) transparent;
+}
+#stage::-webkit-scrollbar { width: 3px; }
+#stage::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.4); }
+
+#game-feed {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px 0 120px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GAME CARDS
+═══════════════════════════════════════════════════════════════════════ */
+.game-card {
+  background: rgba(30,41,59,0.7);
+  border: 1px solid var(--wire);
+  margin: 0 0 1px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  position: relative;
+}
+@media (min-width: 600px) {
+  .game-card {
+    margin: 0 16px 12px;
+    border-radius: 0;
+  }
+}
+.game-card:hover { border-color: rgba(167,139,250,0.35); }
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--wire);
+  background: rgba(15,23,42,0.7);
+}
+
+.game-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--cream);
+  border: 2px solid rgba(167,139,250,0.35);
+  flex-shrink: 0;
+}
+
+.game-author-block { flex: 1; min-width: 0; }
+.game-author {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--purple);
+  letter-spacing: 0.01em;
+}
+.game-time {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--steel);
+  letter-spacing: 0.06em;
+  margin-top: 1px;
+}
+
+.game-badge {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.game-badge.quiz { color: var(--accent2); border-color: rgba(96,165,250,0.4); }
+.game-badge.survey { color: var(--purple); border-color: rgba(167,139,250,0.4); }
+
+.game-delete-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--steel);
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.game-delete-btn:hover { color: var(--accent); background: rgba(239,68,68,0.12); }
+
+.game-image-wrap {
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+  position: relative;
+  max-height: 260px;
+}
+.game-image-wrap img {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.game-card:hover .game-image-wrap img { transform: scale(1.03); }
+
+.game-image-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 32px 20px 16px;
+  background: linear-gradient(to top, rgba(15,23,42,0.95) 0%, transparent 100%);
+}
+.game-image-title {
+  font-family: var(--font-head);
+  font-size: 1.6rem;
+  letter-spacing: 0.06em;
+  color: #fff;
+  line-height: 1.1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+.game-image-desc {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.7);
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.game-text-block {
+  padding: 18px 20px 14px;
+}
+.game-text-title {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.game-text-desc {
+  font-size: 0.84rem;
+  color: var(--steel);
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.game-foot {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--wire);
+  background: rgba(15,23,42,0.7);
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.game-action {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--steel);
+  cursor: pointer;
+  border-right: 1px solid var(--wire);
+  transition: all 0.15s;
+  background: none;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+  text-decoration: none;
+}
+.game-action:last-child { border-right: none; }
+.game-action:hover { color: var(--ink); background: var(--cream); }
+.game-action.play-action { color: var(--accent2); }
+.game-action.play-action:hover { color: #fff; background: rgba(96,165,250,0.2); }
+.game-action.board-action { color: var(--purple); }
+.game-action.board-action:hover { color: #fff; background: rgba(167,139,250,0.2); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOADING & EMPTY STATES
+═══════════════════════════════════════════════════════════════════════ */
+.state-view {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-}
-    .channel-header {
-      background: rgba(15,23,42,0.94);
-      backdrop-filter: blur(14px);
-      padding: 16px 24px;
-      border-bottom: 1px solid rgba(96,165,250,0.22);
-      flex-shrink: 0;
-    }
-    .channel-title {
-      font-size: 1.7rem;
-      color: #60a5fa;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    .channel-meta { color: #94a3b8; font-size: 0.98rem; }
-   .feed-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-}
-    .feed {
-      max-width: 900px;
-      margin: 0 auto;
-      width: 100%;
-    }
-    .game {
-      background: rgba(30,41,59,0.88);
-      border-radius: 16px;
-      margin-bottom: 28px;
-      border: 1px solid rgba(96,165,250,0.15);
-      overflow: hidden;
-      width: 100%;
-    }
-    .game-header {
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .game-avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2.5px solid rgba(96,165,250,0.45);
-    }
-    .game-author { font-weight: 700; font-size: 1.1rem; color: #60a5fa; }
-    .game-time { color: #94a3b8; font-size: 0.85rem; }
-    .game-content {
-      padding: 0 16px 16px;
-      line-height: 1.6;
-      font-size: 1.05rem;
-      white-space: pre-wrap;
-    }
-    .game-footer {
-      padding: 12px 16px;
-      display: flex;
-      gap: 24px;
-      border-top: 1px solid rgba(96,165,250,0.12);
-      color: #94a3b8;
-    }
-
-    .delete-btn:hover {
-  background: #dc2626 !important;
-  transform: scale(1.04);
-}
-.delete-btn:active {
-  transform: scale(0.97);
-}
-    .play-btn {
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .play-btn:hover {
-      transform: scale(1.05);
-    }
-  /* Base style for both quiz and survey buttons */
-.leaderboard-btn {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);   /* default = quiz blue */
-  color: white;
-  border: none;
-  border-radius: 999px;               /* pill shape / fully rounded */
-  padding: 8px 18px;                  /* nice inner spacing */
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: inline-flex;
   align-items: center;
-  gap: 8px;                           /* space between icon and text */
-  transition: all 0.18s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  white-space: nowrap;                /* prevents text wrapping */
-  min-width: 130px;                   /* prevents shrinking too much */
   justify-content: center;
+  gap: 16px;
+  color: var(--steel);
+  padding: 100px 32px;
   text-align: center;
 }
-
-/* Hover & active states */
-.leaderboard-btn:hover {
-  transform: scale(1.04);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+.loading-masthead {
+  font-family: var(--font-head);
+  font-size: 3rem;
+  letter-spacing: 0.12em;
+  color: var(--purple);
+  opacity: 0.45;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.6; }
+}
+.empty-label {
+  font-family: var(--font-head);
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+  color: var(--steel);
+  opacity: 0.6;
+}
+.empty-sub {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--steel);
 }
 
-.leaderboard-btn:active {
-  transform: scale(0.97);
-}
-
-/* Survey variant – different color */
-.leaderboard-btn.survey {
-  background: linear-gradient(135deg, #8b5cf6, #c084fc);   /* purple-ish for survey */
-}
-    .leaderboard-btn:hover { color: #60a5fa; }
-    .fab {
-      position: fixed;
-      bottom: 32px;
-      right: 32px;
-      width: 64px;
-      height: 64px;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      box-shadow: 0 8px 24px rgba(59,130,246,0.4);
-      cursor: pointer;
-      z-index: 1000;
-      transition: all 0.2s;
-    }
-    .fab:hover {
-      transform: scale(1.1);
-      box-shadow: 0 12px 32px rgba(59,130,246,0.5);
-    }
- .game-panel {
+/* ═══════════════════════════════════════════════════════════════════════
+   CHANNEL DRAWER
+═══════════════════════════════════════════════════════════════════════ */
+#channel-drawer {
   position: fixed;
-  inset: auto 0 0 0;
+  top: var(--total-top);
+  left: 0; right: 0;
   background: rgba(15,23,42,0.98);
-  backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(96,165,250,0.3);
-  padding: 24px 16px 60px;
-  transform: translateY(100%);
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.4s ease-out;
-  z-index: 999;
-  max-height: 88vh;
+  border-bottom: 1px solid rgba(167,139,250,0.3);
+  z-index: 850;
+  transform: translateY(-105%);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  max-height: 65vh;
   overflow-y: auto;
-  display: none;                    /* default hidden */
-  box-shadow: 0 -8px 25px rgba(0,0,0,0.4);
+  backdrop-filter: blur(14px);
 }
+#channel-drawer.open { transform: translateY(0); }
 
-.game-panel.active {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-  display: block !important;        /* force visible */
-}
-    .game-panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .game-panel-close {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 1.6rem;
-      cursor: pointer;
-    }
-    .question-input {
-      width: 100%;
-      padding: 16px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(96,165,250,0.4);
-      color: white;
-      font-size: 1.05rem;
-      margin-bottom: 16px;
-    }
-    .choice-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .choice-input {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .choice-input input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(96,165,250,0.4);
-      color: white;
-    }
-    .correct-checkbox {
-      width: 20px;
-      height: 20px;
-    }
-    .add-choice-btn {
-      color: #60a5fa;
-      cursor: pointer;
-    }
-    .reason-input {
-      width: 100%;
-      padding: 16px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(96,165,250,0.4);
-      color: white;
-      font-size: 1.05rem;
-      min-height: 80px;
-      resize: vertical;
-      margin-bottom: 16px;
-    }
-    .timer-input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(96,165,250,0.4);
-      color: white;
-      margin-bottom: 16px;
-    }
-    .submit-game {
-      padding: 12px 32px;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: white;
-      border: none;
-      border-radius: 999px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .empty, .loading {
-      text-align: center;
-      padding: 140px 32px;
-      color: #94a3b8;
-      font-size: 1.2rem;
-    }
-    #toast-container {
-      position: fixed;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10000;
-      max-width: 90%;
-    }
-    .toast {
-      background: #1e293b;
-      padding: 14px 24px;
-      border-radius: 14px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
-      border-left: 5px solid #3b82f6;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      animation: slideDown 0.35s ease;
-    }
-    .toast.error { border-left-color: #ef4444; }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @media (max-width: 768px) {
-      body { flex-direction: column; }
-      .sidebar {
-        width: 100%;
-        max-height: 45dvh;
-        border-right: none;
-        border-bottom: 1px solid rgba(96,165,250,0.18);
-      }
-      .fab { bottom: 90px; right: 24px; }
-      .game-panel { padding: 20px; }
-    }
-   .feed-wrapper {
-  padding-left: 0;
-  padding-right: 0;
-}
-/* Custom thin beautiful scrollbar */
-.feed-wrapper::-webkit-scrollbar {
-  width: 5px;
-}
-.feed-wrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-.feed-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(96, 165, 250, 0.5);
-  border-radius: 10px;
-}
-.feed-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #60a5fa;
-}
-/* Extra bottom space so last game isn't hidden under FAB */
-.feed {
-  padding-bottom: 120px; /* ← increased safety margin */
-  min-height: 100%; /* helps when few games */
-}
-    .top-nav {
-      background: rgba(15,23,42,0.94);
-      backdrop-filter: blur(14px);
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(96,165,250,0.22);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      position: sticky;
-      top: 0;
-      z-index: 900;
-      flex-shrink: 0;
-    }
-    .channels-btn {
-      background: rgba(96,165,250,0.2);
-      color: #60a5fa;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
-    }
-    .channels-btn:hover {
-      background: rgba(96,165,250,0.4);
-    }
-    .page-title {
-      font-size: 1.3rem;
-      color: #60a5fa;
-      margin: 0;
-      flex: 1;
-      text-align: center;
-    }
-    .channels-panel {
-      position: fixed;
-      top: 0;
-      left: -320px;
-      width: 300px;
-      height: 100%;
-      background: rgba(15,23,42,0.98);
-      backdrop-filter: blur(14px);
-      border-right: 1px solid rgba(96,165,250,0.3);
-      transition: left 0.35s ease;
-      z-index: 950;
-      overflow-y: auto;
-      padding: 16px;
-    }
-    .channels-panel.open {
-      left: 0;
-    }
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(96,165,250,0.2);
-    }
-    .panel-header h2 {
-      margin: 0;
-      color: #60a5fa;
-    }
-    .close-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 2rem;
-      cursor: pointer;
-    }
-    main.main {
-      width: 100%;
-    }
-    @media (max-width: 768px) {
-      .channels-panel {
-        width: 100%;
-        left: -100%;
-      }
-      .channels-panel.open {
-        left: 0;
-      }
-    }
-    .back-btn-top {
-      color: #60a5fa;
-      font-size: 1.4rem;
-      text-decoration: none;
-      padding: 8px 12px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      transition: all 0.2s;
-    }
-    .back-btn-top:hover {
-      background: rgba(96,165,250,0.25);
-      transform: scale(1.1);
-    }
-    .page-title {
-      font-size: 1.3rem;
-      color: #60a5fa;
-      margin: 0;
-      flex: 1;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    @media (max-width: 480px) {
-      .top-nav {
-        padding: 10px 12px;
-        gap: 10px;
-      }
-      .back-btn-top {
-        padding: 6px 10px;
-        font-size: 1.3rem;
-      }
-      .channels-btn {
-        padding: 6px 12px;
-        font-size: 0.95rem;
-      }
-    }
-    .channel-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(6px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: 0.25s ease;
-      z-index: 2000;
-    }
-    .channel-modal.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .channel-modal-content {
-      background: rgba(15,23,42,0.95);
-      padding: 28px;
-      width: 90%;
-      max-width: 420px;
-      border-radius: 18px;
-      border: 1px solid rgba(96,165,250,0.3);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      animation: slideUp 0.3s ease;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(40px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .channel-modal-content h3 {
-      margin-bottom: 18px;
-      color: #60a5fa;
-    }
-    .channel-modal-content input,
-    .channel-modal-content textarea {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(96,165,250,0.4);
-      background: rgba(255,255,255,0.06);
-      color: white;
-      margin-bottom: 14px;
-      font-size: 0.95rem;
-    }
-    .channel-modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    .cancel-btn {
-      background: transparent;
-      border: 1px solid #64748b;
-      color: #94a3b8;
-      padding: 8px 18px;
-      border-radius: 999px;
-      cursor: pointer;
-    }
-    .create-btn {
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      border: none;
-      color: white;
-      padding: 8px 22px;
-      border-radius: 999px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .game-play-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 3000;
-    }
-    .game-play-modal.active {
-      display: flex;
-    }
-    .game-play-content {
-      background: rgba(30,41,59,0.96);
-      border-radius: 16px;
-      width: 90%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 24px;
-      position: relative;
-    }
-    .game-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 1.8rem;
-      cursor: pointer;
-    }
-    .timer-bar {
-      height: 4px;
-      background: #60a5fa;
-      transition: width 1s linear;
-      margin-bottom: 16px;
-    }
-/* Horizontal swipeable question cards container */
-#questionsContainer {
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  overflow-y: hidden;
-  gap: 24px;
-  padding: 20px 0 32px;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: #60a5fa rgba(96,165,250,0.2);
-  -webkit-overflow-scrolling: touch; /* smooth iOS scrolling */
-}
-
-/* Custom scrollbar styling */
-#questionsContainer::-webkit-scrollbar {
-  height: 10px;
-}
-#questionsContainer::-webkit-scrollbar-track {
-  background: rgba(96,165,250,0.1);
-  border-radius: 10px;
-}
-#questionsContainer::-webkit-scrollbar-thumb {
-  background: #60a5fa;
-  border-radius: 10px;
-  border: 2px solid rgba(96,165,250,0.1);
-}
-
-/* Each question card - swipeable slide */
-.question-container {
-  flex: 0 0 360px;                /* fixed width - feels like a full slide */
-  min-width: 360px;
-  background: rgba(30,41,59,0.95);
-  border-radius: 20px;
-  border: 1px solid rgba(96,165,250,0.4);
-  padding: 24px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  scroll-snap-align: start;
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Hover / active feel when swiping or focusing */
-.question-container:hover,
-.question-container:focus-within {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 16px 40px rgba(96,165,250,0.4);
-  border-color: #60a5fa;
-}
-
-/* Inputs & elements inside each card */
-.question-container .question-input,
-.question-container .reason-input,
-.question-container .timer-input {
-  width: 100%;
-  margin-bottom: 16px;
-}
-
-.question-container .preview-area {
-  margin: 16px 0;
-  text-align: center;
-}
-
-.question-container .preview-area img {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 12px;
-  border: 1px solid rgba(96,165,250,0.35);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-  object-fit: contain;
-}
-
-.question-container .choice-container {
-  margin: 20px 0;
-  padding: 16px;
-  background: rgba(15,23,42,0.6);
-  border-radius: 12px;
-}
-
-/* Swipe hint arrows when there are multiple questions */
-#questionsContainer.has-many::before,
-#questionsContainer.has-many::after {
-  content: '';
-  position: sticky;
-  top: 50%;
-  width: 50px;
-  height: 50px;
-  background: rgba(96,165,250,0.3);
-  border-radius: 50%;
+.drawer-head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  color: white;
-  pointer-events: none;
-  z-index: 10;
-  transform: translateY(-50%);
-  backdrop-filter: blur(4px);
-}
-
-#questionsContainer.has-many::before {
-  left: 16px;
-  content: '←';
-}
-
-#questionsContainer.has-many::after {
-  right: 16px;
-  content: '→';
-}
-
-/* Hide arrows when only one question */
-#questionsContainer:not(.has-many)::before,
-#questionsContainer:not(.has-many)::after {
-  display: none;
-}
-
-/* Mobile - cards take almost full width */
-@media (max-width: 768px) {
-  .question-container {
-    flex: 0 0 90vw;
-    min-width: 90vw;
-  }
-}
-
-
-    .choices {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .choice-btn {
-      padding: 12px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(96,165,250,0.4);
-      color: white;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .choice-btn:hover {
-      background: rgba(96,165,250,0.2);
-    }
-    .choice-btn.correct {
-      background: #10b981;
-      border-color: #34d399;
-    }
-    .choice-btn.incorrect {
-      background: #ef4444;
-      border-color: #f87171;
-    }
-    .reason {
-      margin-top: 16px;
-      padding: 12px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 12px;
-      display: none;
-    }
-    .next-btn {
-      margin-top: 16px;
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: white;
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      display: none;
-    }
-    .leaderboard-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.65);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 3000;
-    }
-    .leaderboard-modal.active {
-      display: flex;
-    }
-    .leaderboard-content {
-      background: rgba(30,41,59,0.96);
-      border-radius: 16px;
-      width: 90%;
-      max-width: 420px;
-      max-height: 80vh;
-      overflow-y: auto;
-      border: 1px solid rgba(96,165,250,0.3);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-    }
-    .leaderboard-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(96,165,250,0.25);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .leaderboard-header h3 {
-      margin: 0;
-      color: #60a5fa;
-    }
-    .leaderboard-close {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 1.8rem;
-      cursor: pointer;
-    }
-    .leaderboard-list {
-      padding: 12px 0;
-    }
-    .leader-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 20px;
-      transition: background 0.2s;
-    }
-    .leader-item:hover {
-      background: rgba(96,165,250,0.12);
-    }
-    .leader-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid rgba(96,165,250,0.4);
-    }
-    .leader-info {
-      flex: 1;
-    }
-    .leader-name {
-      font-weight: 600;
-      color: #e2e8f0;
-    }
-    .leader-score {
-      font-size: 0.92rem;
-      color: #94a3b8;
-      margin-top: 2px;
-    }
-    .no-leaders {
-      text-align: center;
-      padding: 40px 20px;
-      color: #94a3b8;
-    }
-
-    /* Game card image + text overlay - centered, compact & cool */
-.game-content {
-  position: relative;
-  text-align: center;
-  padding: 0;
-  background: rgba(30, 41, 59, 0.9);
-  border-radius: 0 0 16px 16px;
-}
-
-/* Image as full background-like cover */
-.game-content img {
-  width: 100%;
-  max-height: 220px;               /* ← compact height */
-  object-fit: cover;               /* crops nicely, fills space */
-  object-position: center;
-  border-radius: 12px 12px 0 0;
-  display: block;
-  margin: 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s ease;
-}
-
-/* Hover zoom on image */
-.game:hover .game-content img {
-  transform: scale(1.04);
-}
-
-/* Cool centered text overlay on image */
-.game-overlay-text {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 20px 16px 16px;
-  background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, transparent 100%);
-  border-radius: 0 0 16px 16px;
-  color: white;
-  text-align: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--wire);
+  position: sticky;
+  top: 0;
+  background: rgba(15,23,42,0.98);
   z-index: 2;
 }
+.drawer-head-title {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  color: var(--purple);
+}
+.drawer-close {
+  background: none;
+  border: none;
+  color: var(--steel);
+  cursor: pointer;
+  font-size: 1.2rem;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.15s;
+}
+.drawer-close:hover { color: var(--purple); }
 
-.game-overlay-text h3 {
-  margin: 0 0 8px;
-  font-size: 1.4rem;
+.channel-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 600px) { .channel-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1000px) { .channel-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+.ch-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--wire);
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--ink);
+  position: relative;
+}
+.ch-item:hover { background: var(--cream); }
+.ch-item.active { background: rgba(167,139,250,0.1); border-left: 3px solid var(--purple); }
+
+.ch-item-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--cream);
+  flex-shrink: 0;
+  border: 2px solid rgba(167,139,250,0.4);
+}
+.ch-item-text { flex: 1; min-width: 0; }
+.ch-item-name { font-weight: 700; font-size: 0.92rem; color: var(--ink); }
+.ch-item-desc {
+  font-size: 0.76rem;
+  color: var(--steel);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ch-item-creator {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--steel);
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+.ch-item-delete {
+  width: 32px; height: 32px;
+  background: none;
+  border: 1px solid var(--wire);
+  color: var(--steel);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.ch-item-delete:hover { background: rgba(239,68,68,0.12); color: var(--accent); border-color: var(--accent); }
+
+.drawer-create-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(167,139,250,0.3);
+  width: 100%;
+  text-align: left;
+  color: var(--purple);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
   font-weight: 700;
-  color: #60a5fa;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+  transition: background 0.15s;
 }
+.drawer-create-btn:hover { background: var(--cream); }
 
-.game-overlay-text p {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  color: #e2e8f0;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
-}
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-  .game-content img {
-    max-height: 180px;
-  }
-  
-  .game-overlay-text {
-    padding: 16px 12px 12px;
-  }
-  
-  .game-overlay-text h3 {
-    font-size: 1.25rem;
-  }
-  
-  .game-overlay-text p {
-    font-size: 0.9rem;
-  }
-}
-
-.delete-confirm-toast {
+/* ═══════════════════════════════════════════════════════════════════════
+   CREATE CHANNEL MODAL
+═══════════════════════════════════════════════════════════════════════ */
+#ch-modal {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(30, 41, 59, 0.98);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 990;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+#ch-modal.open { display: flex; }
+
+.ch-form-sheet {
+  background: rgba(15,23,42,0.98);
+  border: 1px solid rgba(167,139,250,0.3);
   border-radius: 16px;
-  box-shadow: 0 20px 70px rgba(0,0,0,0.6);
-  z-index: 10001;
+  width: 90%;
+  max-width: 420px;
+  animation: zoomIn 0.25s ease;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+}
+@keyframes zoomIn {
+  from { opacity:0; transform: scale(0.95); }
+  to   { opacity:1; transform: scale(1); }
+}
+
+.ch-form-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--wire);
+}
+.ch-form-head h3 {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  color: var(--purple);
+}
+.ch-form-close {
+  background: none; border: none; font-size: 1.3rem;
+  cursor: pointer; color: var(--steel); border-radius: 50%;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  transition: color 0.15s;
+}
+.ch-form-close:hover { color: var(--purple); }
+
+.ch-form-body { padding: 20px; }
+
+.ch-avatar-wrap {
+  width: 80px; height: 80px;
+  margin: 0 auto 20px;
+  position: relative;
+  cursor: pointer;
+}
+.ch-avatar-preview {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2.5px solid rgba(167,139,250,0.45);
+  background: var(--cream);
+  display: block;
+}
+.ch-avatar-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: #fff; font-size: 1.2rem;
+}
+.ch-avatar-wrap:hover .ch-avatar-overlay { opacity: 1; }
+
+.ch-field {
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1px solid rgba(167,139,250,0.4);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+  resize: none;
+}
+.ch-field:focus { border-bottom-color: var(--purple); }
+.ch-field::placeholder { color: var(--steel); }
+
+.ch-form-actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--wire);
+}
+.ch-btn-cancel {
+  flex: 1; height: 42px;
+  background: transparent;
+  border: 1px solid var(--wire);
+  color: var(--steel);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  transition: all 0.15s;
+}
+.ch-btn-cancel:hover { background: var(--cream); }
+.ch-btn-submit {
+  flex: 2; height: 42px;
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-family: var(--font-head);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  border-radius: 999px;
+  transition: opacity 0.15s;
+}
+.ch-btn-submit:hover { opacity: 0.88; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CREATE GAME PANEL (like write panel)
+═══════════════════════════════════════════════════════════════════════ */
+#write-panel {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(15,23,42,0.98);
+  border-top: 1px solid rgba(167,139,250,0.3);
+  z-index: 950;
+  transform: translateY(105%);
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  max-height: 84vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  backdrop-filter: blur(14px);
+}
+#write-panel.open { transform: translateY(0); }
+
+.write-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--wire);
+  position: sticky;
+  top: 0;
+  background: rgba(15,23,42,0.98);
+  z-index: 2;
+}
+.write-head-title {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  color: var(--purple);
+}
+.write-close {
+  width: 36px; height: 36px;
+  background: var(--cream);
+  border: 1px solid var(--wire);
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: all 0.15s;
+}
+.write-close:hover { background: var(--purple); color: var(--paper); }
+
+.write-body { padding: 16px 20px 24px; }
+
+/* Mode selector */
+.mode-selector {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--wire);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.mode-opt {
+  flex: 1;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--steel);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all 0.2s;
+}
+.mode-opt input[type="radio"] { display: none; }
+.mode-opt.selected-quiz { background: rgba(96,165,250,0.18); color: var(--accent2); }
+.mode-opt.selected-survey { background: rgba(167,139,250,0.18); color: var(--purple); }
+.mode-opt:not(.selected-quiz):not(.selected-survey):hover { background: var(--cream); color: var(--ink); }
+
+.write-field {
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1px solid rgba(167,139,250,0.4);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.write-field:focus { border-bottom-color: var(--purple); }
+.write-field::placeholder { color: var(--steel); }
+
+.write-field-small {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 1px solid var(--wire);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.write-field-small:focus { border-bottom-color: var(--purple); }
+.write-field-small::placeholder { color: var(--steel); }
+
+/* Questions area */
+.questions-strip {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 0 16px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167,139,250,0.4) transparent;
+  scroll-snap-type: x mandatory;
+}
+.questions-strip::-webkit-scrollbar { height: 3px; }
+.questions-strip::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.4); }
+
+.question-card {
+  flex: 0 0 300px;
+  min-width: 300px;
+  background: rgba(30,41,59,0.6);
+  border: 1px solid var(--wire);
+  border-radius: 8px;
+  padding: 16px;
+  scroll-snap-align: start;
+  position: relative;
+}
+@media (max-width: 480px) {
+  .question-card { flex: 0 0 88vw; min-width: 88vw; }
+}
+
+.question-num {
+  font-family: var(--font-head);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: var(--purple);
+  margin-bottom: 10px;
+}
+
+.q-field {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 1px solid var(--wire);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  outline: none;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.q-field:focus { border-bottom-color: var(--purple); }
+.q-field::placeholder { color: var(--steel); font-size: 0.82rem; }
+
+.q-img-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--steel);
+  cursor: pointer;
+  padding: 4px 10px;
+  border: 1px solid var(--wire);
+  border-radius: 4px;
+  transition: all 0.15s;
+  margin-bottom: 10px;
+}
+.q-img-label:hover { color: var(--purple); border-color: var(--purple); }
+
+.q-img-preview {
+  width: 100%;
+  max-height: 100px;
+  object-fit: contain;
+  display: none;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--wire);
+}
+
+.choice-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.choice-row input[type="text"] {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  border-bottom: 1px solid var(--wire);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.choice-row input[type="text"]:focus { border-bottom-color: var(--accent2); }
+.choice-row input[type="text"]::placeholder { color: var(--steel); }
+.choice-row input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--accent2);
+  flex-shrink: 0;
+}
+.choice-img-label {
+  font-size: 0.75rem;
+  color: var(--steel);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.choice-img-label:hover { color: var(--accent2); }
+
+.q-reason {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  border-bottom: 1px solid var(--wire);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  outline: none;
+  resize: none;
+  margin-top: 8px;
+  transition: border-color 0.2s;
+}
+.q-reason:focus { border-bottom-color: var(--purple); }
+.q-reason::placeholder { color: var(--steel); }
+
+.add-choice-link {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--accent2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  border: none;
+  background: none;
+  padding: 0;
+  transition: opacity 0.15s;
+}
+.add-choice-link:hover { opacity: 0.75; }
+
+/* Write toolbar (add question / timer) */
+.write-toolbar {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--wire);
+  border-bottom: 1px solid var(--wire);
+  margin: 12px 0 16px;
+}
+.write-tool-btn {
+  height: 40px;
+  padding: 0 16px;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--wire);
+  color: var(--steel);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  transition: all 0.15s;
+}
+.write-tool-btn:hover { color: var(--purple); background: var(--cream); }
+.write-tool-btn:last-child { border-right: none; }
+
+.write-submit {
+  width: 100%;
+  height: 46px;
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  color: #fff;
+  border: none;
+  font-family: var(--font-head);
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+.write-submit:hover { opacity: 0.88; }
+.write-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LEADERBOARD / SURVEY REPORT MODAL
+═══════════════════════════════════════════════════════════════════════ */
+#board-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 980;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+#board-modal.open { display: flex; }
+
+.board-sheet {
+  background: rgba(15,23,42,0.98);
+  border-top: 1px solid rgba(167,139,250,0.3);
+  width: 100%;
+  max-width: 640px;
+  max-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  border-radius: 16px 16px 0 0;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--wire);
+  flex-shrink: 0;
+}
+.board-head-title {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: var(--purple);
+}
+.board-close {
+  background: none; border: none;
+  font-size: 1.2rem; cursor: pointer;
+  color: var(--steel); width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: color 0.15s;
+}
+.board-close:hover { color: var(--purple); }
+
+.board-list {
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167,139,250,0.4) transparent;
+}
+
+.leader-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--wire);
+  transition: background 0.15s;
+}
+.leader-item:hover { background: var(--cream); }
+
+.leader-rank {
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.leader-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%; object-fit: cover;
+  background: var(--cream);
+  border: 2px solid rgba(167,139,250,0.35);
+}
+.leader-name { font-weight: 600; font-size: 0.88rem; color: var(--ink); }
+.leader-score {
+  font-size: 0.7rem;
+  color: var(--steel);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+/* Survey report bars */
+.survey-q-block {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--wire);
+}
+.survey-q-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--purple);
+  margin-bottom: 6px;
+}
+.survey-q-meta {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--steel);
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+.survey-bar-row { margin-bottom: 9px; }
+.survey-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+  color: var(--lead);
+}
+.survey-bar-label span:last-child { color: var(--purple); font-family: var(--font-mono); font-size: 0.72rem; }
+.survey-bar-track {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.survey-bar-fill {
+  height: 100%;
+  background: var(--purple);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.participants-wrap {
+  padding: 16px 20px;
+}
+.participants-title {
+  font-family: var(--font-head);
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: var(--steel);
+  margin-bottom: 14px;
+}
+.participants-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.participant-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 60px;
+}
+.participant-chip img {
+  width: 46px; height: 46px;
+  border-radius: 50%; object-fit: cover;
+  border: 2px solid rgba(167,139,250,0.35);
+}
+.participant-chip span {
+  font-size: 0.7rem;
+  color: var(--steel);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-align: center;
+  max-width: 64px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CONFIRM MODAL
+═══════════════════════════════════════════════════════════════════════ */
+#confirm-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 990;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+#confirm-modal.open { display: flex; }
+
+.confirm-sheet {
+  background: rgba(15,23,42,0.98);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 16px;
   width: 90%;
   max-width: 380px;
   padding: 24px;
-  color: #e2e8f0;
-  animation: fadeIn 0.3s ease;
+  animation: zoomIn 0.25s ease;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
 }
+.confirm-icon {
+  font-size: 2rem;
+  color: #fbbf24;
+  margin-bottom: 12px;
+}
+.confirm-title {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.confirm-sub {
+  font-size: 0.84rem;
+  color: var(--steel);
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+.confirm-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.confirm-cancel {
+  height: 38px;
+  padding: 0 18px;
+  background: transparent;
+  border: 1px solid var(--wire);
+  color: var(--steel);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  border-radius: 999px;
+  transition: all 0.15s;
+}
+.confirm-cancel:hover { background: var(--cream); }
+.confirm-ok {
+  height: 38px;
+  padding: 0 20px;
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-family: var(--font-head);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  border-radius: 999px;
+  transition: opacity 0.15s;
+}
+.confirm-ok:hover { opacity: 0.88; }
 
-.delete-confirm-toast strong {
-  color: #ef4444;
+/* ═══════════════════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════════════════ */
+#toast-area {
+  position: fixed;
+  top: calc(var(--total-top) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
 }
-
-.delete-confirm-toast button:hover {
-  opacity: 0.9;
-  transform: scale(1.03);
+.toast-msg {
+  pointer-events: auto;
+  background: rgba(15,23,42,0.95);
+  color: var(--ink);
+  padding: 10px 18px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  animation: toastIn 0.3s ease;
+  max-width: 90vw;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translate(-50%, -60%); }
-  to   { opacity: 1; transform: translate(-50%, -50%); }
+.toast-msg.err { border-left: 3px solid var(--accent); }
+.toast-msg.ok  { border-left: 3px solid var(--purple); }
+@keyframes toastIn {
+  from { opacity:0; transform: translateY(-12px); }
+  to   { opacity:1; transform: translateY(0); }
 }
-
-.delete-channel-btn {
-  opacity: 0.7;
-  transition: all 0.2s;
-}
-.delete-channel-btn:hover {
-  opacity: 1;
-  transform: scale(1.15);
-  background: #dc2626 !important;
-}
-    
-  </style>
+</style>
 </head>
 <body>
-<!-- Top Navigation Bar -->
-<nav class="top-nav">
-  <a href="index.html" class="back-btn-top" title="Back to main page">
+
+<!-- ═══ MASTHEAD ═══════════════════════════════════════════════════════════ -->
+<header id="masthead">
+  <a href="index.html" class="mh-back" title="Back">
     <i class="fas fa-arrow-left"></i>
   </a>
-  <button id="channelsToggle" class="channels-btn">
-    <i class="fas fa-layer-group"></i> Q&A Channels
-  </button>
-  <h1 class="page-title">Riverside Q&A</h1>
-</nav>
-<!-- Slide-in Channels Panel -->
-<div class="channels-panel" id="channelsPanel">
-  <div class="panel-header">
-    <h2>Q&A Channels</h2>
-    <button id="closeChannels" class="close-btn">×</button>
+
+  <div class="mh-channel-info">
+    <img class="mh-channel-avatar" id="mh-avatar" src="" alt="">
+    <div>
+      <div class="mh-channel-name" id="mh-ch-name">RIVERSIDE</div>
+      <div class="mh-channel-meta" id="mh-ch-meta">SELECT A Q&amp;A CHANNEL</div>
+    </div>
   </div>
-  <div class="channel-list" id="channelList">
-    <div class="loading">Loading channels...</div>
+
+  <div class="mh-tools">
+    <button class="mh-btn" id="btn-channels" title="Switch channel">
+      <i class="fas fa-layer-group"></i>
+    </button>
+    <button class="mh-btn" id="btn-write" title="New game" style="display:none;">
+      <i class="fas fa-edit"></i>
+    </button>
+    <button class="mh-btn" id="btn-refresh" title="Refresh">
+      <i class="fas fa-sync-alt"></i>
+    </button>
   </div>
-  <button id="createChannelBtn" style="display:none; width:100%; margin:16px 0; padding:12px; background:#60a5fa; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer;">
-    + New Q&A Channel
-  </button>
+</header>
+
+<!-- ═══ CHANNEL TICKER ═════════════════════════════════════════════════════ -->
+<div id="channel-ticker">
+  <div class="ticker-label">Q&amp;A</div>
+  <div class="ticker-scroll" id="ticker-scroll"></div>
+  <div class="ticker-add" id="ticker-add" title="Manage channels">
+    <i class="fas fa-ellipsis-v"></i>
+  </div>
 </div>
-<main class="main">
-  <header class="channel-header" id="channelHeader" style="display:none;">
-    <h2 class="channel-title" id="channelTitle"></h2>
-    <div class="channel-meta" id="channelMeta"></div>
-  </header>
- <div class="feed-wrapper">
-  <div class="feed" id="feed">
-    <div class="empty initial-state" id="emptyState">
-      <i class="fas fa-dice" style="font-size:5.5rem; opacity:0.45; margin-bottom:28px; color:#60a5fa;"></i><br>
-      <div style="font-size:1.3rem; color:#cbd5e1; margin:12px 0;">
-        Preparing games list...
-      </div>
-      <small style="color:#94a3b8; font-size:1rem; opacity:0.85;">
-        Loading available games — one moment please
-      </small>
+
+<!-- ═══ STAGE ══════════════════════════════════════════════════════════════ -->
+<div id="stage">
+  <div id="game-feed">
+    <div class="state-view" id="initial-state">
+      <div class="loading-masthead">Q&amp;A</div>
+      <div class="empty-sub">LOADING CHANNELS...</div>
     </div>
   </div>
 </div>
-</main>
-<!-- Floating + Button -->
-<div class="fab" id="fabGame" onclick="openGamePanel()" style="display:none;">
-  <i class="fas fa-plus"></i>
-</div>
-<!-- Game Creation Panel -->
-<div class="game-panel" id="gamePanel">
-  <div class="game-panel-header">
-    <h3>Create Q&A Game</h3>
-    <button class="game-panel-close" onclick="closeGamePanel()">×</button>
+
+<!-- ═══ WRITE PANEL (Create Game) ═════════════════════════════════════════ -->
+<div id="write-panel">
+  <div class="write-head">
+    <span class="write-head-title">NEW GAME</span>
+    <button class="write-close" id="write-close"><i class="fas fa-times"></i></button>
   </div>
-  <input id="gameName" class="question-input" placeholder="Game Name">
-  <input id="gameDesc" class="question-input" placeholder="Description (optional)">
-  <input id="gameTimer" class="timer-input" type="number" placeholder="Timer in seconds (optional)">
-
-  <div style="margin: 16px 0; padding: 12px; background: rgba(96,165,250,0.12); border-radius: 12px;">
-  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Game Type</label>
-  <div style="display: flex; gap: 16px;">
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-      <input type="radio" name="gameMode" value="quiz" checked>
-      Quiz (timed, scored, leaderboard)
-    </label>
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-      <input type="radio" name="gameMode" value="survey">
-      Survey (opinion, results summary, no scoring)
-    </label>
-  </div>
-</div>
-
-  <div id="questionsContainer"></div>
-  <button onclick="addQuestion()" class="add-choice-btn"><i class="fas fa-plus"></i> Add Question</button>
-  <button class="submit-game" onclick="submitGame()">Create Game</button>
-</div>
-
-
-<!-- Create Q&A Channel Modal -->
-<div id="channelModal" class="channel-modal">
-  <div class="channel-modal-content">
-    <h3>Create New Q&A Channel</h3>
-    <div style="position:relative; width:110px; height:110px; margin:0 auto 20px;">
-      <img id="channelAvatarPreview"
-           src="https://via.placeholder.com/110?text=Icon"
-           style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:3px solid #60a5fa; box-shadow:0 4px 12px rgba(96,165,250,0.3);">
-      <label for="channelAvatarInput"
-             style="position:absolute; inset:0; background:linear-gradient(135deg,rgba(59,130,246,0.7),rgba(96,165,250,0.7)); opacity:0; transition:opacity 0.25s; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:50%;">
-        <i class="fas fa-camera" style="font-size:2.2rem; color:white; opacity:0.9;"></i>
+  <div class="write-body">
+    <div class="mode-selector" id="mode-selector">
+      <label class="mode-opt selected-quiz">
+        <input type="radio" name="gameMode" value="quiz" checked>
+        <i class="fas fa-trophy"></i> QUIZ
       </label>
-      <input type="file" id="channelAvatarInput" accept="image/*" style="display:none;">
+      <label class="mode-opt">
+        <input type="radio" name="gameMode" value="survey">
+        <i class="fas fa-chart-bar"></i> SURVEY
+      </label>
     </div>
-    <input type="text" id="channelNameInput" placeholder="Q&A Channel name" />
-    <textarea id="channelDescInput" placeholder="Short description (optional)"></textarea>
-    <div class="channel-modal-actions">
-      <button class="cancel-btn" onclick="closeChannelModal()">Cancel</button>
-      <button class="create-btn" onclick="submitQnAChannel()">Create</button>
-    </div>
-  </div>
-</div>
+    <input type="text" class="write-field" id="write-name" placeholder="Game name">
+    <input type="text" class="write-field" id="write-desc" placeholder="Description (optional)">
 
-<!-- Leaderboard Modal -->
-<div id="leaderboardModal" class="leaderboard-modal">
-  <div class="leaderboard-content">
-    <div class="leaderboard-header">
-      <h3>Leaderboard</h3>
-      <button class="leaderboard-close" onclick="closeLeaderboardModal()">×</button>
-    </div>
-    <div class="leaderboard-list" id="leaderboardList"></div>
-  </div>
-</div>
-<div id="toast-container"></div>
-<script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOAI4cpyo_kuYgsP3RDZz0oR_PgwZv7ATu09mAHISUctg6wAe5uJSCy3AmUV0O1jlV/exec'; 
-let currentUserName = localStorage.getItem("userName") || "";
-let currentQnAChannelId = null;
-let allQnAChannels = [];
-let isUserApproved = false;
-if (!currentUserName) window.location.href = "index.html";
-const channelList = document.getElementById("channelList");
-const channelHeader = document.getElementById("channelHeader");
-const channelTitle = document.getElementById("channelTitle");
-const channelMeta = document.getElementById("channelMeta");
-const feed = document.getElementById("feed");
-const fabGame = document.getElementById("fabGame");
-const gamePanel = document.getElementById("gamePanel");
-const leaderboardModal = document.getElementById("leaderboardModal");
-let selectedChannelAvatar = null;
-let questions = [];
-let currentGame = null;
-let timerInterval = null;
-
-function getLh3Link(url) {
-  if (!url) return '';
-  const id = url.match(/[-\w]{25,}/)?.[0];
-  return id ? `https://lh3.googleusercontent.com/d/${id}` : url;
-}
-
-function showToast(msg, type = 'success') {
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${msg}`;
-  document.getElementById('toast-container').appendChild(t);
-  setTimeout(() => t.remove(), 4000);
-}
-
-async function checkCreateQnAChannelPermission() {
-  try {
-    const r = await fetch(`${SCRIPT_URL}?operation=getUserStatus&name=${encodeURIComponent(currentUserName)}`);
-    const data = await r.json();
-    if (data.status === "success") {
-      const canCreate = data.userStatus === "approved" && data.isAdmin === true;
-      isUserApproved = data.userStatus === "approved";
-      document.getElementById("createChannelBtn").style.display = canCreate ? "block" : "none";
-    }
-  } catch(e) {
-    console.error("Permission check failed", e);
-  }
-}
-
-document.getElementById("createChannelBtn").onclick = () => {
-  document.getElementById("channelModal").classList.add("active");
-};
-
-async function loadAllQnAChannels() {
-  try {
-    const r = await fetch(`${SCRIPT_URL}?operation=getAllQnAChannels`);
-    const resp = await r.json();
-    allQnAChannels = resp.channels || [];
-    channelList.innerHTML = allQnAChannels.length === 0
-      ? '<div class="empty" style="padding:32px;text-align:center;">No Q&A channels yet</div>'
-      : '';
-    allQnAChannels.forEach(ch => {
-      const tab = document.createElement("div");
-      tab.className = "channel-tab";
-      const avatarSrc = ch.picLink ? getLh3Link(ch.picLink) : 'https://via.placeholder.com/48?text=' + ch.name.charAt(0).toUpperCase();
-     tab.innerHTML = `
-  <div style="display:flex; align-items:center; gap:12px; flex:1;">
-    <img src="${avatarSrc}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid rgba(96,165,250,0.4); flex-shrink:0;" onerror="this.src='https://via.placeholder.com/48?text=@'">
-    <div style="flex:1;">
-      <div class="channel-tab-name">${ch.name}</div>
-      <div class="channel-tab-desc">${ch.description || "No description"}</div>
-    </div>
-  </div>
-  <button class="delete-channel-btn" style="display:none; background:#ef4444aa; color:white; border:none; padding:6px 10px; border-radius:50%; cursor:pointer;" 
-          onclick="event.stopPropagation(); confirmDeleteQnAChannel('${ch.id}', '${ch.name.replace(/'/g,"\\'")}')">
-    <i class="fas fa-trash-alt"></i>
-  </button>
-`;
-
-// Show delete button only to creator
-const normalizedCreator = (ch.creator || '').trim().toLowerCase();
-const normalizedUser    = currentUserName.trim().toLowerCase();
-const isCreator = normalizedCreator === normalizedUser && normalizedUser !== '';
-tab.querySelector('.delete-channel-btn').style.display = isCreator ? 'block' : 'none';
-      tab.onclick = () => openQnAChannelTab(ch.id, ch.name, ch.description, ch.creator, ch.created, ch.picLink);
-      channelList.appendChild(tab);
-    });
-       // ── Decide which Q&A channel to open automatically ───────────────────────────────
-    let channelToOpen = null;
-
-    // 1. Highest priority: ?channelId= from URL (from dashboard click)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlChannelId = urlParams.get('channelId');
-
-    if (urlChannelId) {
-      channelToOpen = allQnAChannels.find(ch => ch.id === urlChannelId);
-      if (channelToOpen) {
-        console.log("Opening specific Q&A channel from URL:", urlChannelId);
-      } else {
-        console.warn("Channel ID from URL not found:", urlChannelId);
-      }
-    }
-
-    // 2. Fallback: only use last viewed if no URL parameter was provided
-    if (!channelToOpen) {
-      const lastId = localStorage.getItem("lastQnAChannelId");
-      if (lastId) {
-        channelToOpen = allQnAChannels.find(ch => ch.id === lastId);
-      }
-    }
-
-    // 3. Last resort: open the first channel if nothing else matches
-    if (!channelToOpen && allQnAChannels.length > 0) {
-      channelToOpen = allQnAChannels[0];
-    }
-
-    // 4. Open it and remember as last viewed
-    if (channelToOpen) {
-      openQnAChannelTab(
-        channelToOpen.id,
-        channelToOpen.name,
-        channelToOpen.description,
-        channelToOpen.creator,
-        channelToOpen.created,
-        channelToOpen.picLink
-      );
-      // Save as last viewed (so next time without ?channelId it remembers this one)
-      localStorage.setItem("lastQnAChannelId", channelToOpen.id);
-    } else {
-      console.log("No Q&A channels available");
-    }
-  } catch (err) {
-    channelList.innerHTML = '<div class="empty">Failed to load Q&A channels</div>';
-  }
-}
-
-function closeChannelModal() {
-  document.getElementById("channelModal").classList.remove("active");
-  document.getElementById("channelNameInput").value = "";
-  document.getElementById("channelDescInput").value = "";
-  selectedChannelAvatar = null;
-  document.getElementById('channelAvatarPreview').src = "https://via.placeholder.com/110?text=Icon";
-}
-
-
-// ── New function: Show survey report in a modal ────────────────────────────────
-async function showSurveyReport(gameId) {
-  // Reuse the existing leaderboard modal styling (or create new if you prefer)
-  const modal = document.getElementById("leaderboardModal");
-  const list = document.getElementById("leaderboardList");
-  
-  // Change title
-  modal.querySelector('.leaderboard-header h3').textContent = "Survey Report";
-  
-  list.innerHTML = '<div class="no-leaders">Loading report...</div>';
-  modal.classList.add("active");
-
-  try {
-    // 1. Get survey summary statistics
-    const res = await fetch(`${SCRIPT_URL}?operation=getSurveyResults&gameId=${gameId}`);
-    const data = await res.json();
-
-    if (data.status !== "success" || !data.results?.length) {
-      list.innerHTML = '<div class="no-leaders">No responses yet</div>';
-      return;
-    }
-
-    // 2. Get list of participants
-    const partRes = await fetch(`${SCRIPT_URL}?operation=getSurveyParticipants&gameId=${gameId}`);
-    const partData = await partRes.json();
-    const participants = partData.participants || [];
-
-    let html = '<div style="padding: 0 16px 16px;">';
-
-    // Questions + response stats
-    data.results.forEach((q, idx) => {
-      html += `
-        <div style="margin: 24px 0; padding-bottom: 20px; ${idx < data.results.length-1 ? 'border-bottom: 1px solid rgba(96,165,250,0.18);' : ''}">
-          <div style="font-weight: 600; color: #60a5fa; margin-bottom: 8px;">
-            Q${idx+1}: ${q.questionText}
-          </div>
-          ${q.questionImage ? `<img src="${getLh3Link(q.questionImage)}" style="max-width:100%; border-radius:10px; margin:12px 0; display:block;">` : ''}
-          <div style="color: #94a3b8; margin-bottom: 16px; font-size: 0.95rem;">
-            Total responses: <strong style="color:#e2e8f0;">${q.totalResponses}</strong>
-          </div>
-      `;
-
-      q.choices.forEach(choice => {
-        const percent = Math.round(choice.percent || 0);
-        html += `
-          <div style="margin: 10px 0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 0.98rem;">
-              <span>${choice.text}</span>
-              <span style="color: #60a5fa; font-weight: 600;">${percent}% (${choice.count})</span>
-            </div>
-            <div style="height: 10px; background: rgba(255,255,255,0.08); border-radius: 5px; overflow: hidden;">
-              <div style="height: 100%; width: ${percent}%; background: #8b5cf6; transition: width 0.5s ease;"></div>
-            </div>
-          </div>
-        `;
-      });
-
-      html += '</div>';
-    });
-
-    // Participants section
-    html += `
-      <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(96,165,250,0.18);">
-        <div style="font-weight: 600; color: #60a5fa; margin-bottom: 16px;">
-          Participants (${participants.length})
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
-    `;
-
-    if (participants.length === 0) {
-      html += '<div style="color: #94a3b8; font-style: italic;">No participants yet</div>';
-    } else {
-      participants.forEach(p => {
-        const avatar = p.picLink ? getLh3Link(p.picLink) : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.username)}&background=60a5fa&color=fff&size=128`;
-        html += `
-          <div style="text-align: center; min-width: 80px;">
-            <img src="${avatar}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #60a5fa;">
-            <div style="margin-top: 6px; font-size: 0.9rem;">${p.username}</div>
-          </div>
-        `;
-      });
-    }
-
-    html += '</div></div></div>';
-
-    list.innerHTML = html;
-
-  } catch (err) {
-    console.error(err);
-    list.innerHTML = '<div class="no-leaders">Failed to load survey report</div>';
-  }
-}
-
-// Optional: override close function so it resets title when closing
-function closeLeaderboardModal() {
-  leaderboardModal.classList.remove("active");
-  // Reset title for next time
-  leaderboardModal.querySelector('.leaderboard-header h3').textContent = "Leaderboard";
-}
-
-async function submitQnAChannel() {
-  const name = document.getElementById("channelNameInput").value.trim();
-  const desc = document.getElementById("channelDescInput").value.trim();
-  if (!name) {
-    showToast("Q&A Channel name required", "error");
-    return;
-  }
-  const payload = {
-    operation: "createQnAChannel",
-    creator: currentUserName,
-    name,
-    description: desc
-  };
-  if (selectedChannelAvatar) {
-    payload.imageData = selectedChannelAvatar.base64;
-    payload.imageName = selectedChannelAvatar.name;
-  }
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (data.status === "success") {
-      showToast("Q&A Channel created!", "success");
-      closeChannelModal();
-      loadAllQnAChannels();
-    } else {
-      showToast(data.message || "Failed to create Q&A channel", "error");
-    }
-  } catch (err) {
-    showToast("Network error – try again", "error");
-  }
-}
-
-document.getElementById('channelAvatarInput')?.addEventListener('change', function(e) {
-  const file = e.target.files?.[0];
-  if (!file || !file.type.startsWith('image/')) {
-    showToast("Please select an image file", "error");
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    selectedChannelAvatar = {
-      base64: ev.target.result.split(',')[1],
-      name: file.name,
-      type: file.type
-    };
-    document.getElementById('channelAvatarPreview').src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-async function openQnAChannelTab(channelId, name, description, creator, created, picLink) {
-  if (!channelId) return;
-  localStorage.setItem("lastQnAChannelId", channelId);
-  currentQnAChannelId = channelId;
-  document.querySelectorAll('.channel-tab').forEach(el => el.classList.remove('active'));
-  const active = [...document.querySelectorAll('.channel-tab')].find(el =>
-    el.querySelector('.channel-tab-name')?.textContent === name
-  );
-  if (active) active.classList.add('active');
-  channelTitle.textContent = name;
-  channelMeta.textContent = `By ${creator} on ${new Date(created).toLocaleDateString()}`;
-  channelHeader.style.display = 'block';
- // Show FAB only if current user is the creator of this channel
-// More reliable creator check (case-insensitive + trim)
-const normalizedCreator = (creator || '').trim().toLowerCase();
-const normalizedUser = (currentUserName || '').trim().toLowerCase();
-const isCreator = normalizedCreator === normalizedUser && normalizedUser !== '';
-
-fabGame.style.display = isCreator ? 'flex' : 'none';
-
-console.log('Creator check:', { 
-  currentUser: currentUserName, 
-  channelCreator: creator, 
-  isCreator 
-});  // ← debug – check this in console
-
-  await loadGames(channelId);
-}
-
-async function loadGames(channelId) {
-  feed.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading games...</div>';
-  try {
-    const r = await fetch(`${SCRIPT_URL}?operation=getQnAGames&channelId=${channelId}`);
-    const { games = [] } = await r.json();
-
-    feed.innerHTML = games.length === 0
-      ? `<div class="empty">
-           <i class="fas fa-gamepad" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
-           No games yet<br>
-           <small>Click the + button to create one</small>
-         </div>`
-      : '';
-
-    // For each game, fetch its first question image
-    for (const game of games) {
-      try {
-        const qRes = await fetch(`${SCRIPT_URL}?operation=getQnAQuestionsAndChoices&gameId=${game.id}`);
-        const qData = await qRes.json();
-        if (qData.status === "success" && qData.questions?.length > 0) {
-          game.firstQuestionImage = qData.questions[0].imageLink || '';
-        }
-      } catch (e) {
-        console.warn("Failed to fetch questions for game", game.id, e);
-      }
-    }
-
-games.forEach(game => {
-  const div = document.createElement("div");
-  div.className = "game";
-  div.dataset.gameId = game.id;
-
-  const imgSrc = game.firstQuestionImage ? getLh3Link(game.firstQuestionImage) : '';
-
-  div.innerHTML = `
-    <div class="game-header">
-      <img class="game-avatar" src="${getLh3Link(game.creatorPicLink) || 'https://via.placeholder.com/52?text=@'}" 
-           onerror="this.src='https://via.placeholder.com/52?text=@'">
-      <div>
-        <div class="game-author">${game.creator}</div>
-        <div class="game-time">${new Date(game.created).toLocaleString()}</div>
-      </div>
-    </div>
-    <div class="game-content">
-      ${imgSrc ? `
-        <img src="${imgSrc}"
-             onerror="this.src='https://via.placeholder.com/600x340?text=No+Image'; this.style.opacity='0.7';"
-             alt="First question image">
-      ` : ''}
-      <div class="game-overlay-text">
-        <h3>${game.name}</h3>
-        <p>${game.description || 'No description provided'}</p>
-      </div>
-    </div>
-    <div class="game-footer">
-      <button class="play-btn" onclick="window.location.href='play.html?gameId=${game.id}'">Play</button>
-     <button class="leaderboard-btn ${game.mode === 'survey' ? 'survey' : ''}"
-        onclick="${game.mode === 'survey' ? `showSurveyReport('${game.id}')` : `showLeaderboard('${game.id}')`}">
-  <i class="fas ${game.mode === 'survey' ? 'fa-chart-bar' : 'fa-trophy'}"></i>
-  ${game.mode === 'survey' ? 'Results' : 'Leaderboard'}
-</button>
-
-      <button class="delete-btn"
-              style="margin-left:auto; background:#ef4444aa; color:white; border:none; padding:8px 14px; border-radius:999px; font-weight:600; cursor:pointer; display:none;"
-              onclick="confirmDeleteGame('${game.id}', '${game.name.replace(/'/g,"\\'")}')">
-        <i class="fas fa-trash-alt"></i> Delete
+    <div class="write-toolbar">
+      <button class="write-tool-btn" id="btn-add-question">
+        <i class="fas fa-plus"></i> ADD QUESTION
+      </button>
+      <button class="write-tool-btn" id="btn-show-timer">
+        <i class="fas fa-clock"></i> TIMER
       </button>
     </div>
-  `;
 
-  feed.appendChild(div);
+    <input type="number" class="write-field-small" id="write-timer" placeholder="Timer per question (seconds)" style="display:none;">
 
-  // Show delete button only to the creator — same logic as FAB
-  const deleteBtn = div.querySelector('.delete-btn');
-  if (deleteBtn) {
-    const normalizedCreator = (game.creator || '').trim().toLowerCase();
-    const normalizedUser    = (currentUserName || '').trim().toLowerCase();
-    const isCreator = normalizedCreator === normalizedUser && normalizedUser !== '';
-    deleteBtn.style.display = isCreator ? 'inline-block' : 'none';
-  }
+    <div class="questions-strip" id="questions-strip"></div>
+
+    <button class="write-submit" id="write-submit">CREATE GAME</button>
+  </div>
+</div>
+
+<!-- ═══ CHANNEL DRAWER ═════════════════════════════════════════════════════ -->
+<div id="channel-drawer">
+  <div class="drawer-head">
+    <span class="drawer-head-title">Q&amp;A CHANNELS</span>
+    <button class="drawer-close" id="drawer-close"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="channel-grid" id="channel-grid"></div>
+  <button class="drawer-create-btn" id="drawer-create-btn" style="display:none;">
+    <i class="fas fa-plus"></i> CREATE NEW Q&amp;A CHANNEL
+  </button>
+</div>
+
+<!-- ═══ CREATE CHANNEL MODAL ══════════════════════════════════════════════ -->
+<div id="ch-modal">
+  <div class="ch-form-sheet">
+    <div class="ch-form-head">
+      <h3>CREATE Q&amp;A CHANNEL</h3>
+      <button class="ch-form-close" id="ch-modal-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="ch-form-body">
+      <div class="ch-avatar-wrap" id="ch-avatar-wrap">
+        <img class="ch-avatar-preview" id="ch-avatar-preview" src="https://ui-avatars.com/api/?name=Q&background=1e293b&color=a78bfa&size=88" alt="">
+        <div class="ch-avatar-overlay"><i class="fas fa-camera"></i></div>
+      </div>
+      <input type="file" id="ch-avatar-file" accept="image/*" style="display:none;">
+      <input type="text" class="ch-field" id="ch-name-field" placeholder="Channel name">
+      <textarea class="ch-field" id="ch-desc-field" placeholder="Short description (optional)" rows="3"></textarea>
+    </div>
+    <div class="ch-form-actions">
+      <button class="ch-btn-cancel" id="ch-cancel-btn">CANCEL</button>
+      <button class="ch-btn-submit" id="ch-submit-btn">CREATE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LEADERBOARD / SURVEY MODAL ════════════════════════════════════════ -->
+<div id="board-modal">
+  <div class="board-sheet">
+    <div class="board-head">
+      <span class="board-head-title" id="board-title">LEADERBOARD</span>
+      <button class="board-close" id="board-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="board-list" id="board-list"></div>
+  </div>
+</div>
+
+<!-- ═══ CONFIRM MODAL ══════════════════════════════════════════════════════ -->
+<div id="confirm-modal">
+  <div class="confirm-sheet">
+    <div class="confirm-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="confirm-title" id="confirm-title">Are you sure?</div>
+    <div class="confirm-sub" id="confirm-sub">This cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirm-cancel">CANCEL</button>
+      <button class="confirm-ok" id="confirm-ok">DELETE</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-area"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+
+const currentUser = localStorage.getItem('userName') || '';
+if (!currentUser) location.href = 'index.html';
+
+let allChannels    = [];
+let currentChannel = null;
+let isAdmin        = false;
+let chAvatarData   = null;
+let questions      = [];
+let confirmResolve = null;
+
+/* ── UTILITY ─────────────────────────────────────────────────────── */
+function lh3(url) {
+  if (!url) return '';
+  const m = url.match(/[-\w]{25,}/);
+  return m ? `https://lh3.googleusercontent.com/d/${m[0]}` : url;
+}
+
+function fallbackAvatar(name) {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=a78bfa&size=88`;
+}
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtTime(ts) {
+  return new Date(ts).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
+}
+
+/* ── TOAST ──────────────────────────────────────────────────────── */
+function toast(msg, type = 'ok', dur = 3400) {
+  const area = document.getElementById('toast-area');
+  const el = document.createElement('div');
+  el.className = `toast-msg ${type}`;
+  el.textContent = msg;
+  area.appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+/* ── CONFIRM ─────────────────────────────────────────────────────── */
+function confirmDialog(title, sub, okLabel = 'DELETE') {
+  return new Promise(resolve => {
+    confirmResolve = resolve;
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-sub').textContent = sub;
+    document.getElementById('confirm-ok').textContent = okLabel;
+    document.getElementById('confirm-modal').classList.add('open');
+  });
+}
+
+document.getElementById('confirm-ok').addEventListener('click', () => {
+  document.getElementById('confirm-modal').classList.remove('open');
+  if (confirmResolve) { confirmResolve(true); confirmResolve = null; }
+});
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+  document.getElementById('confirm-modal').classList.remove('open');
+  if (confirmResolve) { confirmResolve(false); confirmResolve = null; }
 });
 
-
-
-  } catch (err) {
-    feed.innerHTML = '<div class="empty">Failed to load games — check connection</div>';
-  }
-}
-function openGamePanel() {
-  console.log("openGamePanel called – should show setup panel now");
-
-  questions = [];
-  document.getElementById("gameName").value = "";
-  document.getElementById("gameDesc").value = "";
-  document.getElementById("gameTimer").value = "";
-  document.getElementById("questionsContainer").innerHTML = "";
-
-  addQuestion(); // creates initial question + 2 choices
-
-  gamePanel.classList.add('active');
-  gamePanel.style.display = 'block';
-  gamePanel.style.opacity = '1';
-  gamePanel.style.pointerEvents = 'auto';
-  gamePanel.style.transform = 'translateY(0)';
-  gamePanel.scrollTop = 0;
-
-  document.getElementById("gameName")?.focus();
-
-  // Important: apply correct visibility right after first question is added
-  setTimeout(updateGameModeUI, 50);   // small delay so DOM is ready
-
-  console.log("Panel should be visible at bottom – check screen");
-}
-function closeGamePanel() {
-  gamePanel.classList.remove('active');
-  gamePanel.style.display = 'none'; // safety
-  console.log("Panel closed");
+/* ── API HELPERS ─────────────────────────────────────────────────── */
+async function api(params) {
+  const res = await fetch(`${SCRIPT_URL}?${new URLSearchParams(params)}`);
+  return res.json();
 }
 
-// Auto-show/hide swipe arrows when number of questions changes
-function updateSwipeArrows() {
-  const container = document.getElementById("questionsContainer");
-  if (container.children.length > 1) {
-    container.classList.add("has-many");
-  } else {
-    container.classList.remove("has-many");
-  }
-}
-
-// Call after every new question is added
-// Add this line at the VERY END of your addQuestion() function:
-updateSwipeArrows();
-
-// Also call when opening the panel
-openGamePanel = (function(original) {
-  return function() {
-    original.apply(this, arguments);
-    setTimeout(updateSwipeArrows, 100);
-  };
-})(openGamePanel);
-
-// ── Live update UI when user changes Quiz ↔ Survey ─────────────────────────────
-function updateGameModeUI() {
-  const isSurvey = isSurveyMode();
-
-  // Update ALL existing reason inputs
-  document.querySelectorAll('.reason-input').forEach(el => {
-    el.style.display = isSurvey ? 'none' : 'block';
-    if (isSurvey) el.value = '';  // optional: clear reason when switching to survey
-  });
-
-  // Update ALL existing correct checkboxes
-  document.querySelectorAll('.correct-checkbox').forEach(el => {
-    el.style.display = isSurvey ? 'none' : 'inline-block';
-    if (isSurvey) {
-      el.checked = false;           // optional: uncheck when hiding
-      el.removeAttribute('title');
-    } else {
-      el.setAttribute('title', 'Correct answer');
-    }
-  });
-}
-
-// Attach listeners to both radio buttons
-document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
-  radio.addEventListener('change', updateGameModeUI);
-});
-
-function isSurveyMode() {
-  const surveyRadio = document.querySelector('input[name="gameMode"][value="survey"]');
-  return surveyRadio && surveyRadio.checked;
-}
-
-function addQuestion() {
-  const index = questions.length;
-  questions[index] = { choices: [] };
-
-  const container = document.createElement("div");
-  container.className = "question-container";
-  container.innerHTML = `
-    <input class="question-input" placeholder="Question ${index + 1}" data-index="${index}">
-    
-    <!-- Preview area for question image -->
-    <div class="preview-area" style="margin:12px 0; text-align:center;">
-      <img id="qPreview${index}" src="https://via.placeholder.com/300x180?text=Question+Image+Preview" 
-           style="max-width:100%; max-height:180px; border-radius:8px; display:none; border:1px solid #60a5fa;">
-    </div>
-    
-    <label class="media-btn" for="questionImage${index}"><i class="fas fa-image"></i> Add Image</label>
-    <input type="file" id="questionImage${index}" accept="image/*" style="display:none;">
-    
-    <div class="choice-container" data-index="${index}"></div>
-    <button onclick="addChoice(${index})" class="add-choice-btn"><i class="fas fa-plus"></i> Add Choice</button>
-    <textarea class="reason-input" placeholder="Reason for correct answer" data-index="${index}"></textarea>
-  `;
-  document.getElementById("questionsContainer").appendChild(container);
-
-  if (isSurveyMode()) {
-    const reasonInput = container.querySelector('.reason-input');
-    if (reasonInput) {
-      reasonInput.style.display = 'none';
-      reasonInput.value = '';           // optional – clear it so it doesn't get sent
-    }
-  }
-
-  // Add default choices
-  addChoice(index);
-  addChoice(index);
-
-  // Preview handler for question image
-  const fileInput = container.querySelector(`#questionImage${index}`);
-  const previewImg = container.querySelector(`#qPreview${index}`);
-
-  fileInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const base64 = await fileToBase64(file);
-      questions[index].image = { base64: base64.split(',')[1], name: file.name, type: file.type };
-
-      // Show preview
-      previewImg.src = base64;
-      previewImg.style.display = 'block';
-    }
-  };
-}
-
-function addChoice(qIndex) {
-  const container = document.querySelector(`.choice-container[data-index="${qIndex}"]`);
-  const choiceIndex = questions[qIndex].choices.length;
-
-  const div = document.createElement("div");
-  div.className = "choice-input";
-  div.innerHTML = `
-    <input placeholder="Choice ${choiceIndex + 1}">
-    
-    <!-- Preview for this choice -->
-    <div style="margin:8px 0; text-align:center;">
-      <img id="cPreview${qIndex}_${choiceIndex}" src="https://via.placeholder.com/120?text=Choice+Preview" 
-           style="max-width:120px; max-height:80px; border-radius:6px; display:none; border:1px dashed #60a5fa;">
-    </div>
-    
-    <label class="media-btn" for="choiceImage${qIndex}_${choiceIndex}"><i class="fas fa-image"></i></label>
-    <input type="file" id="choiceImage${qIndex}_${choiceIndex}" accept="image/*" style="display:none;">
-    <input type="checkbox" class="correct-checkbox" title="Correct answer">
-  `;
-  container.appendChild(div);
-
-  // ── Hide correct checkbox when in survey mode ────────────────────────────────
-  if (isSurveyMode()) {
-    const checkbox = div.querySelector('.correct-checkbox');
-    if (checkbox) {
-      checkbox.style.display = 'none';
-      checkbox.removeAttribute('title');     // optional but recommended
-    }
-  }
-
-  questions[qIndex].choices.push({});
-
-  // Preview handler for choice image
-  const fileInput = div.querySelector(`#choiceImage${qIndex}_${choiceIndex}`);
-  const previewImg = div.querySelector(`#cPreview${qIndex}_${choiceIndex}`);
-
-  fileInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const base64 = await fileToBase64(file);
-      questions[qIndex].choices[choiceIndex].image = { base64: base64.split(',')[1], name: file.name, type: file.type };
-
-      // Show preview
-      previewImg.src = base64;
-      previewImg.style.display = 'block';
-    }
-  };
-}
-async function submitGame() {
-  const name = document.getElementById("gameName").value.trim();
-  const desc = document.getElementById("gameDesc").value.trim();
-  const timer = document.getElementById("gameTimer").value.trim();
-
-  if (!name || !currentQnAChannelId) {
-    return showToast("Game name and channel required", "error");
-  }
-
-  // 1. Get mode FIRST
-  const mode = document.querySelector('input[name="gameMode"]:checked')?.value || 'quiz';
-
-  // 2. NOW safely create payload
-  const payload = {
-    operation: "createQnAGame",
-    channelId: currentQnAChannelId,
-    creator: currentUserName,
-    name,
-    description: desc,
-    timer,
-    mode,                    // ← included here
-    questions: []
-  };
-
-  // Build questions
-  document.querySelectorAll(".question-container").forEach((qCont, qIndex) => {
-    const text = qCont.querySelector(".question-input").value.trim();
-    if (!text) return; // skip empty
-
-    const question = {
-      text,
-      image: questions[qIndex]?.image || null,
-      choices: [],
-      correctIndex: -1,
-      reason: qCont.querySelector(".reason-input").value.trim()
-    };
-
-    qCont.querySelectorAll(".choice-input").forEach((cDiv, cIndex) => {
-      const choiceText = cDiv.querySelector("input[placeholder^='Choice']").value.trim();
-      if (!choiceText) return;
-
-      const isCorrect = cDiv.querySelector(".correct-checkbox").checked;
-
-      question.choices.push({
-        text: choiceText,
-        image: questions[qIndex]?.choices?.[cIndex]?.image || null
-      });
-
-      if (isCorrect) question.correctIndex = cIndex;
-    });
-
-    if (question.choices.length > 0) {
-      payload.questions.push(question);
-    }
-  });
-
-  // Validation
-  if (payload.questions.length === 0) {
-    return showToast("Add at least one question with choices", "error");
-  }
-
-  if (mode === 'quiz') {
-    const missingCorrect = payload.questions.some(q => q.correctIndex === -1);
-    if (missingCorrect) {
-      return showToast("Quiz mode requires each question to have at least one correct choice", "error");
-    }
-  }
-
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-
-    if (data.status === "success") {
-      showToast(`Game created! (${mode === 'survey' ? 'Survey' : 'Quiz'})`, "success");
-      closeGamePanel();
-      loadGames(currentQnAChannelId);
-    } else {
-      showToast(data.message || "Failed to create game", "error");
-    }
-  } catch (err) {
-    console.error("Create game error:", err);
-    showToast("Network error – check connection", "error");
-  }
-}
-
-
-
-async function submitScore(gameId, score) {
-  try {
-    await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        operation: "submitQnAScore",
-        gameId,
-        username: currentUserName,
-        score
-      })
-    });
-  } catch (err) {}
-}
-
-
-
-
-
-async function showLeaderboard(gameId) {
-  const list = document.getElementById("leaderboardList");
-  list.innerHTML = '<div class="no-leaders">Loading leaderboard...</div>';
-  leaderboardModal.classList.add("active");
-  try {
-    const r = await fetch(`${SCRIPT_URL}?operation=getQnALeaderboard&gameId=${gameId}`);
-    const data = await r.json();
-    if (data.status !== "success") {
-      list.innerHTML = '<div class="no-leaders">Could not load leaderboard</div>';
-      return;
-    }
-    const leaders = data.leaders || [];
-    if (leaders.length === 0) {
-      list.innerHTML = '<div class="no-leaders">No scores yet</div>';
-      return;
-    }
-    list.innerHTML = '';
-    leaders.forEach((l, index) => {
-      const item = document.createElement('div');
-      item.className = 'leader-item';
-      const avatarSrc = l.picLink ? getLh3Link(l.picLink) : 'https://via.placeholder.com/44?text=@';
-      item.innerHTML = `
-        <span style="font-size:1.2rem; color:${index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : '#cd7f32'};">${index + 1}</span>
-        <img class="leader-avatar" src="${avatarSrc}" onerror="this.src='https://via.placeholder.com/44?text=@'">
-        <div class="leader-info">
-          <div class="leader-name">${l.username}</div>
-          <div class="leader-score">Score: ${l.score}</div>
-        </div>
-      `;
-      list.appendChild(item);
-    });
-  } catch (err) {
-    list.innerHTML = '<div class="no-leaders">Error loading leaderboard</div>';
-  }
-}
-
-function closeLeaderboardModal() {
-  leaderboardModal.classList.remove("active");
+async function postData(body) {
+  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(body) });
+  return res.json();
 }
 
 function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.readAsDataURL(file);
+    r.onload  = () => res(r.result);
+    r.onerror = () => rej(new Error('read failed'));
   });
 }
 
-// ── Delete game functionality ────────────────────────────────────────
+/* ── LOAD CHANNELS ───────────────────────────────────────────────── */
+async function loadChannels() {
+  try {
+    const data = await api({ operation: 'getAllQnAChannels' });
+    allChannels = data.channels || [];
+    renderChannelUI();
 
-function confirmDeleteGame(gameId, gameName) {
-  // Prevent multiple confirmations open at once
-  const existing = document.querySelector('.delete-confirm-toast');
-  if (existing) existing.remove();
+    // Pick channel to open
+    const usp = new URLSearchParams(location.search);
+    const urlId = usp.get('channelId');
+    let target = urlId
+      ? allChannels.find(c => c.id === urlId)
+      : allChannels.find(c => c.id === localStorage.getItem('rv_last_qna_ch')) || allChannels[0];
 
-  // Create simple confirmation toast
-  const toast = document.createElement('div');
-  toast.className = 'delete-confirm-toast';
-  toast.innerHTML = `
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-      <i class="fas fa-exclamation-triangle" style="font-size:1.6rem; color:#fbbf24;"></i>
-      <strong style="font-size:1.2rem; color:#ef4444;">Delete "${gameName}"?</strong>
+    if (target) openChannel(target);
+    else {
+      document.getElementById('game-feed').innerHTML = `
+        <div class="state-view">
+          <div class="empty-label">NO CHANNELS YET</div>
+          <div class="empty-sub">AN ADMIN CAN CREATE ONE</div>
+        </div>`;
+    }
+  } catch (e) {
+    document.getElementById('game-feed').innerHTML = `
+      <div class="state-view">
+        <div class="empty-label">LOAD FAILED</div>
+        <div class="empty-sub">CHECK CONNECTION AND REFRESH</div>
+      </div>`;
+  }
+}
+
+/* ── RENDER CHANNEL UI ───────────────────────────────────────────── */
+function renderChannelUI() {
+  renderTicker();
+  renderDrawer();
+}
+
+function renderTicker() {
+  const strip = document.getElementById('ticker-scroll');
+  strip.innerHTML = '';
+  allChannels.forEach(ch => {
+    const el = document.createElement('div');
+    el.className = 'ticker-ch' + (currentChannel?.id === ch.id ? ' active' : '');
+    el.dataset.id = ch.id;
+    el.innerHTML = `<span class="ticker-ch-dot"></span>${ch.name.toUpperCase()}`;
+    el.addEventListener('click', () => { openChannel(ch); closeDrawer(); });
+    strip.appendChild(el);
+  });
+}
+
+function renderDrawer() {
+  const grid = document.getElementById('channel-grid');
+  grid.innerHTML = '';
+  allChannels.forEach(ch => {
+    const el = document.createElement('div');
+    el.className = 'ch-item' + (currentChannel?.id === ch.id ? ' active' : '');
+    const av = ch.picLink ? lh3(ch.picLink) : fallbackAvatar(ch.name);
+    const isOwner = (ch.creator || '').trim().toLowerCase() === currentUser.trim().toLowerCase();
+
+    el.innerHTML = `
+      <img class="ch-item-avatar" src="${av}" onerror="this.src='${fallbackAvatar(ch.name)}'" alt="">
+      <div class="ch-item-text">
+        <div class="ch-item-name">${ch.name}</div>
+        <div class="ch-item-desc">${ch.description || 'No description'}</div>
+        <div class="ch-item-creator">BY ${(ch.creator || '').toUpperCase()} · ${fmtDate(ch.created)}</div>
+      </div>
+      ${isOwner ? `<button class="ch-item-delete" title="Delete channel" data-id="${ch.id}" data-name="${ch.name}"><i class="fas fa-trash-alt"></i></button>` : ''}
+    `;
+
+    el.addEventListener('click', e => {
+      if (e.target.closest('.ch-item-delete')) return;
+      openChannel(ch);
+      closeDrawer();
+    });
+
+    el.querySelector('.ch-item-delete')?.addEventListener('click', async e => {
+      e.stopPropagation();
+      const ok = await confirmDialog(`Delete "${ch.name}"?`, 'All games, questions and scores will be permanently removed.');
+      if (!ok) return;
+      try {
+        const data = await postData({ operation: 'deleteQnAChannel', channelId: ch.id, username: currentUser });
+        if (data.status === 'success') {
+          toast('Channel deleted', 'ok');
+          allChannels = allChannels.filter(c => c.id !== ch.id);
+          renderChannelUI();
+          if (currentChannel?.id === ch.id) {
+            currentChannel = null;
+            document.getElementById('mh-ch-name').textContent = 'RIVERSIDE';
+            document.getElementById('mh-ch-meta').textContent = 'SELECT A Q&A CHANNEL';
+            document.getElementById('mh-avatar').src = '';
+            document.getElementById('btn-write').style.display = 'none';
+            document.getElementById('game-feed').innerHTML = `
+              <div class="state-view">
+                <div class="empty-label">SELECT A CHANNEL</div>
+                <div class="empty-sub">CHOOSE FROM THE TICKER ABOVE</div>
+              </div>`;
+          }
+        } else {
+          toast(data.message || 'Delete failed', 'err');
+        }
+      } catch { toast('Network error', 'err'); }
+    });
+
+    grid.appendChild(el);
+  });
+}
+
+/* ── DRAWER ──────────────────────────────────────────────────────── */
+function openDrawer()  { document.getElementById('channel-drawer').classList.add('open'); }
+function closeDrawer() { document.getElementById('channel-drawer').classList.remove('open'); }
+
+document.getElementById('btn-channels').addEventListener('click', openDrawer);
+document.getElementById('ticker-add').addEventListener('click', openDrawer);
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+
+/* ── OPEN CHANNEL ─────────────────────────────────────────────────── */
+async function openChannel(ch) {
+  currentChannel = ch;
+  localStorage.setItem('rv_last_qna_ch', ch.id);
+
+  const av = ch.picLink ? lh3(ch.picLink) : fallbackAvatar(ch.name);
+  document.getElementById('mh-avatar').src = av;
+  document.getElementById('mh-ch-name').textContent = ch.name.toUpperCase();
+  document.getElementById('mh-ch-meta').textContent = `BY ${(ch.creator || '').toUpperCase()} · ${fmtDate(ch.created)}`;
+
+  document.querySelectorAll('.ticker-ch').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === ch.id);
+  });
+  const activeTick = document.querySelector(`.ticker-ch[data-id="${ch.id}"]`);
+  if (activeTick) activeTick.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  // Show write btn only to channel creator
+  const isCreator = (ch.creator || '').trim().toLowerCase() === currentUser.trim().toLowerCase();
+  document.getElementById('btn-write').style.display = isCreator ? 'flex' : 'none';
+
+  // Check admin for drawer create btn
+  try {
+    const d = await api({ operation: 'getUserStatus', name: currentUser });
+    isAdmin = d.userStatus === 'approved' && d.isAdmin === true;
+    document.getElementById('drawer-create-btn').style.display = isAdmin ? 'flex' : 'none';
+  } catch { isAdmin = false; }
+
+  await loadGames(ch.id);
+}
+
+/* ── LOAD GAMES ───────────────────────────────────────────────────── */
+async function loadGames(channelId) {
+  const feed = document.getElementById('game-feed');
+  feed.innerHTML = `
+    <div class="state-view">
+      <div class="loading-masthead">LOADING</div>
+      <div class="empty-sub">FETCHING GAMES...</div>
+    </div>`;
+
+  try {
+    const data = await api({ operation: 'getQnAGames', channelId });
+    const games = data.games || [];
+
+    if (games.length === 0) {
+      feed.innerHTML = `
+        <div class="state-view">
+          <div class="empty-label">NO GAMES YET</div>
+          <div class="empty-sub">${document.getElementById('btn-write').style.display !== 'none' ? 'PRESS THE EDIT BUTTON TO CREATE ONE' : 'NOTHING HERE YET'}</div>
+        </div>`;
+      return;
+    }
+
+    // Fetch first question image for each game
+    for (const game of games) {
+      try {
+        const qData = await api({ operation: 'getQnAQuestionsAndChoices', gameId: game.id });
+        if (qData.status === 'success' && qData.questions?.length > 0) {
+          game.firstImage = qData.questions[0].imageLink || '';
+        }
+      } catch {}
+    }
+
+    feed.innerHTML = '';
+    games.forEach(g => feed.appendChild(buildGameCard(g)));
+
+  } catch (err) {
+    feed.innerHTML = `
+      <div class="state-view">
+        <div class="empty-label">LOAD FAILED</div>
+        <div class="empty-sub">CHECK CONNECTION AND REFRESH</div>
+      </div>`;
+  }
+}
+
+/* ── BUILD GAME CARD ──────────────────────────────────────────────── */
+function buildGameCard(game) {
+  const wrap = document.createElement('div');
+  wrap.className = 'game-card';
+  wrap.dataset.gameId = game.id;
+
+  const av = game.creatorPicLink ? lh3(game.creatorPicLink) : fallbackAvatar(game.creator);
+  const isSurvey = game.mode === 'survey';
+  const isOwner = (game.creator || '').trim().toLowerCase() === currentUser.trim().toLowerCase();
+  const imgSrc = game.firstImage ? lh3(game.firstImage) : '';
+
+  let mediaHtml = '';
+  if (imgSrc) {
+    mediaHtml = `
+      <div class="game-image-wrap">
+        <img src="${imgSrc}" loading="lazy" onerror="this.parentElement.style.display='none'" alt="">
+        <div class="game-image-overlay">
+          <div class="game-image-title">${game.name}</div>
+          ${game.description ? `<div class="game-image-desc">${game.description}</div>` : ''}
+        </div>
+      </div>`;
+  } else {
+    mediaHtml = `
+      <div class="game-text-block">
+        <div class="game-text-title">${game.name}</div>
+        ${game.description ? `<div class="game-text-desc">${game.description}</div>` : ''}
+      </div>`;
+  }
+
+  wrap.innerHTML = `
+    <div class="game-header">
+      <img class="game-avatar" src="${av}" onerror="this.src='${fallbackAvatar(game.creator)}'" alt="">
+      <div class="game-author-block">
+        <div class="game-author">${game.creator}</div>
+        <div class="game-time">${fmtTime(game.created)}</div>
+      </div>
+      <span class="game-badge ${isSurvey ? 'survey' : 'quiz'}">${isSurvey ? 'SURVEY' : 'QUIZ'}</span>
+      ${isOwner ? `<button class="game-delete-btn" title="Delete game"><i class="far fa-trash-alt"></i></button>` : ''}
     </div>
-    <p style="margin-bottom:20px; color:#cbd5e1; line-height:1.5;">
-      This will permanently delete the game, all questions, choices and scores.
-    </p>
-    <div style="display:flex; gap:12px; justify-content:flex-end;">
-      <button class="cancel-btn" style="padding:10px 20px; background:rgba(148,163,184,0.25); color:#cbd5e1; border:none; border-radius:999px; font-weight:600; cursor:pointer;">
-        Cancel
-      </button>
-      <button class="confirm-delete-btn" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#f87171); color:white; border:none; border-radius:999px; font-weight:600; cursor:pointer;">
-        Delete
+    ${mediaHtml}
+    <div class="game-foot">
+      <a class="game-action play-action" href="play.html?gameId=${game.id}">
+        <i class="fas fa-play"></i> PLAY
+      </a>
+      <button class="game-action board-action">
+        <i class="fas ${isSurvey ? 'fa-chart-bar' : 'fa-trophy'}"></i>
+        ${isSurvey ? 'RESULTS' : 'LEADERBOARD'}
       </button>
     </div>
   `;
 
-  // Append to body (centered overlay style)
-  document.body.appendChild(toast);
+  wrap.querySelector('.game-delete-btn')?.addEventListener('click', () => deleteGame(game.id, game.name, wrap));
+  wrap.querySelector('.board-action').addEventListener('click', () => {
+    if (isSurvey) showSurveyReport(game.id, game.name);
+    else showLeaderboard(game.id, game.name);
+  });
 
-  // Cancel
-  toast.querySelector('.cancel-btn').onclick = () => {
-    toast.remove();
-    showToast("Cancelled", "info");
-  };
-
-  // Confirm → delete
-  toast.querySelector('.confirm-delete-btn').onclick = () => {
-    toast.remove();
-    showToast("Deleting…", "info");
-    performDelete(gameId, gameName);
-  };
+  return wrap;
 }
 
-async function performDelete(gameId, gameName) {
+/* ── DELETE GAME ─────────────────────────────────────────────────── */
+async function deleteGame(gameId, gameName, el) {
+  const ok = await confirmDialog(`Delete "${gameName}"?`, 'All questions, choices and scores will be permanently removed.');
+  if (!ok) return;
+  el.style.opacity = '0.4';
+  el.style.pointerEvents = 'none';
   try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        operation: "deleteQnAGame",
-        gameId: gameId,
-        username: currentUserName
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.status === "success") {
-  showToast(`"${gameName}" Game deleted`, "success");
-
-      const card = document.querySelector(`.game[data-game-id="${gameId}"]`);
-      if (card) card.remove();
-
-      if (!document.querySelector('.game')) {
-        feed.innerHTML = `
-          <div class="empty">
-            <i class="fas fa-gamepad" style="font-size:5rem; opacity:0.4; margin-bottom:24px;"></i><br>
-            No games yet<br>
-            <small>Click the + button to create one</small>
+    const data = await postData({ operation: 'deleteQnAGame', gameId, username: currentUser });
+    if (data.status === 'success') {
+      el.remove();
+      toast('Game deleted', 'ok');
+      if (!document.querySelector('.game-card')) {
+        document.getElementById('game-feed').innerHTML = `
+          <div class="state-view">
+            <div class="empty-label">NO GAMES YET</div>
+            <div class="empty-sub">PRESS THE EDIT BUTTON TO CREATE ONE</div>
           </div>`;
       }
     } else {
-      showToast(data.message || "Failed to delete game", "error");
+      el.style.opacity = ''; el.style.pointerEvents = '';
+      toast(data.message || 'Delete failed', 'err');
     }
-  } catch (err) {
-    console.error("Delete failed:", err);
-    showToast("Network error — try again", "error");
+  } catch {
+    el.style.opacity = ''; el.style.pointerEvents = '';
+    toast('Network error', 'err');
   }
 }
 
-function confirmDeleteQnAChannel(channelId, channelName) {
-  const existing = document.querySelector('.delete-confirm-toast');
-  if (existing) existing.remove();
+/* ── WRITE PANEL ──────────────────────────────────────────────────── */
+function openWritePanel() {
+  questions = [];
+  document.getElementById('write-name').value = '';
+  document.getElementById('write-desc').value = '';
+  document.getElementById('write-timer').value = '';
+  document.getElementById('write-timer').style.display = 'none';
+  document.getElementById('questions-strip').innerHTML = '';
+  document.querySelector('input[name="gameMode"][value="quiz"]').checked = true;
+  updateModeUI();
+  addQuestion();
+  document.getElementById('write-panel').classList.add('open');
+  document.getElementById('write-name').focus();
+}
 
-  const toast = document.createElement('div');
-  toast.className = 'delete-confirm-toast';
-  toast.innerHTML = `
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-      <i class="fas fa-exclamation-triangle" style="font-size:1.6rem; color:#fbbf24;"></i>
-      <strong style="font-size:1.2rem; color:#ef4444;">Delete "${channelName}"?</strong>
-    </div>
-    <p style="margin-bottom:20px; color:#cbd5e1; line-height:1.5;">
-      This will permanently delete the channel, all games, questions, responses and results.<br>
-      <strong>This cannot be undone.</strong>
-    </p>
-    <div style="display:flex; gap:12px; justify-content:flex-end;">
-      <button class="cancel-btn" style="padding:10px 20px; background:rgba(148,163,184,0.25); color:#cbd5e1; border:none; border-radius:999px; font-weight:600; cursor:pointer;">
-        Cancel
-      </button>
-      <button class="confirm-delete-btn" style="padding:10px 20px; background:linear-gradient(135deg,#ef4444,#f87171); color:white; border:none; border-radius:999px; font-weight:600; cursor:pointer;">
-        Delete Channel
-      </button>
-    </div>
+function closeWritePanel() {
+  document.getElementById('write-panel').classList.remove('open');
+}
+
+document.getElementById('btn-write').addEventListener('click', openWritePanel);
+document.getElementById('write-close').addEventListener('click', closeWritePanel);
+
+document.getElementById('btn-show-timer').addEventListener('click', function() {
+  const el = document.getElementById('write-timer');
+  const showing = el.style.display === 'block';
+  el.style.display = showing ? 'none' : 'block';
+  this.classList.toggle('active', !showing);
+});
+
+document.getElementById('btn-add-question').addEventListener('click', addQuestion);
+
+/* Mode selector */
+document.querySelectorAll('input[name="gameMode"]').forEach(radio => {
+  radio.addEventListener('change', updateModeUI);
+});
+
+function updateModeUI() {
+  const isSurvey = document.querySelector('input[name="gameMode"]:checked')?.value === 'survey';
+  document.querySelectorAll('.mode-opt').forEach(el => {
+    el.classList.remove('selected-quiz', 'selected-survey');
+  });
+  const selected = document.querySelector('input[name="gameMode"]:checked')?.closest('.mode-opt');
+  if (selected) selected.classList.add(isSurvey ? 'selected-survey' : 'selected-quiz');
+
+  document.querySelectorAll('.q-reason').forEach(el => {
+    el.style.display = isSurvey ? 'none' : 'block';
+  });
+  document.querySelectorAll('input[type="checkbox"].correct-cb').forEach(el => {
+    el.style.display = isSurvey ? 'none' : 'inline-block';
+    el.closest('.choice-row')?.querySelector('label.choice-img-label')?.style;
+  });
+}
+
+/* ── ADD QUESTION ─────────────────────────────────────────────────── */
+function addQuestion() {
+  const idx = questions.length;
+  questions.push({ choices: [] });
+  const isSurvey = document.querySelector('input[name="gameMode"]:checked')?.value === 'survey';
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-num">QUESTION ${idx + 1}</div>
+    <input class="q-field" placeholder="Question text" data-q-text>
+    <img class="q-img-preview" id="qprev-${idx}" alt="">
+    <label class="q-img-label" for="qimg-${idx}"><i class="fas fa-image"></i> ADD IMAGE</label>
+    <input type="file" id="qimg-${idx}" accept="image/*" style="display:none;">
+    <div class="choice-container" data-qidx="${idx}"></div>
+    <button class="add-choice-link" data-qidx="${idx}">
+      <i class="fas fa-plus"></i> ADD CHOICE
+    </button>
+    <textarea class="q-reason" placeholder="Reason for correct answer" rows="2" style="display:${isSurvey ? 'none' : 'block'};"></textarea>
   `;
 
-  document.body.appendChild(toast);
+  // Image upload
+  const fileInput = card.querySelector(`#qimg-${idx}`);
+  const preview   = card.querySelector(`#qprev-${idx}`);
+  fileInput.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const b64 = await fileToBase64(file);
+    questions[idx].image = { base64: b64.split(',')[1], name: file.name, type: file.type };
+    preview.src = b64;
+    preview.style.display = 'block';
+  });
 
-  toast.querySelector('.cancel-btn').onclick = () => {
-    toast.remove();
-    showToast("Cancelled", "info");
-  };
+  // Add choice button
+  card.querySelector('.add-choice-link').addEventListener('click', () => addChoice(idx, card));
 
-  toast.querySelector('.confirm-delete-btn').onclick = async () => {
-    toast.remove();
-    showToast("Deleting channel...", "info");
+  document.getElementById('questions-strip').appendChild(card);
 
-    try {
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          operation: "deleteQnAChannel",
-          channelId: channelId,
-          username: currentUserName
-        })
-      });
+  // Default 2 choices
+  addChoice(idx, card);
+  addChoice(idx, card);
 
-      const data = await res.json();
-
-      if (data.status === "success") {
-        showToast(`"${channelName}" and all contents deleted`, "success");
-        
-        // Remove the tab from UI
-        const tab = [...document.querySelectorAll('.channel-tab')].find(t => 
-          t.querySelector('.channel-tab-name')?.textContent === channelName
-        );
-        if (tab) tab.remove();
-
-        // If this was the active channel → clear view or redirect
-        if (currentQnAChannelId === channelId) {
-          currentQnAChannelId = null;
-          channelHeader.style.display = 'none';
-          feed.innerHTML = '<div class="empty">Select or create a Q&A channel</div>';
-          fabGame.style.display = 'none';
-        }
-
-        // Refresh channel list
-        loadAllQnAChannels();
-
-      } else {
-        showToast(data.message || "Failed to delete channel", "error");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Network error – try again", "error");
-    }
-  };
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
 }
 
+function addChoice(qIdx, card) {
+  const choiceIdx = questions[qIdx].choices.length;
+  questions[qIdx].choices.push({});
+  const isSurvey = document.querySelector('input[name="gameMode"]:checked')?.value === 'survey';
 
-window.addEventListener("load", async () => {
-  await checkCreateQnAChannelPermission();
-  await loadAllQnAChannels();
+  const row = document.createElement('div');
+  row.className = 'choice-row';
+  row.innerHTML = `
+    <input type="text" placeholder="Choice ${choiceIdx + 1}">
+    <label class="choice-img-label" for="cimg-${qIdx}-${choiceIdx}" title="Add image"><i class="fas fa-image"></i></label>
+    <input type="file" id="cimg-${qIdx}-${choiceIdx}" accept="image/*" style="display:none;">
+    <input type="checkbox" class="correct-cb" title="Correct answer" style="display:${isSurvey ? 'none' : 'inline-block'};">
+  `;
+
+  const cf = row.querySelector(`#cimg-${qIdx}-${choiceIdx}`);
+  cf.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const b64 = await fileToBase64(file);
+    questions[qIdx].choices[choiceIdx].image = { base64: b64.split(',')[1], name: file.name, type: file.type };
+    toast('Choice image added', 'ok', 2000);
+  });
+
+  card.querySelector('.choice-container').appendChild(row);
+}
+
+/* ── SUBMIT GAME ──────────────────────────────────────────────────── */
+document.getElementById('write-submit').addEventListener('click', async () => {
+  if (!currentChannel) { toast('Select a channel first', 'err'); return; }
+
+  const name  = document.getElementById('write-name').value.trim();
+  const desc  = document.getElementById('write-desc').value.trim();
+  const timer = document.getElementById('write-timer').value.trim();
+  const mode  = document.querySelector('input[name="gameMode"]:checked')?.value || 'quiz';
+
+  if (!name) { toast('Game name required', 'err'); return; }
+
+  const builtQuestions = [];
+  const cards = document.querySelectorAll('.question-card');
+  let valid = true;
+
+  cards.forEach((card, qIdx) => {
+    const text = card.querySelector('[data-q-text]').value.trim();
+    if (!text) return;
+
+    const q = {
+      text,
+      image:        questions[qIdx]?.image || null,
+      choices:      [],
+      correctIndex: -1,
+      reason:       card.querySelector('.q-reason')?.value.trim() || ''
+    };
+
+    card.querySelectorAll('.choice-row').forEach((row, cIdx) => {
+      const choiceText = row.querySelector('input[type="text"]').value.trim();
+      if (!choiceText) return;
+      const isCorrect = row.querySelector('.correct-cb').checked;
+      q.choices.push({
+        text:  choiceText,
+        image: questions[qIdx]?.choices?.[cIdx]?.image || null
+      });
+      if (isCorrect) q.correctIndex = q.choices.length - 1;
+    });
+
+    if (q.choices.length > 0) {
+      if (mode === 'quiz' && q.correctIndex === -1) {
+        toast(`Q${qIdx + 1}: mark at least one correct answer`, 'err');
+        valid = false;
+        return;
+      }
+      builtQuestions.push(q);
+    }
+  });
+
+  if (!valid) return;
+  if (builtQuestions.length === 0) { toast('Add at least one question with choices', 'err'); return; }
+
+  const btn = document.getElementById('write-submit');
+  btn.disabled = true;
+  btn.textContent = 'CREATING...';
+
+  try {
+    const data = await postData({
+      operation: 'createQnAGame',
+      channelId: currentChannel.id,
+      creator: currentUser,
+      name, desc, timer, mode,
+      questions: builtQuestions
+    });
+    if (data.status === 'success') {
+      toast('Game created!', 'ok');
+      closeWritePanel();
+      await loadGames(currentChannel.id);
+    } else {
+      toast(data.message || 'Failed', 'err');
+    }
+  } catch { toast('Network error', 'err'); }
+  finally { btn.disabled = false; btn.textContent = 'CREATE GAME'; }
 });
 
-document.getElementById('channelsToggle')?.addEventListener('click', () => {
-  document.getElementById('channelsPanel').classList.add('open');
-});
-document.getElementById('closeChannels')?.addEventListener('click', () => {
-  document.getElementById('channelsPanel').classList.remove('open');
-});
-</script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(reg => console.log('✅ SW registered in subfolder scope'))
-      .catch(err => console.error('❌ SW registration failed:', err));
+/* ── LEADERBOARD ─────────────────────────────────────────────────── */
+async function showLeaderboard(gameId, gameName) {
+  const modal = document.getElementById('board-modal');
+  const list  = document.getElementById('board-list');
+  document.getElementById('board-title').textContent = `${gameName.toUpperCase()} — LEADERBOARD`;
+  list.innerHTML = '<div class="state-view" style="padding:40px;"><div class="empty-sub">LOADING...</div></div>';
+  modal.classList.add('open');
+
+  try {
+    const data = await api({ operation: 'getQnALeaderboard', gameId });
+    const leaders = data.leaders || [];
+    if (leaders.length === 0) {
+      list.innerHTML = '<div class="state-view" style="padding:40px;"><div class="empty-sub">NO SCORES YET</div></div>';
+      return;
+    }
+    list.innerHTML = '';
+    const colors = ['#ffd700', '#c0c0c0', '#cd7f32'];
+    leaders.forEach((l, i) => {
+      const av = l.picLink ? lh3(l.picLink) : fallbackAvatar(l.username);
+      const row = document.createElement('div');
+      row.className = 'leader-item';
+      row.innerHTML = `
+        <span class="leader-rank" style="color:${colors[i] || 'var(--steel)'};">${i + 1}</span>
+        <img class="leader-avatar" src="${av}" onerror="this.src='${fallbackAvatar(l.username)}'" alt="">
+        <div>
+          <div class="leader-name">${l.username}</div>
+          <div class="leader-score">SCORE · ${l.score}</div>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  } catch {
+    list.innerHTML = '<div class="state-view" style="padding:40px;"><div class="empty-sub">FAILED TO LOAD</div></div>';
   }
+}
+
+/* ── SURVEY REPORT ───────────────────────────────────────────────── */
+async function showSurveyReport(gameId, gameName) {
+  const modal = document.getElementById('board-modal');
+  const list  = document.getElementById('board-list');
+  document.getElementById('board-title').textContent = `${gameName.toUpperCase()} — RESULTS`;
+  list.innerHTML = '<div class="state-view" style="padding:40px;"><div class="empty-sub">LOADING...</div></div>';
+  modal.classList.add('open');
+
+  try {
+    const [rRes, pRes] = await Promise.all([
+      api({ operation: 'getSurveyResults', gameId }),
+      api({ operation: 'getSurveyParticipants', gameId })
+    ]);
+
+    const results      = rRes.results || [];
+    const participants = pRes.participants || [];
+
+    if (results.length === 0) {
+      list.innerHTML = '<div class="state-view" style="padding:40px;"><div class="empty-sub">NO RESPONSES YET</div></div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    results.forEach((q, idx) => {
+      const block = document.createElement('div');
+      block.className = 'survey-q-block';
+      let barsHtml = q.choices.map(c => `
+        <div class="survey-bar-row">
+          <div class="survey-bar-label">
+            <span>${c.text}</span>
+            <span>${Math.round(c.percent || 0)}% (${c.count})</span>
+          </div>
+          <div class="survey-bar-track">
+            <div class="survey-bar-fill" style="width:${Math.round(c.percent || 0)}%"></div>
+          </div>
+        </div>`).join('');
+
+      if (q.questionImage) {
+        barsHtml = `<img src="${lh3(q.questionImage)}" style="max-width:100%;border-radius:8px;margin-bottom:12px;display:block;" loading="lazy" onerror="this.style.display='none'">` + barsHtml;
+      }
+
+      block.innerHTML = `
+        <div class="survey-q-title">Q${idx + 1}: ${q.questionText}</div>
+        <div class="survey-q-meta">${q.totalResponses} RESPONSE${q.totalResponses !== 1 ? 'S' : ''}</div>
+        ${barsHtml}
+      `;
+      list.appendChild(block);
+    });
+
+    // Participants
+    const pw = document.createElement('div');
+    pw.className = 'participants-wrap';
+    pw.innerHTML = `<div class="participants-title">PARTICIPANTS (${participants.length})</div>`;
+    const grid = document.createElement('div');
+    grid.className = 'participants-grid';
+    if (participants.length === 0) {
+      grid.innerHTML = '<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--steel);">NONE YET</span>';
+    } else {
+      participants.forEach(p => {
+        const av = p.picLink ? lh3(p.picLink) : fallbackAvatar(p.username);
+        const chip = document.createElement('div');
+        chip.className = 'participant-chip';
+        chip.innerHTML = `
+          <img src="${av}" onerror="this.src='${fallbackAvatar(p.username)}'" alt="">
+          <span>${p.username}</span>
+        `;
+        grid.appendChild(chip);
+      });
+    }
+    pw.appendChild(grid);
+    list.appendChild(pw);
+
+  } catch {
+    list.innerHTML = '<div class="state-view" style="padding:40px;"><div class="empty-sub">FAILED TO LOAD</div></div>';
+  }
+}
+
+/* Board modal close */
+document.getElementById('board-close').addEventListener('click', () => {
+  document.getElementById('board-modal').classList.remove('open');
+});
+document.getElementById('board-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('board-modal'))
+    document.getElementById('board-modal').classList.remove('open');
+});
+
+/* ── CREATE CHANNEL MODAL ─────────────────────────────────────────── */
+document.getElementById('drawer-create-btn').addEventListener('click', () => {
+  closeDrawer();
+  chAvatarData = null;
+  document.getElementById('ch-name-field').value = '';
+  document.getElementById('ch-desc-field').value = '';
+  document.getElementById('ch-avatar-preview').src = 'https://ui-avatars.com/api/?name=Q&background=1e293b&color=a78bfa&size=88';
+  document.getElementById('ch-modal').classList.add('open');
+});
+
+document.getElementById('ch-modal-close').addEventListener('click', () => {
+  document.getElementById('ch-modal').classList.remove('open');
+});
+document.getElementById('ch-cancel-btn').addEventListener('click', () => {
+  document.getElementById('ch-modal').classList.remove('open');
+});
+
+document.getElementById('ch-avatar-wrap').addEventListener('click', () => {
+  document.getElementById('ch-avatar-file').click();
+});
+document.getElementById('ch-avatar-file').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const b64 = await fileToBase64(file);
+  chAvatarData = { base64: b64.split(',')[1], name: file.name, type: file.type };
+  document.getElementById('ch-avatar-preview').src = b64;
+});
+
+document.getElementById('ch-submit-btn').addEventListener('click', async () => {
+  const name = document.getElementById('ch-name-field').value.trim();
+  const desc = document.getElementById('ch-desc-field').value.trim();
+  if (!name) { toast('Channel name required', 'err'); return; }
+
+  const btn = document.getElementById('ch-submit-btn');
+  btn.disabled = true; btn.textContent = 'CREATING...';
+
+  try {
+    const payload = { operation: 'createQnAChannel', creator: currentUser, name, description: desc };
+    if (chAvatarData) { payload.imageData = chAvatarData.base64; payload.imageName = chAvatarData.name; }
+    const data = await postData(payload);
+    if (data.status === 'success') {
+      toast('Channel created!', 'ok');
+      document.getElementById('ch-modal').classList.remove('open');
+      await loadChannels();
+    } else {
+      toast(data.message || 'Failed', 'err');
+    }
+  } catch { toast('Network error', 'err'); }
+  finally { btn.disabled = false; btn.textContent = 'CREATE'; }
+});
+
+/* ── REFRESH ──────────────────────────────────────────────────────── */
+document.getElementById('btn-refresh').addEventListener('click', async () => {
+  if (!currentChannel) return;
+  const icon = document.querySelector('#btn-refresh i');
+  icon.style.transition = 'transform 0.6s linear';
+  icon.style.transform = 'rotate(360deg)';
+  setTimeout(() => { icon.style.transition = ''; icon.style.transform = ''; }, 650);
+  await loadGames(currentChannel.id);
+});
+
+/* ── INIT ─────────────────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', loadChannels);
+
+/* ── SERVICE WORKER ───────────────────────────────────────────────── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
+      const { getMessaging, getToken, onMessage } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
+
+     const firebaseConfig = {
+       apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+  projectId: "dc-riverside-murera-coffee",
+  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+  messagingSenderId: "373863707096",
+  appId: "1:373863707096:web:5e3c703655687b96e442ad"
+      };
+
+
+      const messaging = getMessaging(app);
+     const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
+
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') return;
+
+      const token = await getToken(messaging, { vapidKey: VAPID, serviceWorkerRegistration: swReg });
+      if (token) await postData({ operation: 'saveFcmToken', username: currentUser, fcmToken: token });
+
+      onMessage(messaging, payload => {
+        const title = payload.data?.title || 'New activity';
+        const body  = payload.data?.body  || '';
+        toast(`${title} — ${body}`, 'ok', 5000);
+        if (currentChannel) loadGames(currentChannel.id);
+      });
+    } catch (err) { console.warn('FCM setup failed:', err); }
+  });
+}
 </script>
 </body>
 </html>
