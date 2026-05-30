@@ -1,1518 +1,2549 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CashSplit - Money Tracker</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/font-awesome.min.css"/>
- <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; width: 100%; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    header {
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(96, 165, 250, 0.2);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-content {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    h1 { font-size: 1.6rem; color: #60a5fa; font-weight: 600; }
-
-    .main-container {
-      flex: 1;
-      max-width: 1000px;
-      margin: 0 auto;
-      width: 100%;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      scrollbar-width: thin;
-      scrollbar-color: #60a5fa rgba(96,165,250,0.1);
-    }
-
-    .card {
-      background: rgba(30, 41, 59, 0.8);
-      backdrop-filter: blur(8px);
-      border-radius: 16px;
-      padding: 20px;
-      border: 1px solid rgba(96, 165, 250, 0.15);
-    }
-    .total-balance {
-      text-align: center;
-      padding: 24px;
-      background: linear-gradient(135deg, #1e40af, #3b82f6);
-      border-radius: 16px;
-      color: white;
-    }
-    .balance-amount { font-size: 2.4rem; font-weight: 700; }
-    .section-title {
-      font-size: 1.1rem;
-      color: #60a5fa;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    input, select, button {
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: none;
-      font-size: 1rem;
-    }
-    input, select {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      width: 100%;
-    }
-    input:focus, select:focus { outline: 2px solid #60a5fa; }
-    button {
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-    }
-
-    .split-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-    }
-    .allocation-item {
-      background: rgba(15, 23, 42, 0.6);
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(96, 165, 250, 0.1);
-    }
-    .allocation-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .progress-bar {
-      height: 6px;
-      background: rgba(96, 165, 250, 0.2);
-      border-radius: 9999px;
-      overflow: hidden;
-      margin: 8px 0;
-    }
-    .progress {
-      height: 100%;
-      background: linear-gradient(90deg, #60a5fa, #3b82f6);
-      transition: width 0.4s ease;
-    }
-
-    .deduction-btn { background: #ef4444; }
-
-    .history { max-height: 420px; overflow-y: auto; }
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(96, 165, 250, 0.1);
-    }
-
-    .modal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: #1e2937;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 380px;
-      padding: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-      border: 1px solid rgba(96, 165, 250, 0.2);
-    }
-    .modal-title {
-      font-size: 1.1rem;
-      margin-bottom: 16px;
-      color: #60a5fa;
-    }
-    .modal input {
-      margin-bottom: 20px;
-      font-size: 1.1rem;
-      width: 100%;
-    }
-    .modal-buttons {
-      display: flex;
-      gap: 12px;
-    }
-    .modal-buttons button {
-      flex: 1;
-      padding: 12px;
-    }
-    .modal-cancel { background: #334155 !important; }
-
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1e293b;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      z-index: 1000;
-      animation: slideUp 0.3s ease;
-    }
-    @keyframes slideUp {
-      from { transform: translate(-50%, 50px); opacity: 0; }
-      to { transform: translate(-50%, 0); opacity: 1; }
-    }
-
-    .sub-allocations {
-      margin-top: 12px;
-      padding-left: 12px;
-      border-left: 3px solid #60a5fa;
-    }
-    .sub-item {
-      background: rgba(15, 23, 42, 0.4);
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #64748b;
-    }
-
-    /* New styles for Actual & Unallocated */
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      margin: 8px 0;
-      font-size: 1.05rem;
-    }
-    .unallocated {
-      color: #fbbf24;
-      font-weight: 600;
-    }
-
-    /* Improved Dropdown / Select Styles */
-select {
-    background: rgba(255,255,255,0.08);
-    color: #e2e8f0;
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(96, 165, 250, 0.3);
-    font-size: 1rem;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23e2e8f0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592c.86 0 1.32 1.013.753 1.658l-4.796 5.482a1 1 0 01-1.506 0z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-size: 12px;
-    cursor: pointer;
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>CashSplit — Money Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #060a12;
+  --bg2: #0d1424;
+  --bg3: #111927;
+  --card: rgba(13,20,36,0.85);
+  --border: rgba(96,165,250,0.12);
+  --border-bright: rgba(96,165,250,0.35);
+  --blue: #3b82f6;
+  --blue-light: #60a5fa;
+  --blue-dim: rgba(59,130,246,0.15);
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #fbbf24;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --glow: 0 0 40px rgba(59,130,246,0.08);
+}
+body.light {
+  --bg: #f0f4ff;
+  --bg2: #e8edf8;
+  --bg3: #fff;
+  --card: rgba(255,255,255,0.92);
+  --border: rgba(59,130,246,0.15);
+  --border-bright: rgba(59,130,246,0.4);
+  --blue: #2563eb;
+  --blue-light: #3b82f6;
+  --blue-dim: rgba(37,99,235,0.1);
+  --text: #0f172a;
+  --text2: #334155;
+  --text3: #64748b;
+  --glow: 0 4px 24px rgba(37,99,235,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:var(--font-mono);
+  background:var(--bg);
+  color:var(--text);
+  display:flex;flex-direction:column;
+  transition:background 0.3s,color 0.3s;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background: radial-gradient(ellipse 80% 50% at 20% -10%, rgba(59,130,246,0.07) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 40% at 80% 110%, rgba(59,130,246,0.05) 0%, transparent 60%);
+  pointer-events:none;z-index:0;
 }
 
-select:focus {
-    outline: none;
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
-    background-color: rgba(255,255,255,0.12);
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:9999px;}
+
+/* ===== TOP BAR ===== */
+#topbar{
+  position:sticky;top:0;z-index:200;
+  background:rgba(6,10,18,0.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+body.light #topbar{background:rgba(240,244,255,0.95);}
+.logo{
+  font-family:var(--font-display);
+  font-weight:800;font-size:1.25rem;
+  color:var(--blue-light);
+  letter-spacing:-0.02em;
+  display:flex;align-items:center;gap:8px;
+}
+.logo-dot{
+  width:8px;height:8px;
+  background:var(--blue);
+  border-radius:50%;
+  box-shadow:0 0 8px var(--blue);
+}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+
+/* Profile switcher */
+#profile-btn{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);font-family:var(--font-mono);
+  font-size:0.78rem;padding:6px 12px;border-radius:8px;
+  cursor:pointer;display:flex;align-items:center;gap:6px;
+  transition:border-color 0.2s;
+}
+#profile-btn:hover{border-color:var(--blue);}
+
+.icon-btn{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.9rem;transition:all 0.2s;
+}
+.icon-btn:hover{border-color:var(--blue-light);color:var(--blue-light);}
+
+/* ===== BANNERS ===== */
+.banner{
+  padding:8px 20px;
+  font-size:0.82rem;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;flex-shrink:0;
+  transition:all 0.3s;
+}
+.banner.hidden{display:none;}
+#offline-banner{background:rgba(251,191,36,0.15);border-bottom:1px solid rgba(251,191,36,0.25);color:#fbbf24;}
+#low-balance-banner{background:rgba(239,68,68,0.12);border-bottom:1px solid rgba(239,68,68,0.25);color:#f87171;}
+#install-banner{background:rgba(59,130,246,0.1);border-bottom:1px solid var(--border);color:var(--blue-light);}
+.banner-x{cursor:pointer;opacity:0.7;font-size:1rem;padding:0 4px;}
+.banner-x:hover{opacity:1;}
+
+/* ===== PULL-TO-REFRESH ===== */
+#ptr{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  height:0;overflow:hidden;color:var(--text2);font-size:0.82rem;
+  transition:height 0.2s;background:var(--bg2);
+}
+#ptr.active{height:44px;}
+.ptr-spin{
+  width:16px;height:16px;
+  border:2px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;animation:spin 0.6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ===== MAIN LAYOUT ===== */
+#main{
+  flex:1;display:flex;overflow:hidden;
+  position:relative;z-index:1;
 }
 
-select option {
-    background: #1e2937;           /* Dark background for dropdown list */
-    color: #e2e8f0;                /* Light text */
-    padding: 12px 16px;
-    font-size: 1rem;
+/* Sidebar for desktop */
+#sidebar{
+  width:220px;flex-shrink:0;
+  border-right:1px solid var(--border);
+  padding:16px 12px;
+  display:flex;flex-direction:column;gap:4px;
+  overflow-y:auto;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  color:var(--text2);font-size:0.88rem;
+  cursor:pointer;transition:all 0.2s;
+  font-family:var(--font-mono);
+}
+.nav-item:hover{background:var(--blue-dim);color:var(--text);}
+.nav-item.active{background:var(--blue-dim);color:var(--blue-light);border:1px solid var(--border);}
+.nav-item .nav-icon{font-size:1rem;width:20px;text-align:center;}
+
+/* Content area */
+#content{
+  flex:1;overflow-y:auto;
+  padding:20px;
+  display:flex;flex-direction:column;gap:16px;
 }
 
-/* Optional: Better hover effect on options (works in most browsers) */
-select option:hover {
-    background: #334155;
+/* ===== MOBILE BOTTOM NAV ===== */
+#bottom-nav{display:none;}
+@media(max-width:640px){
+  #sidebar{display:none;}
+  #content{padding:16px 14px 80px;}
+  #bottom-nav{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;
+    height:60px;background:var(--bg2);
+    border-top:1px solid var(--border);
+    z-index:300;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .bnav-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;font-size:0.62rem;color:var(--text3);cursor:pointer;
+    transition:color 0.2s;font-family:var(--font-mono);
+  }
+  .bnav-item.active{color:var(--blue-light);}
+  .bnav-item .bni{font-size:1.2rem;}
 }
 
-/* Make sure the placeholder option is visible */
-select option[value=""] {
-    color: #94a3b8;
-}
-    .delete-history-btn {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
+/* ===== SECTION PAGES ===== */
+.page{display:none;}
+.page.active{display:flex;flex-direction:column;gap:16px;}
 
-    /* ===== SETTINGS MODAL ===== */
-#settings-modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.75);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
+/* ===== CARDS ===== */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  backdrop-filter:blur(8px);
+  box-shadow:var(--glow);
 }
-#settings-modal .modal-content {
-  width: 90%;
-  max-width: 420px;
+.card-title{
+  font-family:var(--font-display);
+  font-weight:700;font-size:0.95rem;
+  color:var(--blue-light);
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;
+  letter-spacing:0.02em;text-transform:uppercase;
 }
-.settings-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(96,165,250,0.1);
-}
-.settings-row:last-child { border-bottom: none; }
-.settings-label { font-size: 1rem; color: #e2e8f0; }
-.settings-desc { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+.card-title .ct-icon{font-size:1rem;}
 
-/* Toggle switch */
-.toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute; inset: 0;
-  background: #334155;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: 0.3s;
+/* ===== BALANCE HERO ===== */
+#balance-hero{
+  background:linear-gradient(135deg, #0f2a6e 0%, #1e3a8a 40%, #1d4ed8 100%);
+  border:1px solid rgba(96,165,250,0.25);
+  border-radius:var(--radius);
+  padding:28px 24px;
+  text-align:center;
+  position:relative;overflow:hidden;
 }
-.toggle-slider:before {
-  content: "";
-  position: absolute;
-  width: 20px; height: 20px;
-  left: 3px; bottom: 3px;
-  background: white;
-  border-radius: 50%;
-  transition: 0.3s;
+#balance-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 0%, rgba(96,165,250,0.15) 0%, transparent 70%);
 }
-.toggle input:checked + .toggle-slider { background: #3b82f6; }
-.toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
+.hero-label{font-size:0.75rem;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;font-family:var(--font-display);}
+.hero-amount{
+  font-family:var(--font-display);
+  font-size:2.6rem;font-weight:800;
+  color:#fff;margin:4px 0;letter-spacing:-0.03em;
+}
+.hero-sub{font-size:0.78rem;color:rgba(255,255,255,0.5);font-family:var(--font-mono);}
+.hero-row{
+  display:flex;justify-content:space-around;
+  margin-top:20px;padding-top:16px;
+  border-top:1px solid rgba(255,255,255,0.1);
+  gap:12px;flex-wrap:wrap;
+}
+.hero-stat{text-align:center;}
+.hero-stat-label{font-size:0.68rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;}
+.hero-stat-val{font-size:1rem;font-weight:700;color:#fff;font-family:var(--font-display);}
+.hero-stat-val.green{color:#4ade80;}
+.hero-stat-val.red{color:#f87171;}
+.hero-stat-val.yellow{color:#fbbf24;}
 
-/* Font size selector */
-.font-select {
-  background: rgba(255,255,255,0.08);
-  color: #e2e8f0;
-  border: 1px solid rgba(96,165,250,0.3);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
+/* ===== INPUTS ===== */
+input,select,textarea{
+  font-family:var(--font-mono);
+  background:var(--bg3);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:11px 14px;
+  font-size:0.9rem;
+  width:100%;
+  transition:border-color 0.2s,box-shadow 0.2s;
+  outline:none;
 }
+input:focus,select:focus,textarea:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(59,130,246,0.15);
+}
+input::placeholder{color:var(--text3);}
+select{
+  appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592c.86 0 1.32 1.013.753 1.658l-4.796 5.482a1 1 0 01-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;background-size:12px;
+  padding-right:36px;
+}
+select option{background:var(--bg2);color:var(--text);}
 
-/* Light mode overrides */
-body.light-mode {
-  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
-  color: #1e293b;
+/* ===== BUTTONS ===== */
+.btn{
+  font-family:var(--font-mono);
+  padding:11px 18px;
+  border-radius:var(--radius-sm);
+  border:none;cursor:pointer;
+  font-size:0.88rem;font-weight:500;
+  transition:all 0.2s;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
 }
-body.light-mode header {
-  background: rgba(219, 234, 254, 0.97);
-  border-bottom-color: rgba(59,130,246,0.3);
-}
-body.light-mode h1 { color: #1d4ed8; }
-body.light-mode .card {
-  background: rgba(255,255,255,0.9);
-  border-color: rgba(59,130,246,0.2);
-  color: #1e293b;
-}
-body.light-mode .total-balance {
-  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-  color: white;
-}
-body.light-mode .section-title { color: #1d4ed8; }
-body.light-mode .allocation-item {
-  background: rgba(219,234,254,0.5);
-  border-color: rgba(59,130,246,0.2);
-  color: #1e293b;
-}
-body.light-mode .sub-allocations { border-left-color: #3b82f6; }
-body.light-mode .sub-item {
-  background: rgba(191,219,254,0.4);
-  color: #1e293b;
-}
-body.light-mode .allocation-item strong,
-body.light-mode .sub-item strong { color: #0f172a; }
-body.light-mode .allocation-item span,
-body.light-mode .sub-item span,
-body.light-mode .allocation-item div,
-body.light-mode .sub-item div { color: #334155; }
-body.light-mode input {
-  background: rgba(255,255,255,0.9);
-  color: #1e293b;
-  border: 1px solid rgba(59,130,246,0.3);
-}
-body.light-mode input::placeholder { color: #94a3b8; }
-body.light-mode select {
-  background-color: rgba(255,255,255,0.9);
-  color: #1e293b;
-  border-color: rgba(59,130,246,0.3);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%231e293b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592c.86 0 1.32 1.013.753 1.658l-4.796 5.482a1 1 0 01-1.506 0z'/%3E%3C/svg%3E");
-}
-body.light-mode select option {
-  background: #ffffff;
-  color: #1e293b;
-}
-body.light-mode .font-select {
-  background: rgba(255,255,255,0.9);
-  color: #1e293b;
-  border-color: rgba(59,130,246,0.3);
-}
+.btn:hover{transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-light));color:#fff;box-shadow:0 4px 16px rgba(59,130,246,0.25);}
+.btn-primary:hover{box-shadow:0 8px 24px rgba(59,130,246,0.4);}
+.btn-danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;}
+.btn-ghost{background:var(--bg3);border:1px solid var(--border);color:var(--text2);}
+.btn-ghost:hover{border-color:var(--blue-light);color:var(--blue-light);}
+.btn-sm{padding:7px 12px;font-size:0.8rem;}
+.btn-xs{padding:5px 9px;font-size:0.75rem;}
+.btn-block{width:100%;}
+.btn-yellow{background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;}
 
-/* Modal base */
-body.light-mode .modal-content {
-  background: #ffffff;
-  color: #1e293b;
-  border-color: rgba(59,130,246,0.3);
-}
-body.light-mode .modal-title,
-body.light-mode #modal-title { color: #1d4ed8 !important; }
-body.light-mode .modal input,
-body.light-mode #modal-input {
-  background: #ffffff !important;
-  color: #1e293b !important;
-  border: 1px solid rgba(59,130,246,0.3) !important;
-}
-body.light-mode #modal-input::placeholder { color: #94a3b8 !important; }
+/* ===== FORM GROUPS ===== */
+.form-group{display:flex;flex-direction:column;gap:8px;}
+.form-label{font-size:0.78rem;color:var(--text2);letter-spacing:0.04em;text-transform:uppercase;}
+.form-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:480px){.form-row-3{grid-template-columns:1fr 1fr;}}
 
-/* Confirm dialog message */
-body.light-mode #confirm-message {
-  color: #1e293b !important;
+/* ===== ALLOCATIONS ===== */
+.alloc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.alloc-card{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:16px;
+  position:relative;
+  transition:border-color 0.2s;
 }
+.alloc-card:hover{border-color:var(--border-bright);}
+.alloc-card.warning-low{border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.03);}
+.alloc-card.rollover-on::after{
+  content:'🔄';position:absolute;top:10px;right:10px;font-size:0.8rem;
+}
+.alloc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.alloc-name{
+  font-family:var(--font-display);font-weight:700;font-size:0.95rem;
+  display:flex;align-items:center;gap:6px;
+}
+.trend-badge{font-size:0.75rem;padding:2px 5px;border-radius:4px;font-family:var(--font-mono);}
+.trend-up{color:var(--red);background:rgba(239,68,68,0.1);}
+.trend-down{color:var(--green);background:rgba(34,197,94,0.1);}
+.trend-flat{color:var(--text3);}
+.alloc-pct{font-size:0.82rem;color:var(--text3);font-family:var(--font-mono);}
+.alloc-amount{font-size:1.2rem;font-weight:700;font-family:var(--font-display);margin:4px 0;}
+.alloc-meta{font-size:0.78rem;color:var(--text3);margin-bottom:8px;}
+.progress-bar{height:4px;background:var(--border);border-radius:9999px;overflow:hidden;margin:6px 0;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-light));transition:width 0.4s ease;}
+.progress-fill.warn{background:linear-gradient(90deg,#d97706,#fbbf24);}
+.progress-fill.danger{background:linear-gradient(90deg,#dc2626,#ef4444);}
+.alloc-warn-banner{
+  font-size:0.78rem;color:#fbbf24;
+  background:rgba(251,191,36,0.1);
+  border:1px solid rgba(251,191,36,0.2);
+  border-radius:6px;padding:6px 10px;margin:8px 0;
+}
+.alloc-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.sub-allocs{margin-top:12px;padding-left:10px;border-left:2px solid var(--border);}
+.sub-alloc-item{
+  background:rgba(13,20,36,0.5);border-radius:8px;
+  padding:10px;margin-bottom:6px;font-size:0.85rem;
+}
+body.light .sub-alloc-item{background:rgba(59,130,246,0.05);}
 
-/* Reset Settings select inside modal */
-body.light-mode #reset-select {
-  background: #ffffff !important;
-  color: #1e293b !important;
-  border: 1px solid rgba(59,130,246,0.4) !important;
+/* ===== HISTORY ===== */
+.history-wrap{max-height:400px;overflow-y:auto;}
+.history-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 0;border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
 }
-body.light-mode #reset-select option {
-  background: #ffffff;
-  color: #1e293b;
+.history-item:last-child{border-bottom:none;}
+.history-item-inner{display:flex;justify-content:space-between;align-items:center;width:100%;transition:transform 0.2s;}
+.history-delete-reveal{
+  position:absolute;right:0;top:0;bottom:0;
+  width:80px;background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:0.82rem;font-weight:700;
+  transform:translateX(100%);transition:transform 0.2s;border-radius:0 6px 6px 0;cursor:pointer;
 }
+.hi-label{font-size:0.9rem;}
+.hi-time{font-size:0.72rem;color:var(--text3);}
+.hi-amount{font-family:var(--font-display);font-weight:700;font-size:0.95rem;}
+.hi-amount.pos{color:var(--green);}
+.hi-amount.neg{color:var(--red);}
+.hi-amount.neutral{color:var(--text2);}
 
-/* Any paragraph or strong text inside modals */
-body.light-mode .modal-content p,
-body.light-mode .modal-content strong {
-  color: #1e293b !important;
+/* ===== SHORTCUTS ===== */
+.shortcuts-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.shortcut-pill{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+  cursor:pointer;text-align:center;transition:all 0.2s;
+  display:flex;flex-direction:column;gap:2px;
+  user-select:none;
 }
+.shortcut-pill:hover{border-color:var(--blue-light);background:var(--blue-dim);}
+.shortcut-pill:active{transform:scale(0.97);}
+.sp-label{font-size:0.85rem;font-weight:600;font-family:var(--font-display);}
+.sp-meta{font-size:0.75rem;color:var(--text3);}
 
-body.light-mode .modal-cancel { background: #cbd5e1 !important; color: #1e293b !important; }
-body.light-mode .settings-label { color: #1e293b; }
-body.light-mode .settings-desc { color: #475569; }
-body.light-mode .settings-row { border-bottom-color: rgba(59,130,246,0.15); }
-body.light-mode .toggle-slider { background: #94a3b8; }
-body.light-mode .history-item { border-bottom-color: rgba(59,130,246,0.15); }
-body.light-mode .history-item small { color: #475569 !important; }
-body.light-mode .unallocated { color: #b45309; }
-body.light-mode .progress-bar { background: rgba(59,130,246,0.15); }
-body.light-mode .info-row { color: #1e293b; }
-body.light-mode .empty-state { color: #475569; }
-body.light-mode .toast {
-  background: #1e293b;
-  color: white;
+/* ===== GOALS ===== */
+.goal-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:16px;
 }
-body.light-mode button[style*="background:#334155"] {
-  background: #475569 !important;
-  color: white !important;
-}
+.goal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.goal-name{font-family:var(--font-display);font-weight:700;font-size:1rem;}
+.goal-pct{font-size:1.2rem;font-weight:800;font-family:var(--font-display);color:var(--blue-light);}
+.goal-bar{height:6px;background:var(--border);border-radius:9999px;overflow:hidden;margin:8px 0;}
+.goal-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-light));transition:width 0.4s;}
+.goal-meta{font-size:0.78rem;color:var(--text3);}
+.goal-daily{font-size:0.8rem;color:var(--yellow);margin-top:4px;}
 
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ===== ANALYTICS ===== */
+.chart-wrap{position:relative;height:240px;}
+.analytics-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:500px){.analytics-row{grid-template-columns:1fr;}}
+.stat-box{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:16px;text-align:center;
 }
-
-/* Light mode actions menu */
-body.light-mode #actions-menu {
-  background: #ffffff !important;
-  border-color: rgba(59,130,246,0.25) !important;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.15) !important;
-}
-body.light-mode #actions-menu button {
-  color: #1e293b !important;
-}
-body.light-mode #actions-menu button:last-child {
-  color: #dc2626 !important;
-}
-body.light-mode #actions-menu div[style*="height:1px"] {
-  background: rgba(59,130,246,0.15) !important;
-}
-
-/* Light mode Actions trigger button */
-body.light-mode #actions-btn {
-  background: #475569 !important;
-  color: #ffffff !important;
-}
-
-/* Balance History Modal */
-#balance-history-modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.75);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1002;
+.stat-box-val{font-size:1.3rem;font-weight:800;font-family:var(--font-display);}
+.stat-box-label{font-size:0.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;}
+.spend-day-highlight{
+  font-size:0.9rem;color:var(--text);
+  background:var(--blue-dim);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;
+  display:flex;align-items:center;gap:8px;
 }
 
-#balance-history-modal .modal-content {
-  width: 90%;
-  max-width: 420px;
-  max-height: 85vh;
-  overflow-y: auto;
+/* ===== MODALS ===== */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;
+  z-index:500;padding:16px;
+}
+.modal-overlay.open{display:flex;}
+.modal-box{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  width:100%;max-width:400px;
+  padding:24px;
+  box-shadow:0 24px 60px rgba(0,0,0,0.6);
+  max-height:90vh;overflow-y:auto;
+}
+.modal-title{
+  font-family:var(--font-display);font-weight:700;font-size:1.1rem;
+  color:var(--blue-light);margin-bottom:20px;
+}
+.modal-btns{display:flex;gap:10px;margin-top:20px;}
+.modal-btns .btn{flex:1;}
+
+/* ===== PIN LOCK ===== */
+#pin-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:20px;
+}
+.pin-display{
+  display:flex;gap:12px;margin:8px 0;
+}
+.pin-dot{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid var(--border-bright);
+  transition:background 0.2s;
+}
+.pin-dot.filled{background:var(--blue-light);border-color:var(--blue-light);}
+.pin-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  max-width:240px;
+}
+.pin-key{
+  height:60px;border-radius:12px;
+  background:var(--bg3);border:1px solid var(--border);
+  font-size:1.4rem;font-family:var(--font-display);font-weight:700;
+  color:var(--text);cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.pin-key:hover{background:var(--blue-dim);border-color:var(--blue);}
+.pin-key:active{transform:scale(0.93);}
+
+/* ===== TOGGLE ===== */
+.toggle-wrap{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.toggle-track{
+  width:42px;height:24px;border-radius:9999px;
+  background:var(--border);position:relative;transition:background 0.2s;cursor:pointer;
+}
+.toggle-track.on{background:var(--blue);}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;
+  width:18px;height:18px;border-radius:50%;
+  background:#fff;transition:left 0.2s;
+}
+.toggle-track.on .toggle-thumb{left:21px;}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:72px;left:50%;transform:translateX(-50%);
+  background:var(--bg2);border:1px solid var(--border);
+  color:var(--text);padding:10px 20px;border-radius:10px;
+  font-size:0.85rem;font-family:var(--font-mono);
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  z-index:9000;white-space:nowrap;
+  animation:toastIn 0.3s ease;
+}
+@media(min-width:641px){.toast{bottom:20px;}}
+@keyframes toastIn{from{transform:translate(-50%,20px);opacity:0;}to{transform:translate(-50%,0);opacity:1;}}
+
+/* ===== SETTINGS PAGE ===== */
+.settings-section{margin-bottom:20px;}
+.settings-section-title{
+  font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--text3);margin-bottom:8px;padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+.settings-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.settings-row:last-child{border-bottom:none;}
+.settings-label{font-size:0.9rem;color:var(--text);}
+.settings-desc{font-size:0.75rem;color:var(--text3);margin-top:2px;}
+
+/* ===== SPLIT PAYMENT ===== */
+.split-line{
+  display:grid;grid-template-columns:1fr 1fr auto;gap:8px;
+  align-items:center;margin-bottom:8px;
 }
 
-.balance-history-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(96,165,250,0.15);
+/* ===== KEYBOARD HINTS ===== */
+#kbd-hints{
+  position:fixed;bottom:8px;left:50%;transform:translateX(-50%);
+  font-size:0.7rem;color:var(--text3);display:flex;gap:12px;
+  pointer-events:none;
 }
+.kbd-hint kbd{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:4px;padding:1px 5px;font-family:var(--font-mono);font-size:0.68rem;
+}
+@media(max-width:640px){#kbd-hints{display:none;}}
 
-body.light-mode .balance-history-item {
-  border-bottom-color: rgba(59,130,246,0.15);
+/* ===== RECURRING ===== */
+.recurring-item{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;padding:12px;margin-bottom:8px;
+  display:flex;justify-content:space-between;align-items:center;
 }
+.rec-info{flex:1;}
+.rec-name{font-family:var(--font-display);font-weight:600;font-size:0.9rem;}
+.rec-meta{font-size:0.75rem;color:var(--text3);}
 
-.balance-history-item:last-child {
-  border-bottom: none;
+/* ===== PROFILE MENU ===== */
+#profile-menu{
+  position:absolute;top:48px;right:0;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;padding:8px;min-width:200px;
+  box-shadow:0 12px 32px rgba(0,0,0,0.4);z-index:400;
+  display:none;
 }
-  </style>
+#profile-menu.open{display:block;}
+.profile-menu-item{
+  padding:9px 12px;border-radius:8px;font-size:0.85rem;
+  cursor:pointer;transition:background 0.15s;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.profile-menu-item:hover{background:var(--blue-dim);}
+.profile-active-dot{width:8px;height:8px;border-radius:50%;background:var(--blue-light);}
+
+/* ===== MONTH SUMMARY MODAL ===== */
+#month-summary-modal .modal-box{max-width:360px;}
+
+/* ===== MISC ===== */
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:0.88rem;}
+.chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:5px;font-size:0.75rem;
+  background:var(--blue-dim);color:var(--blue-light);font-family:var(--font-mono);
+}
+.chip.green{background:rgba(34,197,94,0.1);color:var(--green);}
+.chip.red{background:rgba(239,68,68,0.1);color:var(--red);}
+.chip.yellow{background:rgba(251,191,36,0.1);color:var(--yellow);}
+.divider{height:1px;background:var(--border);margin:12px 0;}
+.flex-row{display:flex;align-items:center;gap:10px;}
+.flex-between{display:flex;align-items:center;justify-content:space-between;}
+.gap-8{gap:8px;}
+.mb-8{margin-bottom:8px;}
+.mb-12{margin-bottom:12px;}
+.mt-12{margin-top:12px;}
+.w100{width:100%;}
+.text-sm{font-size:0.82rem;}
+.text-xs{font-size:0.72rem;}
+.text-muted{color:var(--text3);}
+.text-green{color:var(--green);}
+.text-red{color:var(--red);}
+.text-yellow{color:var(--yellow);}
+.text-blue{color:var(--blue-light);}
+.font-display{font-family:var(--font-display);}
+</style>
 </head>
 <body>
- <header>
-  <div class="header-content">
-    <h1><i class="fas fa-coins"></i> CashSplit</h1>
+
+<!-- PIN OVERLAY -->
+<div id="pin-overlay" style="display:none;">
+  <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--blue-light);">🔒 CashSplit</div>
+  <div id="pin-error" style="font-size:0.82rem;color:var(--red);min-height:20px;"></div>
+  <div class="pin-display" id="pin-dots"></div>
+  <div class="pin-grid" id="pin-grid"></div>
+  <button class="btn btn-ghost btn-sm" id="pin-forgot-btn" onclick="forgotPIN()" style="margin-top:8px;">Forgot PIN</button>
+  <div id="pin-lockout" style="font-size:0.82rem;color:var(--red);display:none;">Locked for <span id="pin-lockout-secs">30</span>s</div>
+</div>
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner" class="banner hidden">
+  📴 You're offline — data is saved locally
+  <span class="banner-x" onclick="document.getElementById('offline-banner').classList.add('hidden')">✕</span>
+</div>
+
+<!-- LOW BALANCE BANNER -->
+<div id="low-balance-banner" class="banner hidden">
+  <span id="low-balance-text">⚠️ Low balance</span>
+  <span class="banner-x" id="low-balance-x" onclick="document.getElementById('low-balance-banner').classList.add('hidden')">✕</span>
+</div>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner" class="banner hidden">
+  📲 Add CashSplit to your Home Screen for quick access
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="btn btn-sm btn-primary" id="install-btn">Install</button>
+    <span class="banner-x" onclick="dismissInstallBanner()">✕</span>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    CashSplit
+  </div>
+  <div class="topbar-right">
     <div style="position:relative;">
-      <button onclick="showBalanceHistory()" style="background:#334155; font-size:0.9rem;">
-        <i class="fas fa-chart-line"></i> History
+      <button class="icon-btn" id="profile-btn" onclick="toggleProfileMenu()">
+        <span id="profile-name-label">🧑</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M5 6.5L1 2.5h8z"/></svg>
       </button>
-      <button onclick="toggleActions()" id="actions-btn" style="background:#334155; font-size:0.9rem;">
-        <i class="fas fa-ellipsis-v"></i> Actions
-      </button>
-      <div id="actions-menu" style="
-        display: none;
-        position: absolute;
-        top: calc(100% + 8px);
-        right: 0;
-        background: #1e2937;
-        border: 1px solid rgba(96,165,250,0.2);
-        border-radius: 14px;
-        padding: 8px;
-        min-width: 170px;
-        box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-        z-index: 200;
-        flex-direction: column;
-        gap: 6px;
-        animation: slideDown 0.2s ease;
-      ">
-        <button onclick="openSettings(); closeActions();" style="
-          width:100%; background:transparent; color:#e2e8f0;
-          text-align:left; padding:10px 14px; border-radius:10px;
-          font-size:0.95rem; display:flex; align-items:center; gap:10px;
-        " onmouseover="this.style.background='rgba(96,165,250,0.12)'" onmouseout="this.style.background='transparent'">
-          <i class="fas fa-cog" style="width:16px; color:#60a5fa;"></i> Settings
-        </button>
-        <button onclick="showResetSettings(); closeActions();" style="
-          width:100%; background:transparent; color:#e2e8f0;
-          text-align:left; padding:10px 14px; border-radius:10px;
-          font-size:0.95rem; display:flex; align-items:center; gap:10px;
-        " onmouseover="this.style.background='rgba(96,165,250,0.12)'" onmouseout="this.style.background='transparent'">
-          <i class="fas fa-clock" style="width:16px; color:#60a5fa;"></i> Reset Mode
-        </button>
-        <div style="height:1px; background:rgba(96,165,250,0.1); margin:2px 6px;"></div>
-        <button onclick="resetAll(); closeActions();" style="
-          width:100%; background:transparent; color:#ef4444;
-          text-align:left; padding:10px 14px; border-radius:10px;
-          font-size:0.95rem; display:flex; align-items:center; gap:10px;
-        " onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">
-          <i class="fas fa-trash" style="width:16px;"></i> Full Reset
-        </button>
+      <div id="profile-menu"></div>
+    </div>
+    <button class="icon-btn" onclick="showPage('settings')" title="Settings (S)">⚙️</button>
+  </div>
+</div>
+
+<!-- PULL TO REFRESH -->
+<div id="ptr"><div class="ptr-spin"></div><span>Refreshing…</span></div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- Sidebar (desktop) -->
+  <nav id="sidebar">
+    <div class="nav-item active" data-page="home" onclick="showPage('home')"><span class="nav-icon">🏠</span> Home</div>
+    <div class="nav-item" data-page="analytics" onclick="showPage('analytics')"><span class="nav-icon">📊</span> Analytics</div>
+    <div class="nav-item" data-page="goals" onclick="showPage('goals')"><span class="nav-icon">🎯</span> Goals</div>
+    <div class="nav-item" data-page="shortcuts" onclick="showPage('shortcuts')"><span class="nav-icon">⚡</span> Shortcuts</div>
+    <div class="nav-item" data-page="recurring" onclick="showPage('recurring')"><span class="nav-icon">🔁</span> Recurring</div>
+    <div class="nav-item" data-page="settings" onclick="showPage('settings')"><span class="nav-icon">⚙️</span> Settings</div>
+  </nav>
+
+  <!-- Content -->
+  <div id="content">
+
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page active">
+      <div id="balance-hero">
+        <div class="hero-label">Current Balance</div>
+        <div class="hero-amount" id="hero-amount">KSh 0.00</div>
+        <div class="hero-sub" id="hero-sub">Avg daily: KSh 0.00 &nbsp;·&nbsp; <span id="daily-avg-text"></span></div>
+        <div class="hero-row">
+          <div class="hero-stat"><div class="hero-stat-label">Total In</div><div class="hero-stat-val green" id="stat-in">0</div></div>
+          <div class="hero-stat"><div class="hero-stat-label">Total Out</div><div class="hero-stat-val red" id="stat-out">0</div></div>
+          <div class="hero-stat"><div class="hero-stat-label">Net</div><div class="hero-stat-val" id="stat-net">0</div></div>
+          <div class="hero-stat"><div class="hero-stat-label">Unallocated</div><div class="hero-stat-val yellow" id="stat-unalloc">0</div></div>
+        </div>
       </div>
+
+      <!-- Add Money -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">＋</span> Add Money</div>
+        <div class="form-row">
+          <input type="number" id="add-amount" placeholder="Amount received (KSh)" step="0.01" min="0">
+          <button class="btn btn-primary" onclick="addMoney()" id="add-btn">Add</button>
+        </div>
+      </div>
+
+      <!-- Allocations -->
+      <div class="card">
+        <div class="card-title flex-between" style="margin-bottom:12px;">
+          <span><span class="ct-icon">📊</span> Allocations</span>
+          <button class="btn btn-ghost btn-sm" onclick="showAddAllocModal()">＋ New</button>
+        </div>
+        <div id="alloc-grid" class="alloc-grid"></div>
+      </div>
+
+      <!-- Deduction -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">－</span> Make Deduction</div>
+        <div id="split-toggle-row" class="flex-row mb-8">
+          <div class="toggle-wrap" onclick="toggleSplitMode()">
+            <div class="toggle-track" id="split-toggle-track"><div class="toggle-thumb"></div></div>
+            <span class="text-sm">Split Payment</span>
+          </div>
+        </div>
+        <div id="normal-deduct">
+          <select id="deduct-cat" class="mb-8">
+            <option value="">Select category…</option>
+          </select>
+          <div class="form-row">
+            <input type="number" id="deduct-amount" placeholder="Amount (KSh)" step="0.01" min="0" id="deduct-inp">
+            <button class="btn btn-danger" onclick="makeDeduction()">Deduct</button>
+          </div>
+        </div>
+        <div id="split-deduct" style="display:none;">
+          <div id="split-lines"></div>
+          <button class="btn btn-ghost btn-sm mb-8" onclick="addSplitLine()">＋ Add line</button>
+          <button class="btn btn-danger btn-block" onclick="makeSplitDeduction()">Deduct Split</button>
+        </div>
+      </div>
+
+      <!-- Transfer -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">↔</span> Transfer Between Allocations</div>
+        <div class="form-group mb-8">
+          <label class="form-label">From</label>
+          <select id="transfer-from"></select>
+        </div>
+        <div class="form-group mb-8">
+          <label class="form-label">To</label>
+          <select id="transfer-to"></select>
+        </div>
+        <div class="form-row">
+          <input type="number" id="transfer-amount" placeholder="Amount (KSh)" step="0.01" min="0">
+          <button class="btn btn-primary" onclick="doTransfer()">Transfer</button>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📋</span> History</div>
+        <div id="history-list" class="history-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS PAGE -->
+    <div id="page-analytics" class="page">
+      <div class="card">
+        <div class="card-title">📈 Monthly Spending</div>
+        <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🥧 Category Breakdown</div>
+        <div class="chart-wrap" style="height:260px;"><canvas id="chart-pie"></canvas></div>
+      </div>
+      <div class="analytics-row">
+        <div class="stat-box">
+          <div class="stat-box-val text-blue" id="an-avg-day">KSh 0</div>
+          <div class="stat-box-label">Avg Daily Spend</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val text-yellow" id="an-top-day">—</div>
+          <div class="stat-box-label">Highest Spend Day</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Spend by Day of Week</div>
+        <div id="spend-day-chart"></div>
+      </div>
+    </div>
+
+    <!-- GOALS PAGE -->
+    <div id="page-goals" class="page">
+      <div class="card">
+        <div class="card-title flex-between" style="margin-bottom:12px;">
+          <span>🎯 Savings Goals</span>
+          <button class="btn btn-ghost btn-sm" onclick="showAddGoalModal()">＋ Goal</button>
+        </div>
+        <div id="goals-list"></div>
+      </div>
+    </div>
+
+    <!-- SHORTCUTS PAGE -->
+    <div id="page-shortcuts" class="page">
+      <div class="card">
+        <div class="card-title flex-between" style="margin-bottom:12px;">
+          <span>⚡ Quick Shortcuts</span>
+          <button class="btn btn-ghost btn-sm" onclick="showAddShortcutModal()">＋ New</button>
+        </div>
+        <div class="text-xs text-muted mb-8">Tap to fill deduction form · Long-press to delete</div>
+        <div id="shortcuts-grid" class="shortcuts-grid"></div>
+      </div>
+    </div>
+
+    <!-- RECURRING PAGE -->
+    <div id="page-recurring" class="page">
+      <div class="card">
+        <div class="card-title flex-between" style="margin-bottom:12px;">
+          <span>🔁 Recurring Transactions</span>
+          <button class="btn btn-ghost btn-sm" onclick="showAddRecurringModal()">＋ New</button>
+        </div>
+        <div id="recurring-list"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="page-settings" class="page">
+      <div class="card">
+        <div class="card-title">⚙️ Settings</div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Appearance</div>
+          <div class="settings-row">
+            <div><div class="settings-label">Light Mode</div><div class="settings-desc">Switch to bright theme</div></div>
+            <div class="toggle-wrap" onclick="toggleSetting('lightMode')">
+              <div class="toggle-track" id="tog-lightMode"><div class="toggle-thumb"></div></div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Text Size</div></div>
+            <select class="btn btn-ghost btn-sm" id="setting-font" onchange="applyFontSize(this.value)" style="width:auto;">
+              <option value="14px">Small</option>
+              <option value="16px" selected>Default</option>
+              <option value="18px">Large</option>
+              <option value="20px">X-Large</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Compact View</div></div>
+            <div class="toggle-wrap" onclick="toggleSetting('compactView')">
+              <div class="toggle-track" id="tog-compactView"><div class="toggle-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Reset</div>
+          <div class="settings-row">
+            <div><div class="settings-label">Auto Reset Mode</div></div>
+            <select id="reset-mode-select" onchange="setResetMode(this.value)" style="width:auto;" class="btn btn-ghost btn-sm">
+              <option value="consistent">Off</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Security</div>
+          <div class="settings-row">
+            <div><div class="settings-label">PIN Lock</div><div class="settings-desc">Lock app with a 4-digit PIN</div></div>
+            <div class="toggle-wrap" onclick="togglePINSetting()">
+              <div class="toggle-track" id="tog-pin"><div class="toggle-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Alerts</div>
+          <div class="settings-row">
+            <div><div class="settings-label">Low Balance Alert (KSh)</div></div>
+            <input type="number" id="low-bal-threshold" placeholder="0 = off" step="1" style="width:110px;" onchange="saveLowBalThreshold()">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Data</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📤 Export CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-csv-input').click()">📥 Import CSV</button>
+            <input type="file" id="import-csv-input" accept=".csv" style="display:none;" onchange="importCSV(this)">
+            <button class="btn btn-ghost btn-sm" onclick="backupToFile()">💾 Backup JSON</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('restore-input').click()">📂 Restore JSON</button>
+            <input type="file" id="restore-input" accept=".json" style="display:none;" onchange="restoreFromFile(this)">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Danger Zone</div>
+          <button class="btn btn-danger btn-block" onclick="doFullReset()">🗑 Full Reset (Clear All Data)</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- BOTTOM NAV (mobile) -->
+<div id="bottom-nav">
+  <div class="bnav-item active" data-page="home" onclick="showPage('home')"><span class="bni">🏠</span>Home</div>
+  <div class="bnav-item" data-page="analytics" onclick="showPage('analytics')"><span class="bni">📊</span>Analytics</div>
+  <div class="bnav-item" data-page="goals" onclick="showPage('goals')"><span class="bni">🎯</span>Goals</div>
+  <div class="bnav-item" data-page="shortcuts" onclick="showPage('shortcuts')"><span class="bni">⚡</span>Shortcuts</div>
+  <div class="bnav-item" data-page="settings" onclick="showPage('settings')"><span class="bni">⚙️</span>Settings</div>
+</div>
+
+<!-- KEYBOARD HINTS -->
+<div id="kbd-hints">
+  <span><kbd>A</kbd> Add</span>
+  <span><kbd>D</kbd> Deduct</span>
+  <span><kbd>T</kbd> Transfer</span>
+  <span><kbd>Esc</kbd> Close</span>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Generic Input Modal -->
+<div class="modal-overlay" id="input-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="input-modal-title">Input</div>
+    <div id="input-modal-body"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('input-modal')">Cancel</button>
+      <button class="btn btn-primary" id="input-modal-ok" onclick="">OK</button>
     </div>
   </div>
-</header>
+</div>
 
-  <div class="main-container">
-    <div class="card total-balance">
-      <h2>Current Balance</h2>
-      <div class="balance-amount" id="total-balance">KSh 0.00</div>
-    </div>
-
-    <!-- New: Actual Amount and Unallocated -->
-    <div class="card">
-      <div class="section-title"><i class="fas fa-info-circle"></i> Money Overview</div>
-      <div class="info-row">
-        <span>Actual Amount:</span>
-        <span id="actual-amount">KSh 0.00</span>
-      </div>
-      <div class="info-row unallocated">
-        <span>Unallocated Amount:</span>
-        <span id="unallocated-amount">KSh 0.00</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><i class="fas fa-plus-circle"></i> Add Money</div>
-      <div style="display:grid; grid-template-columns:1fr auto; gap:12px;">
-        <input type="number" id="new-amount" placeholder="Amount received (KSh)" step="0.01">
-        <button onclick="addMoney()">Add</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><i class="fas fa-chart-pie"></i> Allocations & Targets</div>
-      <div id="allocations-list" class="split-grid"></div>
-     <button id="add-allocation-btn" onclick="showAddNewAllocationModal()" style="margin-top:16px; width:100%;">
-  <i class="fas fa-plus"></i> Add New Main Allocation Category
-</button>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><i class="fas fa-minus-circle"></i> Make Deduction</div>
-      <select id="deduct-category" style="margin-bottom:12px;"></select>
-      <div style="display:grid; grid-template-columns:1fr auto; gap:12px;">
-        <input type="number" id="deduct-amount" placeholder="Amount to spend" step="0.01">
-        <button onclick="makeDeduction()" class="deduction-btn">Deduct</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><i class="fas fa-history"></i> Today's Activity</div>
-      <div id="history-list" class="history"></div>
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="confirm-modal-title">Confirm</div>
+    <div id="confirm-modal-msg" style="margin-bottom:8px;font-size:0.9rem;color:var(--text2);"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">Yes, proceed</button>
     </div>
   </div>
+</div>
 
-  <!-- Modal -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-title" id="modal-title"></div>
-      <input type="text" id="modal-input" placeholder="Enter value...">
-      <div class="modal-buttons">
-        <button onclick="hideModal()" class="modal-cancel">Cancel</button>
-        <button onclick="confirmModalAction()">OK</button>
-      </div>
+<!-- Add Goal Modal -->
+<div class="modal-overlay" id="goal-modal">
+  <div class="modal-box">
+    <div class="modal-title">🎯 New Savings Goal</div>
+    <div class="form-group mb-8"><label class="form-label">Goal Name</label><input type="text" id="goal-name-inp" placeholder="e.g. Emergency Fund"></div>
+    <div class="form-group mb-8"><label class="form-label">Target Amount (KSh)</label><input type="number" id="goal-target-inp" placeholder="50000" step="1"></div>
+    <div class="form-group mb-8"><label class="form-label">Deadline (optional)</label><input type="date" id="goal-deadline-inp"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('goal-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addGoal()">Add Goal</button>
     </div>
   </div>
+</div>
 
-  <!-- Settings Modal -->
-<div id="settings-modal">
-  <div class="modal-content">
-    <div class="modal-title" style="font-size:1.2rem; margin-bottom:16px;">
-      <i class="fas fa-cog"></i> Settings
+<!-- Add Shortcut Modal -->
+<div class="modal-overlay" id="shortcut-modal">
+  <div class="modal-box">
+    <div class="modal-title">⚡ New Shortcut</div>
+    <div class="form-group mb-8"><label class="form-label">Label</label><input type="text" id="sc-label-inp" placeholder="e.g. Lunch"></div>
+    <div class="form-group mb-8"><label class="form-label">Amount (KSh)</label><input type="number" id="sc-amount-inp" placeholder="200" step="1"></div>
+    <div class="form-group mb-8"><label class="form-label">Category</label><select id="sc-cat-inp"><option value="">Select…</option></select></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('shortcut-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addShortcut()">Save</button>
     </div>
+  </div>
+</div>
 
-    <!-- Light Mode -->
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Light Mode</div>
-        <div class="settings-desc">Switch to a brighter theme</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="setting-light-mode" onchange="applySetting('lightMode', this.checked)">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-
-    <!-- Font Size -->
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Text Size</div>
-        <div class="settings-desc">Adjust how large text appears</div>
-      </div>
-      <select class="font-select" id="setting-font-size" onchange="applySetting('fontSize', this.value)">
-        <option value="14px">Small</option>
-        <option value="16px" selected>Default</option>
-        <option value="18px">Large</option>
-        <option value="20px">X-Large</option>
+<!-- Add Recurring Modal -->
+<div class="modal-overlay" id="recurring-modal">
+  <div class="modal-box">
+    <div class="modal-title">🔁 New Recurring Transaction</div>
+    <div class="form-group mb-8"><label class="form-label">Name</label><input type="text" id="rec-name-inp" placeholder="e.g. Rent"></div>
+    <div class="form-group mb-8"><label class="form-label">Amount (KSh)</label><input type="number" id="rec-amount-inp" step="1" placeholder="5000"></div>
+    <div class="form-group mb-8"><label class="form-label">Type</label><select id="rec-type-inp"><option value="expense">Expense</option><option value="income">Income</option></select></div>
+    <div class="form-group mb-8"><label class="form-label">Category</label><select id="rec-cat-inp"><option value="">Select…</option></select></div>
+    <div class="form-group mb-8"><label class="form-label">Frequency</label>
+      <select id="rec-freq-inp">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
       </select>
     </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('recurring-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addRecurring()">Save</button>
+    </div>
+  </div>
+</div>
 
-    <!-- Compact View -->
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Compact View</div>
-        <div class="settings-desc">Reduce spacing for more content on screen</div>
+<!-- Month Summary Modal -->
+<div class="modal-overlay" id="month-summary-modal">
+  <div class="modal-box" id="month-summary-box">
+    <div class="modal-title">📅 Last Month Summary</div>
+    <div id="month-summary-body"></div>
+    <div class="modal-btns">
+      <button class="btn btn-primary btn-block" onclick="closeModal('month-summary-modal')">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIN Setup Modal -->
+<div class="modal-overlay" id="pin-setup-modal">
+  <div class="modal-box" style="max-width:300px;text-align:center;">
+    <div class="modal-title">🔒 Set PIN</div>
+    <div style="font-size:0.85rem;color:var(--text2);margin-bottom:16px;" id="pin-setup-label">Enter a new 4-digit PIN</div>
+    <div class="pin-display" id="pin-setup-dots" style="justify-content:center;margin-bottom:12px;"></div>
+    <div class="pin-grid" id="pin-setup-grid" style="margin:0 auto;"></div>
+    <button class="btn btn-ghost btn-sm mt-12" onclick="closeModal('pin-setup-modal');cancelPINSetup();">Cancel</button>
+  </div>
+</div>
+
+<!-- Add Allocation Modal -->
+<div class="modal-overlay" id="alloc-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="alloc-modal-title">➕ New Allocation</div>
+    <div class="form-group mb-8"><label class="form-label">Name</label><input type="text" id="alloc-name-inp" placeholder="e.g. Food"></div>
+    <div class="form-group mb-8"><label class="form-label">Percentage (%)</label><input type="number" id="alloc-pct-inp" placeholder="20" step="0.1" min="0.1" max="100"></div>
+    <div class="form-group mb-8"><label class="form-label">Target Amount (0 = none)</label><input type="number" id="alloc-target-inp" placeholder="0" step="1"></div>
+    <div class="flex-row mb-8">
+      <div class="toggle-wrap" onclick="toggleAllocRollover()">
+        <div class="toggle-track" id="tog-alloc-rollover"><div class="toggle-thumb"></div></div>
       </div>
-      <label class="toggle">
-        <input type="checkbox" id="setting-compact" onchange="applySetting('compactView', this.checked)">
-        <span class="toggle-slider"></span>
-      </label>
+      <span class="text-sm">Rollover unspent balance</span>
     </div>
-
-    <div style="margin-top:20px;">
-      <button onclick="closeSettings()" style="width:100%;">Done</button>
+    <div id="alloc-modal-sub" style="display:none;">
+      <div class="form-group mb-8"><label class="form-label">Sub-allocation of</label><select id="alloc-parent-inp"></select></div>
     </div>
-  </div>
-</div>
-
-<!-- Balance History Modal -->
-<div id="balance-history-modal">
-  <div class="modal-content">
-    <div class="modal-title" style="margin-bottom:20px;">
-      <i class="fas fa-chart-line"></i> Actual Balance History
-    </div>
-    <div id="balance-history-list" style="max-height:60vh; overflow-y:auto;"></div>
-    
-    <div style="margin-top:20px;">
-      <button onclick="hideBalanceHistory()" style="width:100%;">Close</button>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('alloc-modal')">Cancel</button>
+      <button class="btn btn-primary" id="alloc-modal-ok" onclick="confirmAddAlloc()">Add</button>
     </div>
   </div>
 </div>
-  <script>
-    let actualAmount = 0;        // The real money we have (this is 100%)
-    let unallocatedAmount = 0;   // What hasn't been assigned to any allocation yet
-    let allocations = [];
-    let history = [];
-    let pendingCallbacks = [];
-        let resetMode = "consistent";   // "consistent", "daily", "weekly", "monthly", "yearly"
-    let lastResetDate = null;
 
-       const STORAGE_KEY = 'cashsplit_data_v12';
+</body>
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const STORE = 'cashsplit_data_v12';
+const SET_KEY = 'cashsplit_settings_v1';
+const GOALS_KEY = 'cashsplit_goals';
+const SC_KEY = 'cashsplit_shortcuts';
+const REC_KEY = 'cashsplit_recurring';
+const PROFILES_KEY = 'cashsplit_profiles';
 
-        function loadData() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const data = JSON.parse(saved);
-        actualAmount = data.actualAmount || 0;
-        unallocatedAmount = data.unallocatedAmount || 0;
-        allocations = data.allocations || [];
-        history = data.history || [];
-        resetMode = data.resetMode || "consistent";
-        lastResetDate = data.lastResetDate || null;
-      }
-      checkAndPerformAutoReset();
-      renderAll();
-    }
-       function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        actualAmount,
-        unallocatedAmount,
-        allocations,
-        history,
-        resetMode,
-        lastResetDate
-      }));
-    }
+let state = {
+  actualAmount: 0,
+  unallocatedAmount: 0,
+  allocations: [],
+  history: [],
+  resetMode: 'consistent',
+  lastResetDate: null,
+  dailyBalanceHistory: {},
+  widget: {}
+};
 
-    function renderAll() {
-      document.getElementById('total-balance').textContent = `KSh ${actualAmount.toFixed(2)}`;
-      document.getElementById('actual-amount').textContent = `KSh ${actualAmount.toFixed(2)}`;
-      document.getElementById('unallocated-amount').textContent = `KSh ${unallocatedAmount.toFixed(2)}`;
+let settings = {
+  lightMode: false,
+  fontSize: '16px',
+  compactView: false,
+  pinHash: null,
+  pinEnabled: false,
+  lowBalThreshold: 0,
+  installDismissed: 0,
+  lastOpenMonth: null,
+  manualTheme: false
+};
 
-      renderAllocations();
-      renderDeductOptions();
-      renderHistory();
-      updateAddButtonState();
-    }
+let goals = [];
+let shortcuts = [];
+let recurringList = [];
+let profiles = { active: 'default', list: [{ id: 'default', name: '👤 Personal' }] };
 
-   function updateAddButtonState() {
-  const btn = document.getElementById('add-allocation-btn');
-  if (!btn) return;
-
-  if (!canAddNewAllocation()) {
-    btn.style.opacity = '0.5';
-    btn.style.cursor = 'pointer';        // remains clickable
-    btn.disabled = false;                // important: keep enabled
-  } else {
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-    btn.disabled = false;
-  }
+// ============================================================
+// STORAGE
+// ============================================================
+function loadAll() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (raw) Object.assign(state, JSON.parse(raw));
+    const sraw = localStorage.getItem(SET_KEY);
+    if (sraw) Object.assign(settings, JSON.parse(sraw));
+    const grow = localStorage.getItem(GOALS_KEY);
+    if (grow) goals = JSON.parse(grow);
+    const scraw = localStorage.getItem(SC_KEY);
+    if (scraw) shortcuts = JSON.parse(scraw);
+    const rraw = localStorage.getItem(REC_KEY);
+    if (rraw) recurringList = JSON.parse(rraw);
+    const praw = localStorage.getItem(PROFILES_KEY);
+    if (praw) profiles = JSON.parse(praw);
+  } catch(e) { console.warn('Load error', e); }
 }
-    function showModal(title, defaultValue, callback, params = {}) {
-      pendingCallbacks.push(callback);
-      document.getElementById('modal-title').textContent = title;
-      const input = document.getElementById('modal-input');
-      input.value = defaultValue || '';
-      input.type = params.type || 'text';
-      if (params.type === 'number') input.step = "0.01";
-      document.getElementById('modal').style.display = 'flex';
-      setTimeout(() => input.focus(), 100);
-    }
 
-    function hideModal() {
-      document.getElementById('modal').style.display = 'none';
-      pendingCallbacks = [];
-    }
+function saveAll() {
+  state.widget = {
+    balance: state.actualAmount,
+    topCategory: state.allocations.length ? state.allocations.reduce((a,b)=>a.used>b.used?a:b,state.allocations[0]).name : '',
+    lastUpdated: new Date().toISOString()
+  };
+  try {
+    localStorage.setItem(STORE, JSON.stringify(state));
+    localStorage.setItem(SET_KEY, JSON.stringify(settings));
+    localStorage.setItem(GOALS_KEY, JSON.stringify(goals));
+    localStorage.setItem(SC_KEY, JSON.stringify(shortcuts));
+    localStorage.setItem(REC_KEY, JSON.stringify(recurringList));
+    localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+  } catch(e) { console.warn('Save error', e); }
+}
 
-    function confirmModalAction() {
-      const value = document.getElementById('modal-input').value.trim();
-      const callback = pendingCallbacks.pop();
-      if (callback) callback(value);
-      if (pendingCallbacks.length === 0) hideModal();
-    }
+// ============================================================
+// PROFILES
+// ============================================================
+function getProfileStoreKey(id) { return `cashsplit_profile_${id}`; }
 
-    function addMoney() {
-  const amount = parseFloat(document.getElementById('new-amount').value);
-  if (!amount || amount <= 0) return showToast("Please enter a valid amount", "error");
-
-  actualAmount += amount;
-  redistributeAll();
-
-  history.unshift({ type: "income", amount, timestamp: new Date().toISOString(), note: "Money added" });
-
-  saveBalanceHistory();        // ← Added
-  document.getElementById('new-amount').value = '';
-  saveData();
+function switchProfile(id) {
+  // Save current
+  const curKey = getProfileStoreKey(profiles.active);
+  localStorage.setItem(curKey, JSON.stringify(state));
+  // Load new
+  profiles.active = id;
+  const newKey = getProfileStoreKey(id);
+  const raw = localStorage.getItem(newKey);
+  if (raw) { Object.assign(state, JSON.parse(raw)); }
+  else { state = { actualAmount:0,unallocatedAmount:0,allocations:[],history:[],resetMode:'consistent',lastResetDate:null,dailyBalanceHistory:{},widget:{} }; }
+  saveAll();
   renderAll();
-  showToast(`KSh ${amount.toFixed(2)} added`);
+  closeProfileMenu();
+  showToast(`Switched to ${profiles.list.find(p=>p.id===id)?.name || id}`);
 }
 
-function makeDeduction() {
-  // ... your existing code ...
-
-  actualAmount -= amount;
-  redistributeAll();
-
-  history.unshift({ type: "deduction", amount, category: categoryName, timestamp: new Date().toISOString() });
-
-  saveBalanceHistory();        // ← Added
-  saveData();
-  renderAll();
-  showToast(`KSh ${amount.toFixed(2)} deducted from ${categoryName}`);
+function toggleProfileMenu() {
+  const m = document.getElementById('profile-menu');
+  m.classList.toggle('open');
+  renderProfileMenu();
 }
-    // ====================== FIXED CORE FUNCTIONS ======================
-    function calculateTotalAllocated() {
-      let total = 0;
-      allocations.forEach(alloc => {
-        total += alloc.used || 0;
-        if (alloc.subAllocations) {
-          alloc.subAllocations.forEach(sub => {
-            total += sub.used || 0;
-          });
-        }
-      });
-      return total;
-    }
+function closeProfileMenu() { document.getElementById('profile-menu').classList.remove('open'); }
 
-    function redistributeAll() {
-      if (actualAmount <= 0) {
-        unallocatedAmount = 0;
-        allocations.forEach(alloc => {
-          alloc.used = 0;
-          if (alloc.subAllocations) {
-            alloc.subAllocations.forEach(sub => sub.used = 0);
-          }
-        });
-        return;
-      }
-
-
-      if (allocations.length === 0) {
-        unallocatedAmount = actualAmount;
-        return;
-      }
-
-      // Calculate based on ACTUAL AMOUNT (100%), not unallocated
-      allocations.forEach(alloc => {
-        const idealShare = (alloc.percent / 100) * actualAmount;
-
-        if (alloc.target > 0) {
-          alloc.used = Math.min(idealShare, alloc.target);
-        } else {
-          alloc.used = idealShare;
-        }
-
-        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
-          redistributeToSubs(alloc);
-        }
-      });
-
-      unallocatedAmount = Math.max(0, actualAmount - calculateTotalAllocated());
-    }
-
-    function canAddNewAllocation() {
-  if (actualAmount <= 0) return true; // Allow if no money yet
-
-  let totalPercent = 0;
-  allocations.forEach(alloc => {
-    totalPercent += alloc.percent || 0;
-  });
-
-  return totalPercent < 100;
-}
-
-    function redistributeToSubs(mainAlloc) {
-      if (!mainAlloc.subAllocations || mainAlloc.subAllocations.length === 0) return;
-
-      const mainUsed = mainAlloc.used;
-
-      mainAlloc.subAllocations.forEach(sub => {
-        const idealSubShare = (sub.percent / 100) * mainUsed;
-
-        if (sub.target > 0) {
-          sub.used = Math.min(idealSubShare, sub.target);
-        } else {
-          sub.used = idealSubShare;
-        }
-      });
-    }
-    // ====================== END OF FIXED FUNCTIONS ======================
-
-    function showAddNewAllocationModal() {
-  if (!canAddNewAllocation()) {
-    showToast("Cannot add more allocations. Total percentage is already 100%. Edit existing percentages first.", "error");
-    return;
+function renderProfileMenu() {
+  const m = document.getElementById('profile-menu');
+  let html = profiles.list.map(p => `
+    <div class="profile-menu-item" onclick="switchProfile('${p.id}')">
+      <span>${p.name}</span>
+      ${p.id===profiles.active?'<div class="profile-active-dot"></div>':''}
+    </div>
+  `).join('');
+  if (profiles.list.length < 5) {
+    html += `<div class="divider"></div>
+      <div class="profile-menu-item" onclick="addProfile()">＋ New Profile</div>`;
   }
+  html += `<div class="divider"></div>
+    <div class="profile-menu-item text-red" onclick="confirmDeleteProfile()">🗑 Delete Current</div>`;
+  m.innerHTML = html;
+  const active = profiles.list.find(p=>p.id===profiles.active);
+  document.getElementById('profile-name-label').textContent = active?.name?.split(' ')[0] || '🧑';
+}
 
-  showModal("Main Allocation Name", "", (name) => {
+function addProfile() {
+  closeProfileMenu();
+  promptInput('New Profile Name', '', (name) => {
     if (!name) return;
-
-    showModal(`Percentage for ${name} (%)`, "10", (percentStr) => {
-      const percent = parseFloat(percentStr);
-      
-      if (!percent || percent <= 0 || percent > 100) {
-        showToast("Percentage must be between 0.01 and 100", "error");
-        return;
-      }
-
-      // Double-check total after adding
-      let currentTotal = allocations.reduce((sum, alloc) => sum + (alloc.percent || 0), 0);
-      if (currentTotal + percent > 100) {
-        showToast("Total percentage would exceed 100%. Please use a smaller percentage or edit existing ones.", "error");
-        return;
-      }
-
-      allocations.push({
-        id: Date.now(),
-        name: name,
-        percent: percent,
-        target: 0,
-        used: 0,
-        subAllocations: []
-      });
-
-      redistributeAll();
-      saveData();
-      renderAll();
-      showToast(`"${name}" added (${percent}%)`);
-    }, {type: 'number'});
+    const id = 'profile_' + Date.now();
+    profiles.list.push({ id, name: '👤 ' + name });
+    saveAll();
+    switchProfile(id);
   });
 }
-    function renderAllocations() {
-      const container = document.getElementById('allocations-list');
-      container.innerHTML = '';
 
-      if (allocations.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <p>No allocations yet.</p>
-            <p style="margin-top:12px; font-size:0.95rem;">All money is currently unallocated.</p>
-          </div>
-        `;
-        return;
-      }
+function confirmDeleteProfile() {
+  if (profiles.list.length <= 1) return showToast('Cannot delete only profile', 'error');
+  closeProfileMenu();
+  confirmAction('Delete Profile', `Delete "${profiles.list.find(p=>p.id===profiles.active)?.name}"? All data will be lost.`, () => {
+    localStorage.removeItem(getProfileStoreKey(profiles.active));
+    profiles.list = profiles.list.filter(p=>p.id!==profiles.active);
+    profiles.active = profiles.list[0].id;
+    const raw = localStorage.getItem(getProfileStoreKey(profiles.active));
+    if (raw) Object.assign(state, JSON.parse(raw));
+    else state = { actualAmount:0,unallocatedAmount:0,allocations:[],history:[],resetMode:'consistent',lastResetDate:null,dailyBalanceHistory:{},widget:{} };
+    saveAll(); renderAll();
+  });
+}
 
-      allocations.forEach((alloc, index) => {
-        const progress = alloc.target > 0 ? Math.min((alloc.used / alloc.target) * 100, 100) : 0;
-        
-        let html = `
-          <div class="allocation-item">
-            <div class="allocation-header">
-              <strong>${alloc.name}</strong>
-              <span>${alloc.percent}%</span>
-            </div>
-            <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:8px;">
-              Allocated: KSh ${alloc.used.toFixed(2)} 
-              ${alloc.target > 0 ? `/ Target: KSh ${alloc.target.toFixed(2)}` : ''}
-            </div>
-        `;
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+let currentPage = 'home';
 
-        if (alloc.target > 0) {
-          html += `<div class="progress-bar"><div class="progress" style="width: ${progress}%"></div></div>`;
-        }
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === name);
+  });
+  document.querySelectorAll('.bnav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === name);
+  });
+  currentPage = name;
+  if (name === 'analytics') renderAnalytics();
+  if (name === 'goals') renderGoals();
+  if (name === 'shortcuts') renderShortcuts();
+  if (name === 'recurring') renderRecurring();
+}
 
-        html += `
-          <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-            <button onclick="setTarget(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Set Target</button>
-            <button onclick="addSubAllocation(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Add Sub</button>
-            <button onclick="editAllocation(${index})" style="flex:1; background:#334155; font-size:0.85rem;">Edit %</button>
-          </div>
-        `;
-
-        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
-          html += `<div class="sub-allocations">`;
-          alloc.subAllocations.forEach((sub, subIndex) => {
-            const subProgress = sub.target > 0 ? Math.min((sub.used / sub.target) * 100, 100) : 0;
-            html += `
-              <div class="sub-item">
-                <div style="display:flex; justify-content:space-between;">
-                  <strong>${sub.name}</strong>
-                  <span>${sub.percent}%</span>
-                </div>
-                <div style="font-size:0.85rem; color:#94a3b8;">
-                  Allocated: KSh ${sub.used.toFixed(2)} 
-                  ${sub.target > 0 ? `/ Target: KSh ${sub.target.toFixed(2)}` : ''}
-                </div>
-                ${sub.target > 0 ? `<div class="progress-bar" style="margin-top:6px;"><div class="progress" style="width: ${subProgress}%"></div></div>` : ''}
-                <button onclick="setSubTarget(${index}, ${subIndex})" style="margin-top:8px; background:#334155; font-size:0.8rem; padding:6px 10px;">Set Target</button>
-              </div>
-            `;
-          });
-          html += `</div>`;
-        }
-        html += `</div>`;
-        container.innerHTML += html;
-      });
-    }
-
-    function setTarget(index) {
-      const alloc = allocations[index];
-      showModal(`Target for ${alloc.name} (0 = no limit)`, alloc.target || "0", (value) => {
-        const target = parseFloat(value);
-        if (!isNaN(target)) {
-          alloc.target = Math.max(0, target);
-          redistributeAll();   // Important: recalculate after changing target
-          saveData();
-          renderAll();
-        }
-      }, {type: 'number'});
-    }
-
-    function editAllocation(index) {
-      const alloc = allocations[index];
-      showModal(`Edit % for ${alloc.name}`, alloc.percent, (value) => {
-        const percent = parseFloat(value);
-        if (!isNaN(percent) && percent > 0 && percent <= 100) {
-          alloc.percent = percent;
-          redistributeAll();
-          saveData();
-          renderAll();
-        } else {
-          showToast("Percentage must be between 0 and 100", "error");
-        }
-      }, {type: 'number'});
-    }
-
-    function addSubAllocation(mainIndex) {
-      const mainAlloc = allocations[mainIndex];
-      showModal(`Sub-allocation name for ${mainAlloc.name}`, "", (name) => {
-        if (!name) return;
-        showModal(`% of ${mainAlloc.name} for ${name}`, "30", (percentStr) => {
-          const percent = parseFloat(percentStr);
-          if (!percent || percent <= 0 || percent > 100) {
-            showToast("Percentage must be between 0 and 100", "error");
-            return;
-          }
-          if (!mainAlloc.subAllocations) mainAlloc.subAllocations = [];
-          mainAlloc.subAllocations.push({
-            id: Date.now(),
-            name: name,
-            percent: percent,
-            target: 0,
-            used: 0
-          });
-          redistributeAll();
-          saveData();
-          renderAll();
-          showToast(`Sub-allocation "${name}" added`);
-        }, {type: 'number'});
-      });
-    }
-
-    function setSubTarget(mainIndex, subIndex) {
-      const sub = allocations[mainIndex].subAllocations[subIndex];
-      showModal(`Target for ${sub.name} (0 = no limit)`, sub.target || "0", (value) => {
-        const target = parseFloat(value);
-        if (!isNaN(target)) {
-          sub.target = Math.max(0, target);
-          redistributeAll();   // Recalculate after target change
-          saveData();
-          renderAll();
-        }
-      }, {type: 'number'});
-    }
-
-    function renderDeductOptions() {
-      const select = document.getElementById('deduct-category');
-      select.innerHTML = '<option value="">Select Category or Sub-Category</option>';
-
-      allocations.forEach((alloc, mainIndex) => {
-        const mainOption = document.createElement('option');
-        mainOption.value = `main-${mainIndex}`;
-        mainOption.textContent = `${alloc.name} - KSh ${alloc.used.toFixed(2)}`;
-        select.appendChild(mainOption);
-
-        if (alloc.subAllocations && alloc.subAllocations.length > 0) {
-          alloc.subAllocations.forEach((sub, subIndex) => {
-            const subOption = document.createElement('option');
-            subOption.value = `sub-${mainIndex}-${subIndex}`;
-            subOption.textContent = `   └ ${sub.name} - KSh ${sub.used.toFixed(2)}`;
-            select.appendChild(subOption);
-          });
-        }
-      });
-    }
-
-    function makeDeduction() {
-      const select = document.getElementById('deduct-category');
-      const amount = parseFloat(document.getElementById('deduct-amount').value);
-
-      if (!select.value || !amount || amount <= 0) 
-        return showToast("Please select category and enter amount", "error");
-
-      const value = select.value;
-      let categoryName = "";
-
-      if (value.startsWith('main-')) {
-        const idx = parseInt(value.split('-')[1]);
-        const alloc = allocations[idx];
-        if (alloc.used < amount) return showToast(`Not enough in ${alloc.name}`, "error");
-        alloc.used -= amount;
-        categoryName = alloc.name;
-      } else if (value.startsWith('sub-')) {
-        const parts = value.split('-');
-        const mainIdx = parseInt(parts[1]);
-        const subIdx = parseInt(parts[2]);
-        const sub = allocations[mainIdx].subAllocations[subIdx];
-        if (sub.used < amount) return showToast(`Not enough in ${sub.name}`, "error");
-        sub.used -= amount;
-        categoryName = sub.name;
-      }
-
-      actualAmount -= amount;
-      redistributeAll();   // Important: recalculate after deduction
-
-      history.unshift({ 
-        type: "deduction", 
-        amount, 
-        category: categoryName, 
-        timestamp: new Date().toISOString() 
-      });
-
-      saveData();
-      renderAll();
-      showToast(`KSh ${amount.toFixed(2)} deducted from ${categoryName}`);
-    }
-
-        function renderHistory() {
-      const container = document.getElementById('history-list');
-      container.innerHTML = history.length === 0 
-        ? '<p style="text-align:center; color:#64748b; padding:60px 20px;">No transactions yet.<br>Add money to start tracking.</p>' 
-        : '';
-
-      history.slice(0, 30).forEach((item, i) => {
-        const isIncome = item.type === 'income';
-        const isReset = item.type === 'reset';
-
-        const div = document.createElement('div');
-        div.className = 'history-item';
-
-        let label = isReset ? `<strong style="color:#eab308">${item.note}</strong>` :
-                    isIncome ? `<strong>Received</strong>` : `<strong>Spent ${item.category ? `(${item.category})` : ''}</strong>`;
-
-        div.innerHTML = `
-          <div style="flex:1">
-            ${label}<br>
-            <small style="color:#64748b">${new Date(item.timestamp).toLocaleString()}</small>
-          </div>
-          <div style="text-align:right">
-            ${isReset ? '' : `<span style="color:${isIncome ? '#22c55e' : '#ef4444'};font-weight:600">
-              ${isIncome ? '+' : '-'} KSh ${item.amount.toFixed(2)}
-            </span>`}
-            <button onclick="deleteHistoryItem(${i})" class="delete-history-btn" style="margin-left:8px">×</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-        // ====================== RESET SYSTEM ======================
-    function checkAndPerformAutoReset() {
-      if (resetMode === "consistent" || !lastResetDate) return;
-
-      const now = new Date();
-      const last = new Date(lastResetDate);
-      let shouldReset = false;
-
-      switch(resetMode) {
-        case "daily":
-          shouldReset = now.toDateString() !== last.toDateString();
-          break;
-        case "weekly":
-          shouldReset = (now - last) / (1000*60*60*24) >= 7;
-          break;
-        case "monthly":
-          shouldReset = now.getMonth() !== last.getMonth() || now.getFullYear() !== last.getFullYear();
-          break;
-        case "yearly":
-          shouldReset = now.getFullYear() !== last.getFullYear();
-          break;
-      }
-
-      if (shouldReset) {
-        performReset(false); // auto reset, no confirm
-      }
-    }
-
-   function performReset(askConfirm = true) {
-  if (askConfirm) {
-    showConfirm("Confirm Reset", `Reset Actual Amount and Allocations to 0?\nMode: ${resetMode}\nHistory will be kept.`, () => {
-      executeReset();
+// ============================================================
+// CORE CALCULATIONS
+// ============================================================
+function redistributeAll() {
+  if (state.actualAmount <= 0) {
+    state.unallocatedAmount = 0;
+    state.allocations.forEach(a => {
+      a.used = 0;
+      (a.subAllocations||[]).forEach(s => s.used = 0);
     });
     return;
   }
-  executeReset();
+  if (!state.allocations.length) { state.unallocatedAmount = state.actualAmount; return; }
+  state.allocations.forEach(a => {
+    const ideal = (a.percent/100) * state.actualAmount;
+    a.used = a.target > 0 ? Math.min(ideal, a.target) : ideal;
+    redistributeSubs(a);
+  });
+  let allocated = state.allocations.reduce((s,a) => {
+    s += a.used;
+    (a.subAllocations||[]).forEach(sub => s += sub.used);
+    return s;
+  }, 0);
+  state.unallocatedAmount = Math.max(0, state.actualAmount - allocated);
 }
 
-function executeReset() {
-  actualAmount = 0;
-  unallocatedAmount = 0;
-
-  allocations.forEach(alloc => {
-    alloc.used = 0;
-    if (alloc.subAllocations) {
-      alloc.subAllocations.forEach(sub => sub.used = 0);
-    }
-  });
-
-  lastResetDate = new Date().toISOString();
-
-  history.unshift({
-    type: "reset",
-    amount: 0,
-    note: `${resetMode} Reset`,
-    timestamp: new Date().toISOString()
-  });
-
-  saveData();
-  renderAll();
-  showToast(`Reset done (${resetMode})`, "success");
-}
-                 function showResetSettings() {
-  const options = [
-    { value: "consistent", text: "Keep Consistent (No Auto Reset)" },
-    { value: "daily",      text: "Reset Every Day" },
-    { value: "weekly",     text: "Reset Every Week" },
-    { value: "monthly",    text: "Reset Every Month" },
-    { value: "yearly",     text: "Reset Every Year" }
-  ];
-
-  let html = `<p style="margin-bottom: 12px; color: #94a3b8;">
-                Current mode: <strong>${options.find(o => o.value === resetMode)?.text || resetMode}</strong>
-              </p>`;
-
-  html += `<select id="reset-select" style="width:100%; padding:12px; border-radius:12px; background:rgba(255,255,255,0.08); color:white; border:1px solid rgba(96,165,250,0.3);">`;
-  options.forEach(opt => {
-    html += `<option value="${opt.value}" ${opt.value === resetMode ? 'selected' : ''}>${opt.text}</option>`;
-  });
-  html += `</select>`;
-
-  // Use the existing modal
-  document.getElementById('modal-title').innerHTML = 'Reset Settings';
-  document.getElementById('modal-input').style.display = 'none';
-
-  const modalContent = document.querySelector('.modal-content');
-  // Remove any previous extra select
-  const oldSelect = document.getElementById('reset-select');
-  if (oldSelect) oldSelect.remove();
-
-  modalContent.insertAdjacentHTML('beforeend', html);
-
-  document.getElementById('modal').style.display = 'flex';
-
-  // Override OK button for this modal
-  const okBtn = document.querySelector('.modal-buttons button:last-child');
-  const originalOnClick = okBtn.onclick;
-
-  okBtn.onclick = function() {
-    const select = document.getElementById('reset-select');
-    if (select) {
-      resetMode = select.value;
-      saveData();
-      showToast(`Reset mode changed to: ${options.find(o => o.value === resetMode).text}`, "success");
-    }
-
-    // Cleanup
-    if (select) select.remove();
-    document.getElementById('modal-input').style.display = 'block';
-    okBtn.onclick = originalOnClick || confirmModalAction;
-    hideModal();
-  };
-}
-           function hideModal() {
-      document.getElementById('modal').style.display = 'none';
-      
-      // Clean up any leftover reset elements
-      const extraSelect = document.getElementById('reset-select');
-      if (extraSelect) extraSelect.remove();
-      
-      const input = document.getElementById('modal-input');
-      input.style.display = 'block';
-      input.value = '';
-      
-      pendingCallbacks = [];
-      
-      // Restore OK button
-      const okBtn = document.querySelector('.modal-buttons button:last-child');
-      if (okBtn) okBtn.onclick = confirmModalAction;
-    }
-    
-   function deleteHistoryItem(index) {
-  showConfirm("Delete Record", "Delete this history record? This action cannot be undone.", () => {
-    history.splice(index, 1);
-    saveData();
-    renderHistory();
-    showToast("History item deleted", "success");
+function redistributeSubs(alloc) {
+  if (!alloc.subAllocations?.length) return;
+  alloc.subAllocations.forEach(sub => {
+    const ideal = (sub.percent/100) * alloc.used;
+    sub.used = sub.target > 0 ? Math.min(ideal, sub.target) : ideal;
   });
 }
 
-    function showToast(message, type = "success") {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.style.borderLeft = type === "error" ? "4px solid #ef4444" : "4px solid #22c55e";
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 2800);
-    }
-    function showConfirm(title, message, onConfirm) {
-  document.getElementById('modal-title').innerHTML = `<strong>${title}</strong>`;
-  
-  const input = document.getElementById('modal-input');
-  input.style.display = 'none';
-  input.value = '';
+function totalAllocPct() {
+  return state.allocations.reduce((s,a) => s + (a.percent||0), 0);
+}
 
-  let msgEl = document.getElementById('confirm-message');
-  if (!msgEl) {
-    msgEl = document.createElement('p');
-    msgEl.id = 'confirm-message';
-    msgEl.style.marginBottom = '20px';
-   msgEl.style.color = document.body.classList.contains('light-mode') ? '#1e293b' : '#e2e8f0';
-    document.querySelector('.modal-content').insertBefore(msgEl, document.querySelector('.modal-buttons'));
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll() {
+  renderHero();
+  renderAllocations();
+  renderDeductSelects();
+  renderHistory();
+  checkLowBalance();
+  updateResetModeUI();
+}
+
+function renderHero() {
+  document.getElementById('hero-amount').textContent = `KSh ${state.actualAmount.toFixed(2)}`;
+
+  // Income/expense this month
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  let totalIn=0, totalOut=0;
+  state.history.forEach(h => {
+    if (!h.timestamp) return;
+    const hk = h.timestamp.slice(0,7);
+    if (hk !== monthKey) return;
+    if (h.type==='income') totalIn += h.amount;
+    else if (h.type==='deduction') totalOut += h.amount;
+  });
+  const net = totalIn - totalOut;
+
+  document.getElementById('stat-in').textContent = `KSh ${totalIn.toFixed(0)}`;
+  document.getElementById('stat-out').textContent = `KSh ${totalOut.toFixed(0)}`;
+  const netEl = document.getElementById('stat-net');
+  netEl.textContent = `KSh ${net.toFixed(0)}`;
+  netEl.className = 'hero-stat-val ' + (net >= 0 ? 'green' : 'red');
+  document.getElementById('stat-unalloc').textContent = `KSh ${state.unallocatedAmount.toFixed(0)}`;
+
+  // Daily avg
+  const dayOfMonth = now.getDate();
+  const avgDay = dayOfMonth > 0 ? totalOut / dayOfMonth : 0;
+  document.getElementById('hero-sub').textContent = `Avg daily spend: KSh ${avgDay.toFixed(0)}`;
+  document.getElementById('an-avg-day').textContent = `KSh ${avgDay.toFixed(0)}`;
+
+  // Highest spend day
+  const dayCounts = {};
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  state.history.forEach(h => {
+    if (h.type!=='deduction'||!h.timestamp) return;
+    const hk = h.timestamp.slice(0,7);
+    if (hk !== monthKey) return;
+    const d = dayNames[new Date(h.timestamp).getDay()];
+    dayCounts[d] = (dayCounts[d]||0) + h.amount;
+  });
+  const topDay = Object.entries(dayCounts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('an-top-day').textContent = topDay ? topDay[0] : '—';
+}
+
+// ============================================================
+// ALLOCATIONS RENDER
+// ============================================================
+function renderAllocations() {
+  const grid = document.getElementById('alloc-grid');
+  if (!state.allocations.length) {
+    grid.innerHTML = '<div class="empty">No allocations yet.<br>Add one to start splitting your money.</div>';
+    return;
   }
-  msgEl.textContent = message;
 
-  pendingCallbacks.push(onConfirm);
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const prevMonth = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const prevKey = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth()+1).padStart(2,'0')}`;
 
-  document.getElementById('modal').style.display = 'flex';
+  grid.innerHTML = state.allocations.map((a, idx) => {
+    const pct = a.target > 0 ? Math.min((a.used/a.target)*100, 100) : (state.actualAmount>0?(a.used/state.actualAmount)*100:0);
+    const fillClass = pct > 80 ? 'progress-fill' : pct > 50 ? 'progress-fill warn' : 'progress-fill';
 
-  const okBtn = document.querySelector('.modal-buttons button:last-child');
-  const originalOk = okBtn.onclick;
+    // Trend
+    let thisMonthSpend=0, lastMonthSpend=0;
+    state.history.forEach(h => {
+      if (h.type!=='deduction' || h.category!==a.name) return;
+      const hk = h.timestamp?.slice(0,7);
+      if (hk===monthKey) thisMonthSpend+=h.amount;
+      if (hk===prevKey) lastMonthSpend+=h.amount;
+    });
+    let trendHtml = '';
+    if (lastMonthSpend>0||thisMonthSpend>0) {
+      if (thisMonthSpend>lastMonthSpend) trendHtml=`<span class="trend-badge trend-up">▲</span>`;
+      else if (thisMonthSpend<lastMonthSpend) trendHtml=`<span class="trend-badge trend-down">▼</span>`;
+      else trendHtml=`<span class="trend-badge trend-flat">—</span>`;
+    }
 
-  okBtn.onclick = () => {
-    const cb = pendingCallbacks.pop();
-    if (cb) cb();
-    hideModal();
-    okBtn.onclick = originalOk || confirmModalAction;
-    if (msgEl) msgEl.remove();
-  };
+    const isLow = a.warnThreshold && a.used < a.warnThreshold;
+    const warnHtml = isLow ? `<div class="alloc-warn-banner">⚠️ ${a.name} is below KSh ${a.warnThreshold}</div>` : '';
+
+    const subHtml = (a.subAllocations||[]).map((sub, si) => {
+      const sp = sub.target>0 ? Math.min((sub.used/sub.target)*100,100) : 0;
+      return `<div class="sub-alloc-item">
+        <div class="flex-between mb-8"><strong>${sub.name}</strong><span class="text-xs text-muted">${sub.percent}%</span></div>
+        <div class="font-display" style="font-size:1rem;font-weight:700;">KSh ${sub.used.toFixed(2)}</div>
+        ${sub.target>0?`<div class="progress-bar"><div class="progress-fill" style="width:${sp}%"></div></div>`:''}
+        <button class="btn btn-ghost btn-xs mt-12" onclick="setSubTarget(${idx},${si})">Target</button>
+      </div>`;
+    }).join('');
+
+    return `<div class="alloc-card ${isLow?'warning-low':''} ${a.rollover?'rollover-on':''}">
+      <div class="alloc-head">
+        <div class="alloc-name">${a.name} ${trendHtml}</div>
+        <span class="alloc-pct">${a.percent}%</span>
+      </div>
+      <div class="alloc-amount">KSh ${a.used.toFixed(2)}</div>
+      <div class="alloc-meta">${a.target>0?`Target: KSh ${a.target.toFixed(0)}`:''}</div>
+      ${a.target>0?`<div class="progress-bar"><div class="${fillClass}" style="width:${pct.toFixed(1)}%"></div></div>`:''}
+      ${warnHtml}
+      <div class="alloc-actions">
+        <button class="btn btn-ghost btn-xs" onclick="editAllocModal(${idx})">Edit %</button>
+        <button class="btn btn-ghost btn-xs" onclick="setTarget(${idx})">Target</button>
+        <button class="btn btn-ghost btn-xs" onclick="setWarnThreshold(${idx})">⚠️</button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleRollover(${idx})">${a.rollover?'🔄 On':'🔄 Off'}</button>
+        <button class="btn btn-ghost btn-xs" onclick="showAddAllocModal(${idx})">＋ Sub</button>
+        <button class="btn btn-xs btn-danger" onclick="deleteAlloc(${idx})">✕</button>
+      </div>
+      ${subHtml?`<div class="sub-allocs">${subHtml}</div>`:''}
+    </div>`;
+  }).join('');
 }
 
-   function resetAll() {
-  showConfirm("Full Reset", "Reset ALL data? This cannot be undone.", () => {
-    localStorage.removeItem(STORAGE_KEY);
+// ============================================================
+// ALLOC CRUD
+// ============================================================
+let allocModalMode = null; // {type:'main'} or {type:'sub', parentIdx}
+let allocRolloverTmp = false;
+
+function showAddAllocModal(parentIdx) {
+  allocRolloverTmp = false;
+  document.getElementById('tog-alloc-rollover').classList.remove('on');
+  document.getElementById('alloc-name-inp').value = '';
+  document.getElementById('alloc-pct-inp').value = '';
+  document.getElementById('alloc-target-inp').value = '0';
+  if (parentIdx !== undefined) {
+    allocModalMode = { type: 'sub', parentIdx };
+    document.getElementById('alloc-modal-title').textContent = `➕ Sub-allocation for ${state.allocations[parentIdx].name}`;
+    document.getElementById('alloc-modal-sub').style.display = 'none';
+  } else {
+    allocModalMode = { type: 'main' };
+    document.getElementById('alloc-modal-title').textContent = '➕ New Allocation';
+    document.getElementById('alloc-modal-sub').style.display = 'none';
+  }
+  openModal('alloc-modal');
+}
+
+function toggleAllocRollover() {
+  allocRolloverTmp = !allocRolloverTmp;
+  document.getElementById('tog-alloc-rollover').classList.toggle('on', allocRolloverTmp);
+}
+
+function confirmAddAlloc() {
+  const name = document.getElementById('alloc-name-inp').value.trim();
+  const pct = parseFloat(document.getElementById('alloc-pct-inp').value);
+  const target = parseFloat(document.getElementById('alloc-target-inp').value) || 0;
+
+  if (!name) return showToast('Name required', 'error');
+  if (!pct || pct <= 0 || pct > 100) return showToast('Percentage must be 0.1–100', 'error');
+
+  if (allocModalMode.type === 'main') {
+    if (totalAllocPct() + pct > 100.01) return showToast('Total % would exceed 100', 'error');
+    state.allocations.push({ id: Date.now(), name, percent: pct, target, used: 0, subAllocations: [], rollover: allocRolloverTmp, warnThreshold: 0 });
+  } else {
+    const parent = state.allocations[allocModalMode.parentIdx];
+    if (!parent.subAllocations) parent.subAllocations = [];
+    parent.subAllocations.push({ id: Date.now(), name, percent: pct, target, used: 0 });
+  }
+
+  redistributeAll(); saveAll(); renderAll();
+  closeModal('alloc-modal');
+  showToast(`"${name}" added`);
+  haptic(30);
+}
+
+function editAllocModal(idx) {
+  const a = state.allocations[idx];
+  promptInput(`Edit % for ${a.name}`, a.percent, (val) => {
+    const p = parseFloat(val);
+    if (!p || p<=0||p>100) return showToast('Invalid %','error');
+    a.percent = p;
+    redistributeAll(); saveAll(); renderAll();
+  }, 'number');
+}
+
+function setTarget(idx) {
+  const a = state.allocations[idx];
+  promptInput(`Target for ${a.name} (0 = none)`, a.target||0, (val) => {
+    const t = parseFloat(val);
+    if (isNaN(t)) return;
+    a.target = Math.max(0, t);
+    redistributeAll(); saveAll(); renderAll();
+  }, 'number');
+}
+
+function setSubTarget(mainIdx, subIdx) {
+  const sub = state.allocations[mainIdx].subAllocations[subIdx];
+  promptInput(`Target for ${sub.name}`, sub.target||0, (val) => {
+    sub.target = Math.max(0, parseFloat(val)||0);
+    redistributeAll(); saveAll(); renderAll();
+  }, 'number');
+}
+
+function setWarnThreshold(idx) {
+  const a = state.allocations[idx];
+  promptInput(`Warning threshold for ${a.name} (0 = off)`, a.warnThreshold||0, (val) => {
+    a.warnThreshold = Math.max(0, parseFloat(val)||0);
+    saveAll(); renderAll();
+    showToast('Threshold saved');
+  }, 'number');
+}
+
+function toggleRollover(idx) {
+  state.allocations[idx].rollover = !state.allocations[idx].rollover;
+  saveAll(); renderAll();
+  showToast(state.allocations[idx].rollover ? '🔄 Rollover ON' : '🔄 Rollover OFF');
+}
+
+function deleteAlloc(idx) {
+  confirmAction(`Delete "${state.allocations[idx].name}"?`, 'This cannot be undone.', () => {
+    state.allocations.splice(idx, 1);
+    redistributeAll(); saveAll(); renderAll();
+    showToast('Allocation removed');
+  });
+}
+
+// ============================================================
+// ADD MONEY
+// ============================================================
+function addMoney() {
+  const amount = parseFloat(document.getElementById('add-amount').value);
+  if (!amount || amount <= 0) return showToast('Enter a valid amount', 'error');
+  state.actualAmount += amount;
+  redistributeAll();
+  state.history.unshift({ type:'income', amount, timestamp: new Date().toISOString(), note:'Money added' });
+  saveDailyBalance();
+  document.getElementById('add-amount').value = '';
+  saveAll(); renderAll();
+  showToast(`KSh ${amount.toFixed(2)} added`);
+  haptic(30);
+}
+
+// ============================================================
+// DEDUCTION
+// ============================================================
+let splitMode = false;
+
+function toggleSplitMode() {
+  splitMode = !splitMode;
+  document.getElementById('split-toggle-track').classList.toggle('on', splitMode);
+  document.getElementById('normal-deduct').style.display = splitMode ? 'none' : 'block';
+  document.getElementById('split-deduct').style.display = splitMode ? 'block' : 'none';
+  if (splitMode) { document.getElementById('split-lines').innerHTML = ''; addSplitLine(); }
+}
+
+function addSplitLine() {
+  const lines = document.getElementById('split-lines');
+  if (lines.children.length >= 5) return;
+  const idx = lines.children.length;
+  const catOptions = getCatOptions();
+  const div = document.createElement('div');
+  div.className = 'split-line';
+  div.innerHTML = `
+    <select class="split-cat" data-idx="${idx}">${catOptions}</select>
+    <input type="number" class="split-amt" placeholder="KSh" step="0.01" min="0">
+    <button class="btn btn-ghost btn-xs" onclick="this.parentElement.remove()">✕</button>
+  `;
+  lines.appendChild(div);
+}
+
+function getCatOptions() {
+  let opts = '<option value="">Category…</option>';
+  state.allocations.forEach((a, mi) => {
+    opts += `<option value="main-${mi}">${a.name}</option>`;
+    (a.subAllocations||[]).forEach((sub, si) => {
+      opts += `<option value="sub-${mi}-${si}">  └ ${sub.name}</option>`;
+    });
+  });
+  return opts;
+}
+
+function renderDeductSelects() {
+  const catOpts = getCatOptions();
+  document.getElementById('deduct-cat').innerHTML = catOpts;
+  document.getElementById('transfer-from').innerHTML = catOpts;
+  document.getElementById('transfer-to').innerHTML = catOpts;
+
+  // Shortcut modal & recurring modal category
+  ['sc-cat-inp','rec-cat-inp'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = catOpts;
+  });
+}
+
+function makeDeduction() {
+  const catVal = document.getElementById('deduct-cat').value;
+  const amount = parseFloat(document.getElementById('deduct-amount').value);
+  if (!catVal || !amount || amount <= 0) return showToast('Select category and enter amount', 'error');
+
+  const { alloc, sub, name } = resolveCategory(catVal);
+  if (!alloc) return showToast('Invalid category', 'error');
+
+  const avail = sub ? sub.used : alloc.used;
+  if (amount > avail) { showToast(`Not enough in ${name}`, 'error'); haptic([30,50,60]); return; }
+
+  if (sub) sub.used -= amount;
+  else alloc.used -= amount;
+
+  state.actualAmount -= amount;
+  redistributeAll();
+  state.history.unshift({ type:'deduction', amount, category:name, timestamp:new Date().toISOString() });
+  saveDailyBalance();
+  document.getElementById('deduct-amount').value = '';
+  saveAll(); renderAll();
+  showToast(`KSh ${amount.toFixed(2)} deducted from ${name}`);
+  haptic(30);
+}
+
+function makeSplitDeduction() {
+  const lines = document.querySelectorAll('.split-line');
+  const entries = [];
+  let totalAmt = 0;
+  for (const line of lines) {
+    const catVal = line.querySelector('.split-cat').value;
+    const amt = parseFloat(line.querySelector('.split-amt').value);
+    if (!catVal || !amt || amt <= 0) return showToast('Fill all split lines', 'error');
+    const { alloc, sub, name } = resolveCategory(catVal);
+    if (!alloc) return showToast('Invalid category in split', 'error');
+    const avail = sub ? sub.used : alloc.used;
+    if (amt > avail) { showToast(`Not enough in ${name}`, 'error'); return; }
+    entries.push({ catVal, amt, name, alloc, sub });
+    totalAmt += amt;
+  }
+  entries.forEach(e => { if (e.sub) e.sub.used -= e.amt; else e.alloc.used -= e.amt; });
+  state.actualAmount -= totalAmt;
+  redistributeAll();
+  const note = entries.map(e=>`${e.name}: KSh ${e.amt}`).join(', ');
+  state.history.unshift({ type:'deduction', amount:totalAmt, category:'Split', note, timestamp:new Date().toISOString() });
+  saveDailyBalance();
+  document.getElementById('split-lines').innerHTML = '';
+  addSplitLine();
+  saveAll(); renderAll();
+  showToast(`Split deduction: KSh ${totalAmt.toFixed(2)}`);
+  haptic(30);
+}
+
+function resolveCategory(val) {
+  if (!val) return { alloc:null, sub:null, name:'' };
+  if (val.startsWith('main-')) {
+    const idx = parseInt(val.split('-')[1]);
+    const alloc = state.allocations[idx];
+    return { alloc, sub:null, name:alloc?.name||'' };
+  } else {
+    const [,mi,si] = val.split('-').map(Number);
+    const alloc = state.allocations[mi];
+    const sub = alloc?.subAllocations?.[si];
+    return { alloc, sub, name:sub?.name||'' };
+  }
+}
+
+// ============================================================
+// TRANSFER
+// ============================================================
+function doTransfer() {
+  const fromVal = document.getElementById('transfer-from').value;
+  const toVal = document.getElementById('transfer-to').value;
+  const amount = parseFloat(document.getElementById('transfer-amount').value);
+  if (!fromVal || !toVal || !amount || amount <= 0) return showToast('Fill all transfer fields', 'error');
+  if (fromVal === toVal) return showToast('Cannot transfer to same category', 'error');
+
+  const from = resolveCategory(fromVal);
+  const to = resolveCategory(toVal);
+  if (!from.alloc || !to.alloc) return showToast('Invalid category', 'error');
+
+  const fromUsed = from.sub ? from.sub.used : from.alloc.used;
+  if (amount > fromUsed) return showToast(`Not enough in ${from.name}`, 'error');
+
+  if (from.sub) from.sub.used -= amount; else from.alloc.used -= amount;
+  if (to.sub) to.sub.used += amount; else to.alloc.used += amount;
+
+  state.history.unshift({ type:'transfer', amount, category:`${from.name} → ${to.name}`, note:`↔ Transfer`, timestamp:new Date().toISOString() });
+  document.getElementById('transfer-amount').value = '';
+  saveAll(); renderAll();
+  showToast(`↔ Transferred KSh ${amount.toFixed(2)}`);
+  haptic(30);
+}
+
+// ============================================================
+// HISTORY RENDER + SWIPE
+// ============================================================
+function renderHistory() {
+  const container = document.getElementById('history-list');
+  if (!state.history.length) {
+    container.innerHTML = '<div class="empty">No transactions yet.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  state.history.slice(0, 50).forEach((item, i) => {
+    const isIncome = item.type === 'income';
+    const isTransfer = item.type === 'transfer';
+    const isReset = item.type === 'reset';
+    const isRecurring = item.recurring;
+
+    let label = isReset ? '🔄 Reset' :
+                isTransfer ? `↔ ${item.category}` :
+                isIncome ? `💰 Money Added` :
+                `💸 ${item.category||''}${isRecurring?'  🔁':''}`;
+    let amtClass = isIncome ? 'pos' : isReset ? 'neutral' : isTransfer ? 'neutral' : 'neg';
+    let amtText = isReset ? '' : `${isIncome?'+':isTransfer?'↔':'-'} KSh ${item.amount?.toFixed(2)||''}`;
+
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `
+      <div class="history-item-inner">
+        <div>
+          <div class="hi-label">${label}</div>
+          ${item.note?`<div class="text-xs text-muted">${item.note}</div>`:''}
+          <div class="hi-time">${new Date(item.timestamp).toLocaleString()}</div>
+        </div>
+        <div style="text-align:right;display:flex;align-items:center;gap:8px;">
+          <span class="hi-amount ${amtClass}">${amtText}</span>
+          <button class="btn btn-ghost btn-xs" onclick="deleteHistoryItem(${i})">✕</button>
+        </div>
+      </div>
+      <div class="history-delete-reveal" onclick="deleteHistoryItem(${i})">Delete</div>
+    `;
+    addSwipeToDelete(div, i);
+    container.appendChild(div);
+  });
+}
+
+function addSwipeToDelete(el, idx) {
+  let startX = 0, curX = 0, swiping = false;
+  const inner = el.querySelector('.history-item-inner');
+  const reveal = el.querySelector('.history-delete-reveal');
+
+  el.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    swiping = true;
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    if (!swiping) return;
+    curX = e.touches[0].clientX;
+    const dx = startX - curX;
+    if (dx > 0) {
+      inner.style.transform = `translateX(-${Math.min(dx, 80)}px)`;
+      reveal.style.transform = `translateX(${Math.max(0, 80 - dx)}px)`;
+    }
+  }, { passive: true });
+  el.addEventListener('touchend', () => {
+    swiping = false;
+    const dx = startX - curX;
+    if (dx >= 120) { deleteHistoryItem(idx); }
+    else if (dx >= 60) { inner.style.transform = 'translateX(-80px)'; reveal.style.transform = 'translateX(0)'; }
+    else { inner.style.transform = ''; reveal.style.transform = ''; }
+  });
+}
+
+function deleteHistoryItem(idx) {
+  confirmAction('Delete Record', 'Remove this history item?', () => {
+    state.history.splice(idx, 1);
+    saveAll(); renderHistory();
+    showToast('Deleted');
+  });
+}
+
+// ============================================================
+// SHORTCUTS
+// ============================================================
+function renderShortcuts() {
+  renderDeductSelects();
+  const grid = document.getElementById('shortcuts-grid');
+  if (!shortcuts.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;">No shortcuts yet. Add up to 8.</div>';
+    return;
+  }
+  grid.innerHTML = shortcuts.map((sc, i) => `
+    <div class="shortcut-pill" onclick="applyShortcut(${i})" oncontextmenu="event.preventDefault();deleteShortcut(${i})">
+      <div class="sp-label">${sc.label}</div>
+      <div class="sp-meta">KSh ${sc.amount} · ${sc.catName}</div>
+    </div>
+  `).join('');
+
+  // Long press for mobile
+  grid.querySelectorAll('.shortcut-pill').forEach((el, i) => {
+    let timer;
+    el.addEventListener('touchstart', () => { timer = setTimeout(() => deleteShortcut(i), 600); });
+    el.addEventListener('touchend', () => clearTimeout(timer));
+    el.addEventListener('touchmove', () => clearTimeout(timer));
+  });
+}
+
+function showAddShortcutModal() {
+  if (shortcuts.length >= 8) return showToast('Max 8 shortcuts reached', 'error');
+  renderDeductSelects();
+  document.getElementById('sc-label-inp').value = '';
+  document.getElementById('sc-amount-inp').value = '';
+  openModal('shortcut-modal');
+}
+
+function addShortcut() {
+  const label = document.getElementById('sc-label-inp').value.trim();
+  const amount = parseFloat(document.getElementById('sc-amount-inp').value);
+  const catVal = document.getElementById('sc-cat-inp').value;
+  const catName = document.getElementById('sc-cat-inp').selectedOptions[0]?.text || '';
+  if (!label || !amount || !catVal) return showToast('Fill all fields', 'error');
+  shortcuts.push({ label, amount, catVal, catName });
+  saveAll(); closeModal('shortcut-modal'); renderShortcuts();
+  showToast('Shortcut saved');
+}
+
+function applyShortcut(i) {
+  const sc = shortcuts[i];
+  showPage('home');
+  document.getElementById('deduct-cat').value = sc.catVal;
+  document.getElementById('deduct-amount').value = sc.amount;
+  showToast(`Filled: ${sc.label}`);
+}
+
+function deleteShortcut(i) {
+  confirmAction('Delete shortcut', `Delete "${shortcuts[i].label}"?`, () => {
+    shortcuts.splice(i, 1);
+    saveAll(); renderShortcuts();
+    showToast('Shortcut removed');
+  });
+}
+
+// ============================================================
+// GOALS
+// ============================================================
+function renderGoals() {
+  const list = document.getElementById('goals-list');
+  if (!goals.length) { list.innerHTML = '<div class="empty">No goals yet.</div>'; return; }
+  list.innerHTML = goals.map((g, i) => {
+    const pct = g.target > 0 ? Math.min((g.saved/g.target)*100, 100) : 0;
+    let dailyNeeded = '';
+    if (g.deadline && g.saved < g.target) {
+      const daysLeft = Math.max(1, Math.ceil((new Date(g.deadline)-new Date())/(1000*60*60*24)));
+      const needed = (g.target - g.saved) / daysLeft;
+      dailyNeeded = `<div class="goal-daily">Save KSh ${needed.toFixed(0)}/day to reach by ${g.deadline}</div>`;
+    }
+    return `<div class="goal-card mb-8">
+      <div class="goal-head">
+        <div class="goal-name">${g.name}</div>
+        <div class="goal-pct">${pct.toFixed(0)}%</div>
+      </div>
+      <div class="goal-bar"><div class="goal-fill" style="width:${pct}%"></div></div>
+      <div class="goal-meta">KSh ${g.saved.toFixed(0)} / KSh ${g.target.toFixed(0)}${g.deadline?' · Due '+g.deadline:''}</div>
+      ${dailyNeeded}
+      <div class="alloc-actions mt-12">
+        <button class="btn btn-ghost btn-xs" onclick="incrementGoal(${i})">＋ Add</button>
+        <button class="btn btn-xs btn-danger" onclick="deleteGoal(${i})">✕ Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showAddGoalModal() {
+  document.getElementById('goal-name-inp').value = '';
+  document.getElementById('goal-target-inp').value = '';
+  document.getElementById('goal-deadline-inp').value = '';
+  openModal('goal-modal');
+}
+
+function addGoal() {
+  const name = document.getElementById('goal-name-inp').value.trim();
+  const target = parseFloat(document.getElementById('goal-target-inp').value);
+  const deadline = document.getElementById('goal-deadline-inp').value;
+  if (!name || !target || target <= 0) return showToast('Name and target required', 'error');
+  goals.push({ id: Date.now(), name, target, saved: 0, deadline });
+  saveAll(); closeModal('goal-modal'); renderGoals();
+  showToast(`Goal "${name}" added`);
+}
+
+function incrementGoal(i) {
+  promptInput(`Add to "${goals[i].name}"`, '', (val) => {
+    const amt = parseFloat(val);
+    if (!amt || amt <= 0) return;
+    goals[i].saved = Math.min(goals[i].saved + amt, goals[i].target);
+    saveAll(); renderGoals();
+    showToast(`Added KSh ${amt.toFixed(0)} to ${goals[i].name}`);
+    if (goals[i].saved >= goals[i].target) showToast('🎉 Goal reached!', 'success');
+  }, 'number');
+}
+
+function deleteGoal(i) {
+  confirmAction('Delete Goal', `Delete "${goals[i].name}"?`, () => {
+    goals.splice(i, 1);
+    saveAll(); renderGoals();
+  });
+}
+
+// ============================================================
+// RECURRING
+// ============================================================
+function renderRecurring() {
+  const list = document.getElementById('recurring-list');
+  if (!recurringList.length) { list.innerHTML = '<div class="empty">No recurring transactions.</div>'; return; }
+  list.innerHTML = recurringList.map((r, i) => `
+    <div class="recurring-item">
+      <div class="rec-info">
+        <div class="rec-name">🔁 ${r.name}</div>
+        <div class="rec-meta">KSh ${r.amount} · ${r.type} · ${r.freq} · ${r.catName||'Uncat'}</div>
+        <div class="text-xs text-muted">Last: ${r.lastRun||'Never'}</div>
+      </div>
+      <button class="btn btn-xs btn-danger" onclick="deleteRecurring(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function showAddRecurringModal() {
+  renderDeductSelects();
+  document.getElementById('rec-name-inp').value = '';
+  document.getElementById('rec-amount-inp').value = '';
+  openModal('recurring-modal');
+}
+
+function addRecurring() {
+  const name = document.getElementById('rec-name-inp').value.trim();
+  const amount = parseFloat(document.getElementById('rec-amount-inp').value);
+  const type = document.getElementById('rec-type-inp').value;
+  const catVal = document.getElementById('rec-cat-inp').value;
+  const catName = document.getElementById('rec-cat-inp').selectedOptions[0]?.text || '';
+  const freq = document.getElementById('rec-freq-inp').value;
+  if (!name || !amount) return showToast('Name and amount required', 'error');
+  recurringList.push({ id: Date.now(), name, amount, type, catVal, catName, freq, lastRun: null });
+  saveAll(); closeModal('recurring-modal'); renderRecurring();
+  showToast(`Recurring "${name}" saved`);
+}
+
+function deleteRecurring(i) {
+  confirmAction('Delete Recurring', `Delete "${recurringList[i].name}"?`, () => {
+    recurringList.splice(i, 1);
+    saveAll(); renderRecurring();
+  });
+}
+
+function checkRecurring() {
+  const today = getTodayKey();
+  let applied = 0;
+  recurringList.forEach(r => {
+    if (!shouldRunRecurring(r, today)) return;
+    if (r.type === 'income') {
+      state.actualAmount += r.amount;
+      state.history.unshift({ type:'income', amount:r.amount, timestamp:new Date().toISOString(), note:`🔁 ${r.name}`, recurring:true });
+    } else {
+      const { alloc, sub } = resolveCategory(r.catVal);
+      if (alloc) {
+        if (sub) sub.used = Math.max(0, sub.used - r.amount);
+        else alloc.used = Math.max(0, alloc.used - r.amount);
+        state.actualAmount -= r.amount;
+        state.history.unshift({ type:'deduction', amount:r.amount, category:r.catName, timestamp:new Date().toISOString(), note:`🔁 ${r.name}`, recurring:true });
+      }
+    }
+    r.lastRun = today;
+    applied++;
+  });
+  if (applied) { redistributeAll(); saveAll(); showToast(`🔁 ${applied} recurring transaction(s) applied`); }
+}
+
+function shouldRunRecurring(r, today) {
+  if (!r.lastRun) return true;
+  const last = new Date(r.lastRun);
+  const now = new Date(today);
+  switch (r.freq) {
+    case 'daily': return today !== r.lastRun;
+    case 'weekly': return (now - last) >= 7*24*60*60*1000;
+    case 'monthly': return now.getMonth() !== last.getMonth() || now.getFullYear() !== last.getFullYear();
+    default: return false;
+  }
+}
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+let chartMonthly = null, chartPie = null;
+
+function renderAnalytics() {
+  renderMonthlyChart();
+  renderPieChart();
+  renderSpendDayChart();
+}
+
+function renderMonthlyChart() {
+  const ctx = document.getElementById('chart-monthly').getContext('2d');
+  if (chartMonthly) chartMonthly.destroy();
+
+  const months = [];
+  const amounts = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    let total = 0;
+    state.history.forEach(h => { if (h.type==='deduction' && h.timestamp?.slice(0,7)===key) total += h.amount; });
+    months.push(d.toLocaleString('default',{month:'short'}));
+    amounts.push(total);
+  }
+
+  chartMonthly = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{ label:'Spending (KSh)', data:amounts,
+        backgroundColor:'rgba(59,130,246,0.5)', borderColor:'#3b82f6',
+        borderWidth:2, borderRadius:6 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`KSh ${ctx.raw.toFixed(0)}`}} },
+      scales:{ y:{ticks:{color:'#94a3b8',callback:v=>`KSh ${v}`}, grid:{color:'rgba(96,165,250,0.08)'}}, x:{ticks:{color:'#94a3b8'}, grid:{display:false}} }
+    }
+  });
+}
+
+function renderPieChart() {
+  const ctx = document.getElementById('chart-pie').getContext('2d');
+  if (chartPie) chartPie.destroy();
+  if (!state.allocations.length) return;
+
+  const palette = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#6366f1'];
+  const labels = state.allocations.map(a => a.name);
+  const data = state.allocations.map(a => a.used);
+
+  chartPie = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor:palette.slice(0,labels.length), borderColor:'rgba(255,255,255,0.05)', borderWidth:2 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins:{
+        legend:{ position:'bottom', labels:{color:'#94a3b8',padding:12,font:{size:11}} },
+        tooltip:{callbacks:{label:ctx=>`${ctx.label}: KSh ${ctx.raw.toFixed(0)}`}}
+      }
+    }
+  });
+}
+
+function renderSpendDayChart() {
+  const container = document.getElementById('spend-day-chart');
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const dayCounts = {};
+  dayNames.forEach(d => dayCounts[d]=0);
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  state.history.forEach(h => {
+    if (h.type!=='deduction'||!h.timestamp) return;
+    if (h.timestamp.slice(0,7)!==monthKey) return;
+    const d = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(h.timestamp).getDay()];
+    dayCounts[d] = (dayCounts[d]||0) + h.amount;
+  });
+  const max = Math.max(...Object.values(dayCounts), 1);
+  const topDay = Object.entries(dayCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  container.innerHTML = dayNames.map(d => {
+    const pct = (dayCounts[d]/max)*100;
+    const isTop = d === topDay[0] && dayCounts[d] > 0;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:36px;font-size:0.78rem;color:var(--text3);text-align:right;">${d}</div>
+      <div style="flex:1;height:8px;background:var(--border);border-radius:9999px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${isTop?'#f59e0b':'#3b82f6'};border-radius:9999px;transition:width 0.4s;"></div>
+      </div>
+      <div style="width:60px;font-size:0.78rem;color:${isTop?'#fbbf24':'var(--text3)'};text-align:right;">${dayCounts[d]>0?`KSh ${dayCounts[d].toFixed(0)}`:''}</div>
+    </div>`;
+  }).join('');
+
+  if (topDay[1] > 0) {
+    container.innerHTML += `<div class="spend-day-highlight">📅 You spend most on <strong>${topDay[0]}s</strong></div>`;
+  }
+}
+
+// ============================================================
+// RESET SYSTEM
+// ============================================================
+function setResetMode(val) {
+  state.resetMode = val;
+  saveAll();
+  showToast(`Reset mode: ${val}`);
+}
+
+function updateResetModeUI() {
+  const el = document.getElementById('reset-mode-select');
+  if (el) el.value = state.resetMode;
+}
+
+function checkAutoReset() {
+  if (state.resetMode === 'consistent' || !state.lastResetDate) return;
+  const now = new Date(), last = new Date(state.lastResetDate);
+  let should = false;
+  switch(state.resetMode) {
+    case 'daily': should = now.toDateString() !== last.toDateString(); break;
+    case 'weekly': should = (now-last)/(1000*60*60*24) >= 7; break;
+    case 'monthly': should = now.getMonth()!==last.getMonth()||now.getFullYear()!==last.getFullYear(); break;
+    case 'yearly': should = now.getFullYear()!==last.getFullYear(); break;
+  }
+  if (should) executeReset(false);
+}
+
+function executeReset(withRollover = true) {
+  state.allocations.forEach(a => {
+    const carry = withRollover && a.rollover ? a.used : 0;
+    a.used = carry;
+    (a.subAllocations||[]).forEach(sub => sub.used = 0);
+  });
+  state.actualAmount = state.allocations.reduce((s,a)=>s+a.used,0);
+  state.unallocatedAmount = 0;
+  state.lastResetDate = new Date().toISOString();
+  state.history.unshift({ type:'reset', amount:0, note:`🔄 ${state.resetMode} Reset`, timestamp:new Date().toISOString() });
+  haptic(100);
+  saveAll(); renderAll();
+  showToast(`Reset done (${state.resetMode})`);
+}
+
+function doFullReset() {
+  confirmAction('Full Reset', 'Delete ALL data? This cannot be undone.', () => {
+    [STORE, SET_KEY, GOALS_KEY, SC_KEY, REC_KEY, PROFILES_KEY].forEach(k => localStorage.removeItem(k));
     location.reload();
   });
 }
 
-  
-// ===== SETTINGS =====
-const SETTINGS_KEY = 'cashsplit_settings_v1';
-let appSettings = { lightMode: false, fontSize: '16px', compactView: false };
+// ============================================================
+// DAILY BALANCE HISTORY
+// ============================================================
+function getTodayKey() { return new Date().toISOString().split('T')[0]; }
 
-function loadSettings() {
-  const saved = localStorage.getItem(SETTINGS_KEY);
-  if (saved) appSettings = { ...appSettings, ...JSON.parse(saved) };
-  applyAllSettings();
-  // Sync UI toggles/selects
-  document.getElementById('setting-light-mode').checked = appSettings.lightMode;
-  document.getElementById('setting-font-size').value = appSettings.fontSize;
-  document.getElementById('setting-compact').checked = appSettings.compactView;
+function saveDailyBalance() {
+  state.dailyBalanceHistory[getTodayKey()] = state.actualAmount;
 }
 
-function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings));
-}
-
-function applySetting(key, value) {
-  appSettings[key] = value;
-  saveSettings();
-  applyAllSettings();
-}
-
-function applyAllSettings() {
-  // Light mode
-  document.body.classList.toggle('light-mode', appSettings.lightMode);
-
-  // Font size — apply to root so rem/em cascade correctly
-  document.documentElement.style.fontSize = appSettings.fontSize;
-
-  // Compact view
-  document.querySelectorAll('.card').forEach(card => {
-    card.style.padding = appSettings.compactView ? '12px' : '20px';
-  });
-  document.querySelectorAll('.allocation-item').forEach(el => {
-    el.style.padding = appSettings.compactView ? '8px' : '16px';
-  });
-  document.querySelectorAll('.sub-item').forEach(el => {
-    el.style.padding = appSettings.compactView ? '6px' : '10px';
-  });
-  document.querySelectorAll('.main-container').forEach(el => {
-    el.style.gap = appSettings.compactView ? '12px' : '24px';
-  });
-}
-
-function openSettings() {
-  document.getElementById('settings-modal').style.display = 'flex';
-}
-
-function closeSettings() {
-  document.getElementById('settings-modal').style.display = 'none';
-  // Re-apply compact since new cards may have rendered
-  applyAllSettings();
-}
-
-function toggleActions() {
-  const menu = document.getElementById('actions-menu');
-  const isOpen = menu.style.display === 'flex';
-  menu.style.display = isOpen ? 'none' : 'flex';
-}
-
-function closeActions() {
-  document.getElementById('actions-menu').style.display = 'none';
-}
-
-document.addEventListener('click', (e) => {
-  if (!document.getElementById('actions-btn').contains(e.target) &&
-      !document.getElementById('actions-menu').contains(e.target)) {
-    closeActions();
+// ============================================================
+// LOW BALANCE ALERT
+// ============================================================
+function checkLowBalance() {
+  const threshold = settings.lowBalThreshold || 0;
+  const banner = document.getElementById('low-balance-banner');
+  if (threshold > 0 && state.actualAmount < threshold) {
+    document.getElementById('low-balance-text').textContent = `⚠️ Low balance: KSh ${state.actualAmount.toFixed(2)}`;
+    banner.classList.remove('hidden');
+  } else {
+    banner.classList.add('hidden');
   }
-});
-
-// ====================== DAILY BALANCE HISTORY ======================
-let dailyBalanceHistory = {};   // Format: { "2026-04-28": 12500.50, ... }
-
-function getTodayKey() {
-  return new Date().toISOString().split('T')[0];
 }
 
-function saveBalanceHistory() {
-  const today = getTodayKey();
-  dailyBalanceHistory[today] = actualAmount;
-  saveData(); // reuse your existing saveData()
+function saveLowBalThreshold() {
+  settings.lowBalThreshold = parseFloat(document.getElementById('low-bal-threshold').value) || 0;
+  saveAll(); checkLowBalance();
 }
 
-function loadBalanceHistory() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    const data = JSON.parse(saved);
-    if (data.dailyBalanceHistory) {
-      dailyBalanceHistory = data.dailyBalanceHistory;
+// ============================================================
+// SETTINGS
+// ============================================================
+function applySettings() {
+  document.body.classList.toggle('light', settings.lightMode);
+  document.documentElement.style.fontSize = settings.fontSize;
+  document.querySelectorAll('.card').forEach(c => c.style.padding = settings.compactView ? '12px' : '20px');
+  // Sync toggles
+  ['lightMode','compactView'].forEach(key => {
+    const el = document.getElementById('tog-'+key);
+    if (el) el.classList.toggle('on', settings[key]);
+  });
+  const fs = document.getElementById('setting-font');
+  if (fs) fs.value = settings.fontSize;
+  const lbt = document.getElementById('low-bal-threshold');
+  if (lbt) lbt.value = settings.lowBalThreshold || '';
+  // PIN toggle
+  const pinEl = document.getElementById('tog-pin');
+  if (pinEl) pinEl.classList.toggle('on', settings.pinEnabled);
+}
+
+function toggleSetting(key) {
+  settings[key] = !settings[key];
+  if (key === 'lightMode') settings.manualTheme = true;
+  saveAll(); applySettings();
+}
+
+function applyFontSize(val) {
+  settings.fontSize = val;
+  saveAll(); applySettings();
+}
+
+// ============================================================
+// AUTO DARK/LIGHT MODE
+// ============================================================
+function initAutoTheme() {
+  if (settings.manualTheme) return;
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  settings.lightMode = !mq.matches;
+  applySettings();
+  mq.addEventListener('change', e => {
+    if (!settings.manualTheme) { settings.lightMode = !e.matches; applySettings(); }
+  });
+}
+
+// ============================================================
+// PIN LOCK
+// ============================================================
+let pinBuffer = '';
+let pinAttempts = 0;
+let pinSetupBuffer = '';
+let pinSetupFirst = '';
+let pinSetupStep = 1;
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function showPINOverlay() {
+  const overlay = document.getElementById('pin-overlay');
+  overlay.style.display = 'flex';
+  pinBuffer = '';
+  renderPINDots('pin-dots', 0);
+  buildPINGrid('pin-grid', handlePINEntry);
+}
+
+function buildPINGrid(gridId, handler) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  [1,2,3,4,5,6,7,8,9,'',0,'⌫'].forEach(k => {
+    const btn = document.createElement('div');
+    btn.className = 'pin-key';
+    btn.textContent = k;
+    if (k !== '') btn.onclick = () => handler(String(k));
+    else btn.style.visibility = 'hidden';
+    grid.appendChild(btn);
+  });
+}
+
+function renderPINDots(dotsId, count) {
+  const el = document.getElementById(dotsId);
+  el.innerHTML = [0,1,2,3].map(i => `<div class="pin-dot ${i<count?'filled':''}"></div>`).join('');
+}
+
+async function handlePINEntry(key) {
+  if (document.getElementById('pin-lockout').style.display !== 'none') return;
+  if (key === '⌫') { pinBuffer = pinBuffer.slice(0,-1); }
+  else if (pinBuffer.length < 4) { pinBuffer += key; }
+  renderPINDots('pin-dots', pinBuffer.length);
+  if (pinBuffer.length === 4) {
+    const hash = await sha256(pinBuffer);
+    if (hash === settings.pinHash) {
+      document.getElementById('pin-overlay').style.display = 'none';
+      pinAttempts = 0;
+    } else {
+      pinAttempts++;
+      document.getElementById('pin-error').textContent = `Wrong PIN (${pinAttempts}/3)`;
+      haptic([30,50,60]);
+      if (pinAttempts >= 3) startLockout();
+      setTimeout(() => { pinBuffer = ''; renderPINDots('pin-dots', 0); document.getElementById('pin-error').textContent=''; }, 500);
     }
   }
 }
 
-// Update saveData to also save balance history
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    actualAmount,
-    unallocatedAmount,
-    allocations,
-    history,
-    resetMode,
-    lastResetDate,
-    dailyBalanceHistory   // ← Added
-  }));
+function startLockout() {
+  const lockEl = document.getElementById('pin-lockout');
+  lockEl.style.display = 'block';
+  let secs = 30;
+  document.getElementById('pin-lockout-secs').textContent = secs;
+  const interval = setInterval(() => {
+    secs--;
+    document.getElementById('pin-lockout-secs').textContent = secs;
+    if (secs <= 0) { clearInterval(interval); lockEl.style.display='none'; pinAttempts=0; }
+  }, 1000);
 }
 
-// Show Balance History Modal
-function showBalanceHistory() {
-  const container = document.getElementById('balance-history-list');
-  container.innerHTML = '';
+function forgotPIN() {
+  const overlay = document.getElementById('pin-overlay');
+  overlay.style.display = 'none';
+  confirmAction('Forgot PIN', 'This will clear ALL app data. Continue?', () => {
+    [STORE, SET_KEY, GOALS_KEY, SC_KEY, REC_KEY, PROFILES_KEY].forEach(k => localStorage.removeItem(k));
+    location.reload();
+  });
+}
 
-  const sortedDates = Object.keys(dailyBalanceHistory).sort().reverse();
-
-  if (sortedDates.length === 0) {
-    container.innerHTML = `<p style="text-align:center; color:#64748b; padding:40px 20px;">No balance history yet.<br>Add money to start tracking daily balances.</p>`;
+function togglePINSetting() {
+  if (settings.pinEnabled) {
+    settings.pinEnabled = false; settings.pinHash = null;
+    saveAll(); applySettings();
+    showToast('PIN disabled');
   } else {
-    sortedDates.forEach(date => {
-      const amount = dailyBalanceHistory[date];
-      const isToday = date === getTodayKey();
-      
-      const div = document.createElement('div');
-      div.className = 'balance-history-item';
-      div.innerHTML = `
-        <div>
-          <strong>${isToday ? 'Today' : new Date(date).toLocaleDateString('en-GB', { 
-            weekday: 'short', 
-            month: 'short', 
-            day: 'numeric' 
-          })}</strong>
-        </div>
-        <div style="text-align:right; font-weight:600; color:#60a5fa;">
-          KSh ${amount.toFixed(2)}
-        </div>
-      `;
-      container.appendChild(div);
-    });
+    startPINSetup();
   }
-
-  document.getElementById('balance-history-modal').style.display = 'flex';
 }
 
-function hideBalanceHistory() {
-  document.getElementById('balance-history-modal').style.display = 'none';
+function startPINSetup() {
+  pinSetupBuffer = ''; pinSetupFirst = ''; pinSetupStep = 1;
+  document.getElementById('pin-setup-label').textContent = 'Enter a new 4-digit PIN';
+  renderPINDots('pin-setup-dots', 0);
+  buildPINGrid('pin-setup-grid', handlePINSetup);
+  openModal('pin-setup-modal');
 }
 
-// Update loadData to include balance history
-function loadData() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    const data = JSON.parse(saved);
-    actualAmount = data.actualAmount || 0;
-    unallocatedAmount = data.unallocatedAmount || 0;
-    allocations = data.allocations || [];
-    history = data.history || [];
-    resetMode = data.resetMode || "consistent";
-    lastResetDate = data.lastResetDate || null;
-    dailyBalanceHistory = data.dailyBalanceHistory || {};
+async function handlePINSetup(key) {
+  if (key === '⌫') { pinSetupBuffer = pinSetupBuffer.slice(0,-1); }
+  else if (pinSetupBuffer.length < 4) pinSetupBuffer += key;
+  renderPINDots('pin-setup-dots', pinSetupBuffer.length);
+  if (pinSetupBuffer.length === 4) {
+    if (pinSetupStep === 1) {
+      pinSetupFirst = pinSetupBuffer;
+      pinSetupBuffer = '';
+      pinSetupStep = 2;
+      document.getElementById('pin-setup-label').textContent = 'Confirm your PIN';
+      renderPINDots('pin-setup-dots', 0);
+    } else {
+      if (pinSetupBuffer === pinSetupFirst) {
+        settings.pinHash = await sha256(pinSetupBuffer);
+        settings.pinEnabled = true;
+        saveAll(); applySettings();
+        closeModal('pin-setup-modal');
+        showToast('PIN set!');
+      } else {
+        document.getElementById('pin-setup-label').textContent = 'PINs did not match. Try again.';
+        pinSetupBuffer = ''; pinSetupFirst = ''; pinSetupStep = 1;
+        renderPINDots('pin-setup-dots', 0);
+      }
+    }
   }
-  
-  // Save today's balance on load (in case it changed)
-  saveBalanceHistory();
-  
-  checkAndPerformAutoReset();
+}
+
+function cancelPINSetup() { pinSetupBuffer=''; pinSetupFirst=''; pinSetupStep=1; }
+
+// ============================================================
+// EXPORT / IMPORT / BACKUP
+// ============================================================
+function exportCSV() {
+  const rows = [['Date','Type','Category','Amount','Note']];
+  state.history.forEach(h => {
+    rows.push([
+      h.timestamp ? new Date(h.timestamp).toLocaleDateString() : '',
+      h.type, h.category||'', (h.amount||0).toFixed(2), h.note||''
+    ]);
+  });
+  rows.push([]);
+  rows.push(['Allocation','Percent','Allocated']);
+  state.allocations.forEach(a => rows.push([a.name, a.percent+'%', a.used.toFixed(2)]));
+
+  const csv = rows.map(r => r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  downloadBlob(csv, `cashsplit-export-${getTodayKey()}.csv`, 'text/csv');
+  showToast('CSV exported');
+}
+
+function importCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n');
+    const header = lines[0].split(',').map(c=>c.replace(/"/g,'').trim());
+    let added=0, skipped=0;
+    const existingTs = new Set(state.history.map(h=>h.timestamp));
+    for (let i=1; i<lines.length; i++) {
+      const cols = lines[i].split(',').map(c=>c.replace(/"/g,'').trim());
+      if (cols.length < 4) continue;
+      const date=cols[0], type=cols[1], category=cols[2], amount=parseFloat(cols[3]), note=cols[4]||'';
+      if (!date||!type||isNaN(amount)) continue;
+      const ts = new Date(date).toISOString();
+      if (existingTs.has(ts)) { skipped++; continue; }
+      state.history.push({ type, amount, category, note, timestamp:ts });
+      existingTs.add(ts);
+      added++;
+    }
+    state.history.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+    saveAll(); renderHistory();
+    showToast(`Imported ${added}, skipped ${skipped} duplicates`);
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function backupToFile() {
+  const data = {
+    cashsplit_data: state, cashsplit_settings: settings,
+    cashsplit_goals: goals, cashsplit_shortcuts: shortcuts,
+    cashsplit_recurring: recurringList, cashsplit_profiles: profiles
+  };
+  downloadBlob(JSON.stringify(data, null, 2), `cashsplit-backup-${getTodayKey()}.json`, 'application/json');
+  showToast('Backup downloaded');
+}
+
+function restoreFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.cashsplit_data) throw new Error('Invalid backup');
+      confirmAction('Restore Backup', 'This will overwrite all current data. Proceed?', () => {
+        if (data.cashsplit_data) Object.assign(state, data.cashsplit_data);
+        if (data.cashsplit_settings) Object.assign(settings, data.cashsplit_settings);
+        if (data.cashsplit_goals) goals = data.cashsplit_goals;
+        if (data.cashsplit_shortcuts) shortcuts = data.cashsplit_shortcuts;
+        if (data.cashsplit_recurring) recurringList = data.cashsplit_recurring;
+        if (data.cashsplit_profiles) profiles = data.cashsplit_profiles;
+        saveAll(); location.reload();
+      });
+    } catch(err) { showToast('Invalid backup file', 'error'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function downloadBlob(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// MONTHLY SUMMARY
+// ============================================================
+function checkMonthlySummary() {
+  const now = new Date();
+  const curMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  if (settings.lastOpenMonth === curMonth) return;
+
+  const lastMonth = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const lastKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth()+1).padStart(2,'0')}`;
+  settings.lastOpenMonth = curMonth;
+  saveAll();
+
+  let totalIn=0, totalOut=0;
+  const catSpend = {};
+  state.history.forEach(h => {
+    if (!h.timestamp || h.timestamp.slice(0,7) !== lastKey) return;
+    if (h.type==='income') totalIn += h.amount;
+    else if (h.type==='deduction') {
+      totalOut += h.amount;
+      catSpend[h.category||'Other'] = (catSpend[h.category||'Other']||0) + h.amount;
+    }
+  });
+  if (!totalIn && !totalOut) return;
+
+  const topCat = Object.entries(catSpend).sort((a,b)=>b[1]-a[1])[0];
+  const body = document.getElementById('month-summary-body');
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div class="stat-box"><div class="stat-box-val text-green">KSh ${totalIn.toFixed(0)}</div><div class="stat-box-label">Total In</div></div>
+      <div class="stat-box"><div class="stat-box-val text-red">KSh ${totalOut.toFixed(0)}</div><div class="stat-box-label">Total Out</div></div>
+    </div>
+    ${topCat?`<div class="spend-day-highlight mb-8">🏆 Top category: <strong>${topCat[0]}</strong> (KSh ${topCat[1].toFixed(0)})</div>`:''}
+    <div class="stat-box"><div class="stat-box-val ${totalIn-totalOut>=0?'text-green':'text-red'}">KSh ${(totalIn-totalOut).toFixed(0)}</div><div class="stat-box-label">Net Saved</div></div>
+  `;
+  setTimeout(() => openModal('month-summary-modal'), 600);
+}
+
+// ============================================================
+// MODALS + PROMPTS
+// ============================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function promptInput(title, defVal, callback, type='text') {
+  document.getElementById('input-modal-title').textContent = title;
+  const body = document.getElementById('input-modal-body');
+  body.innerHTML = `<input type="${type}" id="prompt-inp" value="${defVal}" step="0.01" style="margin-bottom:0;">`;
+  document.getElementById('input-modal-ok').onclick = () => {
+    const val = document.getElementById('prompt-inp').value;
+    closeModal('input-modal');
+    callback(val);
+  };
+  openModal('input-modal');
+  setTimeout(() => document.getElementById('prompt-inp')?.focus(), 100);
+}
+
+function confirmAction(title, msg, callback) {
+  document.getElementById('confirm-modal-title').textContent = title;
+  document.getElementById('confirm-modal-msg').textContent = msg;
+  document.getElementById('confirm-ok-btn').onclick = () => { closeModal('confirm-modal'); callback(); };
+  openModal('confirm-modal');
+}
+
+// ============================================================
+// TOAST + HAPTIC
+// ============================================================
+function showToast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderLeft = `3px solid ${type==='error'?'#ef4444':'#22c55e'}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(()=>el.remove(),300); }, 2500);
+}
+
+function haptic(pattern) {
+  if (!navigator.vibrate) return;
+  if (Array.isArray(pattern)) navigator.vibrate(pattern);
+  else navigator.vibrate(pattern);
+}
+
+// ============================================================
+// PULL TO REFRESH
+// ============================================================
+function initPullToRefresh() {
+  const content = document.getElementById('content');
+  let startY = 0, pulling = false;
+  content.addEventListener('touchstart', e => {
+    if (content.scrollTop === 0) { startY = e.touches[0].clientY; pulling = true; }
+  }, { passive: true });
+  content.addEventListener('touchmove', e => {
+    if (!pulling) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 70) document.getElementById('ptr').classList.add('active');
+  }, { passive: true });
+  content.addEventListener('touchend', () => {
+    if (document.getElementById('ptr').classList.contains('active')) {
+      checkRecurring(); renderAll();
+      setTimeout(() => document.getElementById('ptr').classList.remove('active'), 600);
+    }
+    pulling = false;
+  });
+}
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+function initKeyboard() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    if (document.querySelectorAll('.modal-overlay.open').length) {
+      if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+      return;
+    }
+    switch(e.key.toUpperCase()) {
+      case 'A': showPage('home'); setTimeout(()=>document.getElementById('add-amount')?.focus(),100); break;
+      case 'D': showPage('home'); setTimeout(()=>document.getElementById('deduct-amount')?.focus(),100); break;
+      case 'T': showPage('home'); setTimeout(()=>document.getElementById('transfer-amount')?.focus(),100); break;
+      case 'S': showPage('settings'); break;
+    }
+  });
+}
+
+// ============================================================
+// OFFLINE INDICATOR
+// ============================================================
+function initOfflineDetect() {
+  const show = () => document.getElementById('offline-banner').classList.remove('hidden');
+  const hide = () => document.getElementById('offline-banner').classList.add('hidden');
+  window.addEventListener('online', hide);
+  window.addEventListener('offline', show);
+  if (!navigator.onLine) show();
+}
+
+// ============================================================
+// INSTALL BANNER
+// ============================================================
+let deferredInstallPrompt = null;
+
+function initInstallBanner() {
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const dismissed = settings.installDismissed;
+    const sevenDays = 7*24*60*60*1000;
+    if (!dismissed || Date.now() - dismissed > sevenDays) {
+      document.getElementById('install-banner').classList.remove('hidden');
+    }
+  });
+  document.getElementById('install-btn').onclick = () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt = null;
+    document.getElementById('install-banner').classList.add('hidden');
+  };
+}
+
+function dismissInstallBanner() {
+  settings.installDismissed = Date.now();
+  saveAll();
+  document.getElementById('install-banner').classList.add('hidden');
+}
+
+// ============================================================
+// CLOSE OVERLAYS ON CLICK OUTSIDE
+// ============================================================
+document.addEventListener('click', e => {
+  const profileMenu = document.getElementById('profile-menu');
+  const profileBtn = document.getElementById('profile-btn');
+  if (!profileMenu.contains(e.target) && !profileBtn.contains(e.target)) closeProfileMenu();
+
+  document.querySelectorAll('.modal-overlay.open').forEach(m => {
+    if (e.target === m) m.classList.remove('open');
+  });
+});
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = () => {
+  loadAll();
+  initAutoTheme();
+  applySettings();
+  checkAutoReset();
+  checkRecurring();
+  saveDailyBalance();
   renderAll();
-}
+  renderProfileMenu();
+  initPullToRefresh();
+  initKeyboard();
+  initOfflineDetect();
+  initInstallBanner();
+  checkMonthlySummary();
 
-// Call saveBalanceHistory after every change that affects actualAmount
-
-
-   window.onload = () => { loadData(); loadSettings(); };
-  </script>
-</body>
-</html>
-
+  // PIN check
+  if (settings.pinEnabled && settings.pinHash) {
+    showPINOverlay();
+  }
+};
+</script>
 </html>
