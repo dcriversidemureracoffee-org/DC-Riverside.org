@@ -403,7 +403,6 @@ html, body {
 .post-media-wrap {
   width: 100%;
   background: #000;
-  overflow: hidden;
   position: relative;
 }
 .post-media-wrap img {
@@ -414,12 +413,12 @@ html, body {
 }
 .post-media-wrap iframe {
   width: 100%;
-  height: 56vw;
-  max-height: 420px;
+  height: 56.25vw;
+  min-height: 240px;
+  max-height: 75vh;
   border: none;
   display: block;
 }
-
 .post-calendar { border-top: 1px solid var(--wire); }
 
 .cal-month-strip {
@@ -2142,14 +2141,23 @@ function buildPostView(p, idx, total) {
   const isOwn = p.author === currentUser;
 
   let mediaHtml = '';
-  if (p.media?.link) {
+ if (p.media?.link) {
     const isImg = (p.media.type || '').startsWith('image');
-    const src = isImg
-      ? lh3(p.media.link)
-      : `https://drive.google.com/file/d/${(p.media.link.match(/[-\w]{25,}/) || [p.media.link])[0]}/preview`;
-    mediaHtml = isImg
-      ? `<div class="post-media-wrap"><img src="${src}" loading="lazy" onerror="this.style.display='none'" alt=""></div>`
-      : `<div class="post-media-wrap"><iframe src="${src}" allowfullscreen></iframe></div>`;
+    if (isImg) {
+      const src = lh3(p.media.link);
+      mediaHtml = `<div class="post-media-wrap"><img src="${src}" loading="lazy" onerror="this.style.display='none'" alt=""></div>`;
+    }  else {
+      const idMatch = p.media.link.match(/[-\w]{25,}/);
+      const fileId = idMatch ? idMatch[0] : p.media.link;
+const src = `https://drive.google.com/file/d/${fileId}/preview`;
+      mediaHtml = `<div class="post-media-wrap" style="position:relative;padding-bottom:75%;height:0;overflow:hidden;">
+        <iframe src="${src}"
+          style="position:absolute;top:0;left:0;width:100%;height:130%;border:none;"
+          allow="autoplay"
+          allowfullscreen>
+        </iframe>
+      </div>`;
+    }
   }
 
   let calHtml = '';
@@ -2178,9 +2186,11 @@ function buildPostView(p, idx, total) {
     calHtml = `<div class="post-calendar"><div class="cal-month-strip">${monthsHtml}</div></div>`;
   }
 
-  const cleanText = (p.content || '')
-    .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, '')
-    .replace(/\s{2,}/g, ' ').trim();
+ const cleanText = (p.content || '')
+  .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, '')
+  .replace(/\/view\b\S*/gi, '')
+  .replace(/usp=\S+/gi, '')
+  .replace(/\s{2,}/g, ' ').trim();
 
   wrap.innerHTML = `
     <div class="post-header">
