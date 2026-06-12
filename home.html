@@ -1266,6 +1266,7 @@ let lastCommentCount = 0;
 let pollingInterval = null;
 let selectedFileData = null;
 let replyingTo = null;
+let memberMap = {};
 
 if (!userName) window.location.href = 'login.html';
 
@@ -1441,16 +1442,20 @@ async function loadComments(silent = true) {
         msg.innerHTML = `
           ${!isOwn ? `<img src="${avatarSrc}" class="avatar" onerror="this.style.visibility='hidden'">` : ''}
           <div class="message-content">
-            ${!isSame ? `<div class="msg-name">${c.name}</div>` : ''}
-            ${replyHtml}
-            ${mediaHtml}
-            <div class="msg-text" id="text-${c.timestamp}">${c.comment}</div>
-            <div class="msg-footer">
-              <span class="msg-time">${formatTime(c.timestamp)}</span>
-              ${actionsHtml}
-            </div>
-          </div>
-          ${isOwn ? `<img src="${avatarSrc}" class="avatar ${isSame ? 'same-sender' : ''}" onerror="this.style.visibility='hidden'">` : ''}
+           ${!isSame ? `<div class="msg-name">
+  ${c.name}
+  <img src="${(memberMap[c.name]?.isAdmin) ? 'admin-icon.svg' : 'member-icon.svg'}"
+       style="width:16px;height:16px;vertical-align:middle;margin-left:4px;opacity:0.85;position:relative;top:-1px;">
+</div>` : ''}
+${replyHtml}
+${mediaHtml}
+<div class="msg-text" id="text-${c.timestamp}">${c.comment}</div>
+<div class="msg-footer">
+  <span class="msg-time">${formatTime(c.timestamp)}</span>
+  ${actionsHtml}
+</div>
+</div>
+${isOwn ? `<img src="${avatarSrc}" class="avatar ${isSame ? 'same-sender' : ''}" onerror="this.style.visibility='hidden'">` : ''}
         `;
 
         groupDiv.appendChild(msg);
@@ -1477,6 +1482,16 @@ async function checkUserStatus() {
 
     const status = data.userStatus.toLowerCase();
     isApproved = (status === 'approved');
+
+    memberMap[userName] = { isAdmin: data.isAdmin, role: data.role };
+// Also load all members for badge lookup
+fetch(`${scriptUrl}?operation=getMembers`)
+  .then(r => r.json())
+  .then(d => {
+    (d.users || []).forEach(u => {
+      memberMap[u.name] = { isAdmin: u.isAdmin, role: u.role };
+    });
+  }).catch(() => {});
 
     const bellWrap = document.querySelector('#ann-badge')?.closest('div[style*="position"]') || document.querySelector('a[href="announce.html"]')?.parentElement;
 
