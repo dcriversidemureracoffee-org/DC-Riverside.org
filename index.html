@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Riverside Connect – Welcome</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="manifest" href="./manifest.json">
+
   <!-- iOS support -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -41,7 +42,7 @@
       --font-body: 'DM Sans', sans-serif;
       --font-mono: 'DM Mono', monospace;
 
-      --bar-h: 56px;
+      --bar-h: 50px;
     }
 
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -56,7 +57,7 @@
     }
 
     /* ══ TOP BAR ══════════════════════════════════════════════ */
-    #topbar {
+   #topbar {
       position: fixed;
       top: 0; left: 0; right: 0;
       height: var(--bar-h);
@@ -65,91 +66,78 @@
       z-index: 900;
       display: flex;
       align-items: center;
-      gap: 0;
+      gap: 4px;
+      padding: 0 8px;
       backdrop-filter: blur(16px);
     }
 
     .tb-logo {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 0 16px;
-      border-right: 1px solid var(--wire);
       height: 100%;
       flex-shrink: 0;
+      padding-right: 6px;
     }
     .tb-logo-text {
       font-family: var(--font-head);
-      font-size: 1.35rem;
-      letter-spacing: 0.06em;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
       color: var(--accent2);
       line-height: 1;
     }
-    .tb-logo-text span { color: var(--ink); opacity: 0.55; font-size: 0.85em; }
 
     .tb-spacer { flex: 1; }
 
-    .tb-btn {
-      height: 100%;
-      padding: 0 14px;
+    .tb-icon-btn {
+      position: relative;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
-      gap: 7px;
+      justify-content: center;
       background: none;
       border: none;
-      border-left: 1px solid var(--wire);
+      border-radius: 9px;
       color: var(--lead);
       cursor: pointer;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
+      font-size: 0.95rem;
       transition: all 0.15s;
       flex-shrink: 0;
       text-decoration: none;
     }
-    .tb-btn:hover { color: var(--accent2); background: var(--lift); }
-    .tb-btn.active { color: var(--accent2); background: rgba(96,165,250,0.08); }
-    .tb-btn i { font-size: 0.9rem; }
+    .tb-icon-btn:hover { color: var(--accent2); background: var(--lift); }
+    .tb-icon-btn.active { color: var(--accent2); background: rgba(96,165,250,0.12); }
+    .tb-icon-btn:disabled { opacity: 0.5; cursor: default; }
 
-    .tb-avatar {
-      height: 100%;
-      width: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-left: 1px solid var(--wire);
-      cursor: pointer;
-      flex-shrink: 0;
+    .tb-icon-btn.spinning i { animation: tbspin 0.8s linear infinite; }
+    @keyframes tbspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .tb-badge {
+      position: absolute;
+      top: 1px; right: 1px;
+      min-width: 15px; height: 15px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.55rem;
+      font-weight: 800;
+      border-radius: 100px;
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 0 3px;
+      border: 1.5px solid var(--paper);
+      font-family: var(--font-mono);
     }
-    .tb-avatar img {
-      width: 32px; height: 32px;
+    .tb-badge.visible { display: flex; }
+
+    .tb-avatar-btn { padding: 0; }
+    .tb-avatar-btn img {
+      width: 28px; height: 28px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid rgba(96,165,250,0.4);
+      transition: border-color 0.15s;
     }
-
-    .tb-more-btn {
-      height: 100%;
-      padding: 0 18px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: none;
-      border: none;
-      border-left: 1px solid var(--wire);
-      color: var(--ink);
-      cursor: pointer;
-      font-family: var(--font-head);
-      font-size: 0.95rem;
-      letter-spacing: 0.12em;
-      transition: all 0.15s;
-      flex-shrink: 0;
-    }
-    .tb-more-btn:hover { background: var(--lift); color: var(--accent2); }
-    .tb-more-btn.active { color: var(--accent2); background: rgba(96,165,250,0.08); }
-    .tb-more-btn .chevron { transition: transform 0.25s ease; font-size: 0.7rem; }
-    .tb-more-btn.active .chevron { transform: rotate(180deg); }
-
+    .tb-avatar-btn:hover img { border-color: var(--accent2); }
     /* ══ MORE PANEL (slides down) ═════════════════════════════ */
     #more-panel {
       position: fixed;
@@ -812,24 +800,28 @@
 <!-- ══ TOP BAR ══════════════════════════════════════════════════════ -->
 <header id="topbar">
   <div class="tb-logo">
-    <div class="tb-logo-text">RIVERSIDE <span>·</span> CONNECT</div>
+    <div class="tb-logo-text">RC</div>
   </div>
 
   <div class="tb-spacer"></div>
 
-  <a href="announce.html" class="tb-btn" id="tb-ann" title="Announcements">
-    <i class="fas fa-bullhorn"></i>
-    <span id="ann-badge-tb" style="background:#ef4444;color:#fff;font-size:0.58rem;font-weight:800;padding:1px 5px;border-radius:100px;display:none;">0</span>
-  </a>
-
-  <button class="tb-more-btn" id="more-toggle" title="More">
-    MORE <i class="fas fa-chevron-down chevron"></i>
+  <button class="tb-icon-btn" id="refresh-btn" title="Refresh">
+    <i class="fas fa-rotate"></i>
   </button>
 
-  <div class="tb-avatar" onclick="window.location.href='user.html'" title="Profile">
+  <a href="announce.html" class="tb-icon-btn" id="tb-ann" title="Notifications">
+    <i class="fas fa-bell"></i>
+    <span class="tb-badge" id="ann-badge-tb">0</span>
+  </a>
+
+  <button class="tb-icon-btn" id="more-toggle" title="More">
+    <i class="fas fa-ellipsis"></i>
+  </button>
+
+  <a href="user.html" class="tb-icon-btn tb-avatar-btn" title="Profile">
     <img id="user-avatar" src="" alt="Profile"
          onerror="this.src='https://ui-avatars.com/api/?background=3b82f6&color=fff&name=RC'">
-  </div>
+  </a>
 </header>
 
 <!-- ══ MORE PANEL ═══════════════════════════════════════════════════ -->
@@ -1119,11 +1111,11 @@ async function loadAnnBadge() {
     const gd   = document.getElementById('ann-badge-grid');
     if (n > 0) {
       tb.textContent = n > 99 ? '99+' : n;
-      tb.style.display = 'inline-block';
+      tb.classList.add('visible');
       gd.textContent = n > 99 ? '99+' : n;
       gd.classList.add('visible');
     } else {
-      tb.style.display = 'none';
+      tb.classList.remove('visible');
       gd.classList.remove('visible');
     }
   } catch {}
@@ -1355,6 +1347,25 @@ function setupScrollProgress() {
     counter.textContent = total ? `${idx + 1} / ${total}` : '';
   }, { passive: true });
 }
+/* ── REFRESH ─────────────────────────────────────────────────────── */
+let isRefreshing = false;
+async function refreshAll() {
+  if (isRefreshing) return;
+  isRefreshing = true;
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  try {
+    await Promise.all([loadFeed(), loadMorePanelData(), loadAnnBadge()]);
+    toast('Feed refreshed', 'ok', 1500);
+  } catch {
+    toast('Refresh failed', 'err');
+  } finally {
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+    isRefreshing = false;
+  }
+}
 
 /* ── LOAD ALL CHANNEL POSTS ──────────────────────────────────────── */
 async function loadFeed() {
@@ -1445,6 +1456,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadMorePanelData();
   loadAnnBadge();
   setInterval(loadAnnBadge, 30000);
+  document.getElementById('refresh-btn').addEventListener('click', refreshAll);
 });
 </script>
 </body>
