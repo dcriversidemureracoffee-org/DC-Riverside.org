@@ -800,7 +800,7 @@
 <!-- ══ TOP BAR ══════════════════════════════════════════════════════ -->
 <header id="topbar">
   <div class="tb-logo">
-    <div class="tb-logo-text">RIVERSIDE CONNECT</div>
+    <div class="tb-logo-text">RC</div>
   </div>
 
   <div class="tb-spacer"></div>
@@ -1156,10 +1156,13 @@ function buildCard(post, chName, chAvatar, chId, idx, total) {
     } else {
       const idM = post.media.link.match(/[-\w]{25,}/);
       const fid = idM ? idM[0] : post.media.link;
-      mediaHtml = `<div class="card-media">
-        <iframe src="https://drive.google.com/file/d/${fid}/preview"
-          allow="autoplay" allowfullscreen></iframe>
-      </div>`;
+     mediaHtml = `<div class="card-media" style="position:relative;padding-bottom:100%;height:0;overflow:hidden;">
+  <iframe src="https://drive.google.com/file/d/${fid}/preview"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+    allow="autoplay"
+    allowfullscreen>
+  </iframe>
+</div>`;
     }
   }
 
