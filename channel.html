@@ -1964,7 +1964,18 @@ async function loadChannels(force = false) {
     ? allChannels.find(c => c.id === urlChId)
     : allChannels.find(c => c.id === localStorage.getItem('rv_last_ch')) || allChannels[0];
 
-  if (target) openChannel(target, urlPostId || null);
+  if (target) {
+    openChannel(target, urlPostId || null);
+  } else {
+    // No channels exist — show empty state immediately
+    document.getElementById('post-rail').innerHTML = `
+      <div class="state-view">
+        <div class="empty-label">NO CHANNELS YET</div>
+        <div class="empty-sub">AN ADMIN CAN CREATE THE FIRST ONE</div>
+      </div>`;
+    // Still run auth check so the create button appears for admins
+    await checkAuth(null);
+  }
 }
 
 async function fetchChannelsFresh() {
@@ -2079,7 +2090,9 @@ async function checkAuth(channelId) {
   document.getElementById('btn-write').style.display = isAuthorised ? 'flex' : 'none';
 
   try {
-    const d = await api({ operation: 'getUserStatus', name: currentUser });
+    const data = channelId
+    ? await api({ operation: 'isAuthorised', username: currentUser, channelId })
+    : { status: 'success', isAuthorised: false };
     isAdmin = d.userStatus === 'approved' && d.isAdmin === true;
     document.getElementById('drawer-create-btn').style.display = isAdmin ? 'flex' : 'none';
   } catch { isAdmin = false; }
