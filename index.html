@@ -1,28 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Riverside Connect – Welcome</title>
+  <title>Riverside Connect</title>
 
-   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="manifest" href="./manifest.json">
 
-  <!-- iOS support -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Riverside Connect">
-
   <link rel="apple-touch-icon" sizes="180x180" href="maskable_icon_x192.png">
 
-  <!-- Open Graph -->
   <meta property="og:title" content="Riverside Connect">
   <meta property="og:description" content="Join the conversation – real-time Christian community">
   <meta property="og:image" content="https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/maskable_icon_x192.png">
   <meta property="og:url" content="https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/The-Riverside-Connect/">
+
   <style>
     :root {
       --ink:       #e2e8f0;
@@ -57,7 +55,7 @@
     }
 
     /* ══ TOP BAR ══════════════════════════════════════════════ */
-   #topbar {
+    #topbar {
       position: fixed;
       top: 0; left: 0; right: 0;
       height: var(--bar-h);
@@ -88,6 +86,46 @@
 
     .tb-spacer { flex: 1; }
 
+    .tb-live-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 26px;
+      padding: 0 14px 0 10px;
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.15s;
+    }
+    .tb-live-btn:hover { background: #1a1a1a; }
+
+    .tb-live-btn.is-live {
+      background: #ef4444;
+      animation: liveGlow 1.4s ease-in-out infinite;
+    }
+    .tb-live-btn.is-live:hover { background: #dc2626; }
+
+    @keyframes liveGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+      50%      { box-shadow: 0 0 10px 3px rgba(239,68,68,0.6); }
+    }
+
+    #live-badge-tb {
+      background: #000000;
+      color: #ffffff;
+      top: -6px;
+      right: -6px;
+    }
+
     .tb-icon-btn {
       position: relative;
       width: 36px;
@@ -106,7 +144,6 @@
       text-decoration: none;
     }
     .tb-icon-btn:hover { color: var(--accent2); background: var(--lift); }
-    .tb-icon-btn.active { color: var(--accent2); background: rgba(96,165,250,0.12); }
     .tb-icon-btn:disabled { opacity: 0.5; cursor: default; }
 
     .tb-icon-btn.spinning i { animation: tbspin 0.8s linear infinite; }
@@ -138,562 +175,149 @@
       transition: border-color 0.15s;
     }
     .tb-avatar-btn:hover img { border-color: var(--accent2); }
-    /* ══ MORE PANEL (slides down) ═════════════════════════════ */
-    #more-panel {
-      position: fixed;
-      top: var(--bar-h);
-      left: 0; right: 0;
-      background: rgba(10,15,30,0.98);
-      border-bottom: 1px solid rgba(96,165,250,0.25);
-      z-index: 850;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(16px);
-    }
-    #more-panel.open { max-height: 80vh; overflow-y: auto; }
 
-    .more-inner {
-      padding: 20px 16px 24px;
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
-    /* Channels circles row */
-    .more-section-label {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      color: var(--steel);
-      margin-bottom: 12px;
-      padding: 0 2px;
-    }
-
-    .circles-scroll {
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      margin: 0 -4px 20px;
-      padding: 0 4px 4px;
-    }
-    .circles-scroll::-webkit-scrollbar { display: none; }
-
-    .circles-row {
-      display: inline-flex;
-      gap: 16px;
-    }
-
-    .circle-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      flex-shrink: 0;
-      transition: transform 0.15s;
-    }
-    .circle-item:hover { transform: translateY(-2px); }
-    .circle-item:active { transform: scale(0.95); }
-
-    .circle-ring {
-      width: 60px; height: 60px;
-      border-radius: 50%;
-      border: 2px solid rgba(96,165,250,0.35);
-      padding: 2px;
-      transition: border-color 0.15s;
-    }
-    .circle-item:hover .circle-ring { border-color: var(--accent2); }
-
-    .circle-avatar {
-      width: 100%; height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      background: var(--lift);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-head);
-      font-size: 1.4rem;
-      color: var(--accent2);
-    }
-
-    .circle-label {
-      font-size: 0.7rem;
-      color: var(--lead);
-      max-width: 64px;
-      text-align: center;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-family: var(--font-mono);
-      letter-spacing: 0.03em;
-    }
-
-    /* Nav grid */
-    .nav-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    @media (max-width: 400px) { .nav-grid { grid-template-columns: 1fr 1fr; } }
-
-    .nav-tile {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 12px 14px;
-      background: var(--surface);
-      border: 1px solid var(--wire);
-      border-radius: 10px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.15s;
-      position: relative;
-      overflow: hidden;
-    }
-    .nav-tile:hover { border-color: rgba(96,165,250,0.4); transform: translateY(-1px); background: var(--lift); }
-    .nav-tile:active { transform: scale(0.97); }
-
-    .nav-tile-icon {
-      width: 32px; height: 32px;
-      background: rgba(96,165,250,0.1);
-      border-radius: 7px;
-      display: flex; align-items:center; justify-content:center;
-      font-size: 0.9rem;
-      color: var(--accent2);
-      flex-shrink: 0;
-    }
-    .nav-tile-label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--ink);
-    }
-    .nav-tile-sub {
-      font-size: 0.68rem;
-      color: var(--steel);
-      font-family: var(--font-mono);
-      letter-spacing: 0.04em;
-    }
-
-    .nav-tile-badge {
-      position: absolute;
-      top: 8px; right: 8px;
-      min-width: 18px; height: 18px;
-      background: #ef4444;
-      color: white;
-      font-size: 0.6rem;
-      font-weight: 800;
-      border-radius: 100px;
-      display: none;
-      align-items:center; justify-content:center;
-      padding: 0 4px;
-      border: 1.5px solid var(--surface);
-    }
-    .nav-tile-badge.visible { display: flex; }
-
-    /* Notif tile */
-    .notif-tile {
-      background: none;
-      border: 1px solid var(--wire);
-      width: 100%;
-      text-align: left;
-      font-family: var(--font-body);
-    }
-    .notif-pill {
-      font-size: 0.62rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 100px;
-      background: rgba(16,185,129,0.15);
-      color: #34d399;
-      font-family: var(--font-mono);
-      letter-spacing: 0.05em;
-      margin-left: auto;
-    }
-    .notif-pill.off {
-      background: rgba(100,116,139,0.18);
-      color: var(--steel);
-    }
-
-    .more-divider {
-      height: 1px;
-      background: var(--wire);
-      margin: 4px 0 16px;
-    }
-
-    /* ══ FEED ════════════════════════════════════════════════ */
-    #feed {
+    /* ══ CHAT LIST ═══════════════════════════════════════════ */
+    #chat-list {
       position: fixed;
       top: var(--bar-h);
       left: 0; right: 0;
       bottom: 0;
-      overflow-y: scroll;
-      overflow-x: hidden;
-      scroll-snap-type: y mandatory;
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      overscroll-behavior-y: contain;
-      scrollbar-width: none;
-    }
-    #feed::-webkit-scrollbar { display: none; }
-
-    /* ══ FEED CARD ═══════════════════════════════════════════ */
-    .feed-card {
-      width: 100%;
-      height: calc(100dvh - var(--bar-h));
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border-bottom: 1px solid var(--wire);
     }
 
-    /* Channel label strip */
-    .card-channel-strip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px 8px;
-      background: rgba(10,15,30,0.9);
-      border-bottom: 1px solid var(--wire);
-      flex-shrink: 0;
-    }
-    .card-channel-avatar {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: var(--lift);
-      border: 1.5px solid rgba(96,165,250,0.35);
-    }
-    .card-channel-name {
-      font-family: var(--font-mono);
-      font-size: 0.66rem;
-      letter-spacing: 0.1em;
-      color: var(--accent2);
-    }
-    .card-channel-link {
-      margin-left: auto;
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.08em;
-      color: var(--steel);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: color 0.15s;
-    }
-    .card-channel-link:hover { color: var(--accent2); }
-
-    /* Post header */
-    .card-post-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      flex-shrink: 0;
-    }
-    .card-author-avatar {
-      width: 34px; height: 34px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: var(--lift);
-      border: 2px solid rgba(96,165,250,0.3);
-      flex-shrink: 0;
-    }
-    .card-author-name {
-      font-weight: 700;
-      font-size: 0.88rem;
-      color: var(--ink);
-    }
-    .card-post-time {
+    .list-section-label {
       font-family: var(--font-mono);
       font-size: 0.65rem;
+      letter-spacing: 0.12em;
       color: var(--steel);
-      letter-spacing: 0.05em;
-      margin-top: 1px;
+      padding: 14px 16px 6px;
+      background: var(--paper);
     }
 
-    /* Scrollable body */
-    .card-body {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(96,165,250,0.3) transparent;
-    }
-    .card-body::-webkit-scrollbar { width: 2px; }
-    .card-body::-webkit-scrollbar-thumb { background: rgba(96,165,250,0.35); }
-
-    .card-media {
-      width: 100%;
-      background: #000;
-      position: relative;
-    }
-    .card-media img {
-      width: 100%;
-      max-height: 52vh;
-      object-fit: contain;
-      display: block;
-    }
-    .card-media iframe {
-      width: 100%;
-      height: 56.25vw;
-      min-height: 220px;
-      max-height: 50vh;
-      border: none;
-      display: block;
-    }
-
-    .card-text {
-      padding: 14px 16px 10px;
-      font-size: 1rem;
-      line-height: 1.7;
-      color: var(--ink);
-      white-space: pre-wrap;
-    }
-
-    /* Post footer actions */
-    .card-foot {
+    .chat-row {
       display: flex;
       align-items: center;
-      border-top: 1px solid var(--wire);
-      background: rgba(10,15,30,0.92);
-      height: 46px;
-      flex-shrink: 0;
-    }
-    .card-action {
-      flex: 1;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-family: var(--font-body);
-      font-size: 0.7rem;
-      letter-spacing: 0.05em;
-      color: var(--steel);
+      gap: 12px;
+      padding: 10px 16px;
       cursor: pointer;
-      border: none;
+      border-bottom: 1px solid var(--wire);
+      transition: background 0.15s;
       background: none;
-      border-right: 1px solid var(--wire);
-      transition: all 0.15s;
+      border-left: none; border-right: none; border-top: none;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+      color: inherit;
+      font-family: var(--font-body);
     }
-    .card-action:last-child { border-right: none; }
-    .card-action:hover { color: var(--ink); background: var(--lift); }
-    .card-action.liked { color: var(--danger); }
-    .card-action.liked i { animation: heartpop 0.35s ease; }
-    @keyframes heartpop {
-      0%  { transform: scale(1); }
-      40% { transform: scale(1.5); }
-      100%{ transform: scale(1); }
-    }
+    .chat-row:hover { background: var(--lift); }
+    .chat-row:active { background: var(--lift); }
 
-    /* Comment panel */
-    .card-comments {
-      display: none;
-      flex-direction: column;
-      border-top: 1px solid rgba(96,165,250,0.25);
-      background: rgba(10,15,30,0.94);
-      flex-shrink: 0;
-      max-height: 42%;
-      overflow: hidden;
-    }
-    .card-comments.open { display: flex; }
-
-    .comment-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(96,165,250,0.3) transparent;
-    }
-    .comment-list::-webkit-scrollbar { width: 2px; }
-
-    .c-msg { display: flex; gap: 9px; }
-    .c-msg.own { flex-direction: row-reverse; }
-
-    .c-av {
-      width: 26px; height: 26px;
+    .row-avatar {
+      width: 50px; height: 50px;
       border-radius: 50%;
       object-fit: cover;
       background: var(--lift);
-      border: 1.5px solid rgba(96,165,250,0.3);
+      border: 2px solid rgba(96,165,250,0.18);
       flex-shrink: 0;
-      margin-top: 1px;
     }
 
-    .c-bub {
-      max-width: 78%;
-      background: var(--lift);
-      border: 1px solid var(--wire);
-      padding: 7px 10px;
-      border-radius: 4px 12px 12px 12px;
-    }
-    .c-msg.own .c-bub {
-      background: linear-gradient(135deg, #2563eb, #3b82f6);
-      border-color: transparent;
-      border-radius: 12px 4px 12px 12px;
-    }
+    .row-content { flex: 1; min-width: 0; }
 
-    .c-name {
-      font-family: var(--font-mono);
-      font-size: 0.66rem;
-      letter-spacing: 0.04em;
-      color: var(--accent2);
+    .row-title-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .row-title {
       font-weight: 700;
-      margin-bottom: 2px;
+      font-size: 0.94rem;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .c-msg.own .c-name { color: rgba(255,255,255,0.75); }
-
-    .c-text { font-size: 0.85rem; line-height: 1.45; word-break: break-word; }
-
-    .c-time {
-      font-size: 0.6rem;
-      color: var(--steel);
-      margin-top: 3px;
+    .row-time {
       font-family: var(--font-mono);
-      display: block;
+      font-size: 0.63rem;
+      color: var(--steel);
+      flex-shrink: 0;
     }
-    .c-msg.own .c-time { color: rgba(255,255,255,0.5); }
 
-    .comment-input-bar {
+    .row-sub-line {
       display: flex;
       align-items: center;
-      border-top: 1px solid var(--wire);
-      background: rgba(10,15,30,0.98);
-      flex-shrink: 0;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 2px;
     }
-    .comment-input-bar input {
-      flex: 1;
-      height: 42px;
-      padding: 0 14px;
-      border: none;
-      background: transparent;
-      color: var(--ink);
-      font-family: var(--font-body);
-      font-size: 0.88rem;
-      outline: none;
+    .row-subtitle {
+      font-size: 0.8rem;
+      color: var(--lead);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .comment-input-bar input::placeholder { color: var(--steel); }
-    .comment-send {
-      width: 48px; height: 42px;
-      background: var(--accent);
-      border: none;
-      color: #fff;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: flex; align-items:center; justify-content:center;
-      transition: opacity 0.15s;
-      flex-shrink: 0;
-    }
-    .comment-send:hover { opacity: 0.85; }
 
-    /* ══ LOADING / EMPTY / ERROR STATES ══════════════════════ */
-    .feed-state {
-      width: 100%;
-      height: calc(100dvh - var(--bar-h));
-      scroll-snap-align: start;
+    .row-badge {
+      min-width: 20px; height: 20px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      border-radius: 100px;
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 0 6px;
+      flex-shrink: 0;
+      font-family: var(--font-body);
+    }
+    .row-badge.visible { display: flex; }
+    .row-badge.live { background: #ef4444; }
+    .row-badge.on { background: rgba(16,185,129,0.18); color: #34d399; font-size: 0.6rem; }
+    .row-badge.off { background: rgba(100,116,139,0.18); color: var(--steel); font-size: 0.6rem; }
+
+    .list-empty {
+      padding: 10px 16px 16px;
+      color: var(--steel);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+    }
+
+    .list-loading, .list-error {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
+      gap: 12px;
+      padding: 60px 20px;
+      text-align: center;
     }
-
-    .feed-state-icon {
-      font-size: 2.4rem;
+    .list-loading i, .list-error i {
+      font-size: 2rem;
       color: var(--accent2);
-      opacity: 0.35;
+      opacity: 0.4;
       animation: pulse 1.5s ease-in-out infinite;
     }
     @keyframes pulse {
       0%, 100% { opacity: 0.2; }
-      50%       { opacity: 0.55; }
+      50%       { opacity: 0.5; }
     }
-    .feed-state-title {
+    .list-loading-title, .list-error-title {
       font-family: var(--font-head);
-      font-size: 1.6rem;
+      font-size: 1.4rem;
       letter-spacing: 0.1em;
       color: var(--lead);
       opacity: 0.5;
     }
-    .feed-state-sub {
+    .list-loading-sub, .list-error-sub {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       letter-spacing: 0.1em;
       color: var(--steel);
-    }
-
-    /* Progress bar */
-    #feed-progress {
-      position: fixed;
-      right: 0;
-      top: var(--bar-h);
-      bottom: 0;
-      width: 3px;
-      background: rgba(96,165,250,0.08);
-      z-index: 800;
-      pointer-events: none;
-    }
-    #feed-progress-fill {
-      background: var(--accent2);
-      width: 100%;
-      height: 0%;
-      transition: height 0.3s ease;
-    }
-
-    /* Post counter */
-    #feed-counter {
-      position: fixed;
-      bottom: 12px;
-      right: 14px;
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      color: var(--steel);
-      z-index: 800;
-      pointer-events: none;
-      background: rgba(10,15,30,0.82);
-      padding: 3px 8px;
-      border: 1px solid var(--wire);
-      border-radius: 4px;
-    }
-
-    /* Swipe hint */
-    #swipe-hint {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      color: var(--steel);
-      z-index: 799;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      animation: swipeHint 3.5s ease 1.2s forwards;
-      opacity: 0;
-    }
-    @keyframes swipeHint {
-      0%   { opacity: 0; }
-      15%  { opacity: 0.65; transform: translateX(-50%) translateY(0); }
-      80%  { opacity: 0.65; transform: translateX(-50%) translateY(-18px); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
     }
 
     /* ══ TOAST ════════════════════════════════════════════════ */
@@ -791,7 +415,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .feed-state-icon, #swipe-hint { animation: none; opacity: 0.4; }
+      .list-loading i, .list-error i { animation: none; opacity: 0.4; }
     }
   </style>
 </head>
@@ -809,14 +433,12 @@
     <i class="fas fa-rotate"></i>
   </button>
 
+  
+
   <a href="announce.html" class="tb-icon-btn" id="tb-ann" title="Notifications">
     <i class="fas fa-bell"></i>
     <span class="tb-badge" id="ann-badge-tb">0</span>
   </a>
-
-  <button class="tb-icon-btn" id="more-toggle" title="More">
-    <i class="fas fa-ellipsis"></i>
-  </button>
 
   <a href="profile.html" class="tb-icon-btn tb-avatar-btn" title="Profile">
     <img id="user-avatar" src="" alt="Profile"
@@ -824,90 +446,13 @@
   </a>
 </header>
 
-<!-- ══ MORE PANEL ═══════════════════════════════════════════════════ -->
-<div id="more-panel">
-  <div class="more-inner">
-
-    <!-- Quick nav tiles -->
-    <div class="more-section-label">QUICK ACCESS</div>
-    <div class="nav-grid" id="nav-grid">
-
-      <a href="home.html" class="nav-tile">
-        <div class="nav-tile-icon"><i class="fas fa-home"></i></div>
-        <div class="nav-tile-label">Home</div>
-        <div class="nav-tile-sub">Feed</div>
-      </a>
-
-      
-
-      <a href="announce.html" class="nav-tile" id="ann-tile" style="">
-        <div class="nav-tile-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b;"><i class="fas fa-bullhorn"></i></div>
-        <div class="nav-tile-badge" id="ann-badge-grid">0</div>
-        <div class="nav-tile-label">Announce</div>
-        <div class="nav-tile-sub">Updates</div>
-      </a>
-
-      <a href="split.html" class="nav-tile">
-        <div class="nav-tile-icon" style="background:rgba(96,165,250,0.1);color:#60a5fa;"><i class="fas fa-arrows-split-up-and-left"></i></div>
-        <div class="nav-tile-label">Split</div>
-        <div class="nav-tile-sub">Cash</div>
-      </a>
-
-      <a href="user.html" class="nav-tile">
-        <div class="nav-tile-icon" style="background:rgba(250,204,21,0.08);color:#facc15;"><i class="fas fa-user"></i></div>
-        <div class="nav-tile-label">Profile</div>
-        <div class="nav-tile-sub">Settings</div>
-      </a>
-
-      <button id="notif-tile" class="nav-tile notif-tile" onclick="toggleNotifications()">
-        <div style="display:flex;align-items:center;gap:6px;width:100%;">
-          <div class="nav-tile-icon" style="background:rgba(16,185,129,0.1);color:#34d399;"><i id="notif-icon" class="fas fa-bell"></i></div>
-          <span id="notif-pill" class="notif-pill">ON</span>
-        </div>
-        <div class="nav-tile-label">Notifs</div>
-        <div class="nav-tile-sub">Alerts</div>
-      </button>
-
-    </div>
-
-    <div class="more-divider"></div>
-
-    <!-- Channels -->
-    <div class="more-section-label">CHANNELS</div>
-    <div id="channels-circles" class="circles-scroll">
-      <div class="circles-row" id="channels-row">
-        <div style="color:var(--steel);font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;padding:8px 0;">Loading…</div>
-      </div>
-    </div>
-
-    <div class="more-divider"></div>
-
-    <!-- Q&A -->
-    <div class="more-section-label">Q&amp;A SPACES</div>
-    <div id="qna-circles" class="circles-scroll">
-      <div class="circles-row" id="qna-row">
-        <div style="color:var(--steel);font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;padding:8px 0;">Loading…</div>
-      </div>
-    </div>
-
+<!-- ══ CHAT LIST ═══════════════════════════════════════════════════ -->
+<div id="chat-list">
+  <div class="list-loading" id="list-loading">
+    <i class="fas fa-church"></i>
+    <div class="list-loading-title">RIVERSIDE</div>
+    <div class="list-loading-sub">LOADING…</div>
   </div>
-</div>
-
-<!-- ══ MAIN FEED ═════════════════════════════════════════════════════ -->
-<div id="feed">
-  <div class="feed-state" id="feed-loading">
-    <div class="feed-state-icon"><i class="fas fa-church"></i></div>
-    <div class="feed-state-title">RIVERSIDE</div>
-    <div class="feed-state-sub">LOADING POSTS…</div>
-  </div>
-</div>
-
-<div id="feed-progress"><div id="feed-progress-fill"></div></div>
-<div id="feed-counter"></div>
-
-<div id="swipe-hint">
-  <i class="fas fa-arrow-up" style="font-size:0.7rem;"></i>
-  SWIPE UP
 </div>
 
 <!-- ══ PENDING SCREEN ════════════════════════════════════════════════ -->
@@ -933,14 +478,25 @@
 <script>
 'use strict';
 
+/* ── BACKEND (Riverside Murera Coffee) ───────────────────────────── */
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
 const DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+  projectId: "dc-riverside-murera-coffee",
+  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+  messagingSenderId: "373863707096",
+  appId: "1:373863707096:web:5e3c703655687b96e442ad"
+};
+const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
 
 const userName = localStorage.getItem('userName') || '';
 if (!userName) { window.location.href = 'login.html'; }
 
-let allPosts = [];
 let isNotificationEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
+const CACHE_KEY = 'rc_chatlist_html_v1';
 
 /* ── HELPERS ──────────────────────────────────────────────────── */
 function lh3(url) {
@@ -951,8 +507,27 @@ function lh3(url) {
 function fallback(name) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=60a5fa&size=88`;
 }
+/* Drop real image URLs in here whenever you have them — every row below
+   pulls from this object, so swapping an icon is a one-line change. */
+const APP_ICON = 'maskable_icon_x192.png';
+const ICONS = {
+  home:     APP_ICON,
+  announce: APP_ICON,
+  split:    APP_ICON,
+  profile:  APP_ICON,
+  notifs:   APP_ICON
+};
 function fmtTime(ts) {
-  return new Date(ts).toLocaleString([], { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  return sameDay
+    ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+}
+function esc(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 /* ── TOAST ─────────────────────────────────────────────────────── */
@@ -977,38 +552,18 @@ function toast(msg, type = 'inf', dur = 3200) {
   }
 })();
 
-/* ── MORE PANEL ─────────────────────────────────────────────────── */
-const moreToggle = document.getElementById('more-toggle');
-const morePanel  = document.getElementById('more-panel');
-
-moreToggle.addEventListener('click', () => {
-  const open = morePanel.classList.toggle('open');
-  moreToggle.classList.toggle('active', open);
-});
-
-// Close more panel when clicking outside
-document.addEventListener('click', e => {
-  if (!morePanel.contains(e.target) && !moreToggle.contains(e.target)) {
-    morePanel.classList.remove('open');
-    moreToggle.classList.remove('active');
-  }
-});
-
-/* ── NOTIFICATION TOGGLE ────────────────────────────────────────── */
-function updateNotifUI() {
-  const icon = document.getElementById('notif-icon');
-  const pill = document.getElementById('notif-pill');
+/* ── NOTIFICATION TOGGLE (row-driven) ────────────────────────────── */
+function updateNotifRowUI() {
+  const badge = document.getElementById('notif-row-badge');
+  if (!badge) return;
   if (isNotificationEnabled) {
-    icon.className = 'fas fa-bell';
-    pill.textContent = 'ON';
-    pill.className = 'notif-pill';
+    badge.textContent = 'ON';
+    badge.className = 'row-badge visible on';
   } else {
-    icon.className = 'fas fa-bell-slash';
-    pill.textContent = 'OFF';
-    pill.className = 'notif-pill off';
+    badge.textContent = 'OFF';
+    badge.className = 'row-badge visible off';
   }
 }
-updateNotifUI();
 
 async function toggleNotifications() {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) {
@@ -1016,44 +571,49 @@ async function toggleNotifications() {
   }
   isNotificationEnabled = !isNotificationEnabled;
   localStorage.setItem('notificationsEnabled', isNotificationEnabled.toString());
-  updateNotifUI();
+  updateNotifRowUI();
 
   if (isNotificationEnabled) {
     try {
-      const { initializeApp }  = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
-      const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
-      const app = initializeApp({
-         apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
-  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
-  projectId: "dc-riverside-murera-coffee",
-  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
-  messagingSenderId: "373863707096",
-  appId: "1:373863707096:web:5e3c703655687b96e442ad"
-      });
-      const msg   = getMessaging(app);
-      const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-      const perm  = await Notification.requestPermission();
-      if (perm !== 'granted') {
-        toast('Permission denied', 'err');
-        isNotificationEnabled = false;
-        localStorage.setItem('notificationsEnabled', 'false');
-        updateNotifUI(); return;
-      }
-      const token = await getToken(msg, { vapidKey: "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0", serviceWorkerRegistration: swReg });
-      if (token) {
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ operation: 'saveFcmToken', username: userName, fcmToken: token }) });
-        toast('Notifications enabled', 'ok');
-      }
+      await registerFcmToken(true);
+      toast('Notifications enabled', 'ok');
     } catch (err) {
       console.error(err);
       toast('Failed to enable notifications', 'err');
       isNotificationEnabled = false;
       localStorage.setItem('notificationsEnabled', 'false');
-      updateNotifUI();
+      updateNotifRowUI();
     }
   } else {
     toast('Notifications turned off', 'inf');
   }
+}
+
+/* ── FCM TOKEN: registers a fresh token with the backend on every open ── */
+async function registerFcmToken(forcePermissionPrompt) {
+  if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
+  if (Notification.permission === 'denied' && !forcePermissionPrompt) return;
+
+  const { initializeApp }  = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
+  const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
+  const app = initializeApp(FIREBASE_CONFIG);
+  const msg   = getMessaging(app);
+  const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+
+  let perm = Notification.permission;
+  if (perm === 'default') perm = await Notification.requestPermission();
+  if (perm !== 'granted') return;
+
+  const token = await getToken(msg, {
+    vapidKey: VAPID_KEY,
+    serviceWorkerRegistration: swReg
+  });
+  if (!token) return;
+
+  await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ operation: 'saveFcmToken', username: userName, fcmToken: token })
+  });
 }
 
 /* ── INSTALL ─────────────────────────────────────────────────────── */
@@ -1078,278 +638,268 @@ installBtn.addEventListener('click', async () => {
 });
 window.addEventListener('appinstalled', () => installBar.classList.remove('show'));
 
-/* ── CIRCLES ─────────────────────────────────────────────────────── */
-function renderCircles(channels, rowId, baseUrl) {
-  const row = document.getElementById(rowId);
-  if (!channels.length) {
-    row.innerHTML = `<div style="color:var(--steel);font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;padding:4px 0;">None yet</div>`;
-    return;
-  }
-  const colors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'];
-  row.innerHTML = channels.map(ch => {
-    const av  = ch.picLink ? lh3(ch.picLink) : '';
-    const bg  = colors[ch.name.charCodeAt(0) % colors.length];
-    const ini = ch.name.charAt(0).toUpperCase();
-    const imgHtml = av
-      ? `<img src="${av}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;background:${bg};border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:1.2rem;color:#fff;\\'>${ini}</div>'">`
-      : `<div style="width:100%;height:100%;background:${bg};border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:1.2rem;color:#fff;">${ini}</div>`;
-    return `
-      <a href="${baseUrl}?channelId=${encodeURIComponent(ch.id)}" class="circle-item">
-        <div class="circle-ring">${imgHtml}</div>
-        <div class="circle-label">${ch.name}</div>
-      </a>`;
-  }).join('');
+/* ── LIVE BADGE (top bar) ─────────────────────────────────────────── */
+async function loadLiveBadge() {
+  try {
+    const chRes  = await fetch(`${SCRIPT_URL}?operation=getLiveChannels`);
+    const chData = await chRes.json();
+    const channels = chData.channels || [];
+
+    const counts = await Promise.all(channels.map(ch =>
+      fetch(`${SCRIPT_URL}?operation=getLiveBroadcasts&channelId=${encodeURIComponent(ch.id)}`)
+        .then(r => r.json())
+        .then(d => (d.broadcasts || []).filter(b => b.status === 'live').length)
+        .catch(() => 0)
+    ));
+
+    const total = counts.reduce((a, b) => a + b, 0);
+    const btn   = document.getElementById('tb-live');
+    const badge = document.getElementById('live-badge-tb');
+
+    if (total > 0) {
+      badge.textContent = total > 99 ? '99+' : total;
+      badge.classList.add('visible');
+      btn.classList.add('is-live');
+    } else {
+      badge.classList.remove('visible');
+      btn.classList.remove('is-live');
+    }
+
+    // Reflect in the row too, if the list has been built already
+    const rowBadge = document.getElementById('live-row-badge');
+    const rowSub   = document.getElementById('live-row-sub');
+    if (rowBadge && rowSub) {
+      if (total > 0) {
+        rowBadge.textContent = total > 99 ? '99+' : total;
+        rowBadge.className = 'row-badge visible live';
+        rowSub.textContent = `${total} stream${total > 1 ? 's' : ''} live now`;
+      } else {
+        rowBadge.classList.remove('visible');
+        rowSub.textContent = 'No live streams right now';
+      }
+    }
+  } catch {}
 }
 
-/* ── ANNOUNCEMENT BADGE ─────────────────────────────────────────── */
+/* ── ANNOUNCEMENTS BADGE ──────────────────────────────────────────── */
 async function loadAnnBadge() {
   try {
     const res  = await fetch(`${DASHBOARD_URL}?operation=getUnseenAnnCount&name=${encodeURIComponent(userName)}`);
     const data = await res.json();
     const n    = data.unseenCount || 0;
-    const tb   = document.getElementById('ann-badge-tb');
-    const gd   = document.getElementById('ann-badge-grid');
-    if (n > 0) {
-      tb.textContent = n > 99 ? '99+' : n;
-      tb.classList.add('visible');
-      gd.textContent = n > 99 ? '99+' : n;
-      gd.classList.add('visible');
-    } else {
-      tb.classList.remove('visible');
-      gd.classList.remove('visible');
+
+    const tb = document.getElementById('ann-badge-tb');
+    if (n > 0) { tb.textContent = n > 99 ? '99+' : n; tb.classList.add('visible'); }
+    else       { tb.classList.remove('visible'); }
+
+    const rowBadge = document.getElementById('ann-row-badge');
+    const rowSub   = document.getElementById('ann-row-sub');
+    if (rowBadge && rowSub) {
+      if (n > 0) {
+        rowBadge.textContent = n > 99 ? '99+' : n;
+        rowBadge.classList.add('visible');
+        rowSub.textContent = `${n} new update${n > 1 ? 's' : ''}`;
+      } else {
+        rowBadge.classList.remove('visible');
+        rowSub.textContent = 'No new updates';
+      }
     }
   } catch {}
 }
 
-/* ── LOAD CHANNELS & Q&A FOR MORE PANEL ─────────────────────────── */
-async function loadMorePanelData() {
-  try {
-    const [chRes, qnaRes] = await Promise.all([
-      fetch(`${DASHBOARD_URL}?operation=getAllChannels`),
-      fetch(`${DASHBOARD_URL}?operation=getAllQnAChannels`)
-    ]);
-    const chData  = await chRes.json();
-    const qnaData = await qnaRes.json();
-    renderCircles(chData.channels || [], 'channels-row', 'channel.html');
-    renderCircles(qnaData.channels || [], 'qna-row', 'Q&A.html');
-  } catch {
-    document.getElementById('channels-row').innerHTML = `<div style="color:var(--steel);font-family:var(--font-mono);font-size:0.7rem;">Failed to load</div>`;
-    document.getElementById('qna-row').innerHTML = `<div style="color:var(--steel);font-family:var(--font-mono);font-size:0.7rem;">Failed to load</div>`;
-  }
-}
+/* ── ROW BUILDER ──────────────────────────────────────────────────── */
+function buildRow({ id, href, onClick, avatarSrc, fallbackName, title, subtitle, subtitleId, time, badgeId, badgeClass }) {
+  const tag = href ? 'a' : 'button';
+  const el = document.createElement(tag);
+  el.className = 'chat-row';
+  if (href) el.href = href;
+  if (id) el.id = id;
 
-/* ── FEED: BUILD CARD ────────────────────────────────────────────── */
-function buildCard(post, chName, chAvatar, chId, idx, total) {
-  const wrap = document.createElement('div');
-  wrap.className = 'feed-card';
-  wrap.dataset.postId = post.postId;
-
-  const authorAv = lh3(post.picLink) || fallback(post.author);
-  const chAv     = chAvatar || fallback(chName);
-
-  // Media
-  let mediaHtml = '';
-  if (post.media?.link) {
-    const isImg = (post.media.type || '').startsWith('image');
-    if (isImg) {
-      mediaHtml = `<div class="card-media"><img src="${lh3(post.media.link)}" loading="lazy" onerror="this.parentElement.style.display='none'" alt=""></div>`;
-    } else {
-      const idM = post.media.link.match(/[-\w]{25,}/);
-      const fid = idM ? idM[0] : post.media.link;
-     mediaHtml = `<div class="card-media" style="position:relative;padding-bottom:100%;height:0;overflow:hidden;">
-  <iframe src="https://drive.google.com/file/d/${fid}/preview"
-    style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
-    allow="autoplay"
-    allowfullscreen>
-  </iframe>
-</div>`;
-    }
-  }
-
-  const cleanText = (post.content || '')
-    .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, '')
-    .replace(/\/view\b\S*/gi, '')
-    .replace(/usp=\S+/gi, '')
-    .replace(/\s{2,}/g, ' ').trim();
-
-  wrap.innerHTML = `
-    <div class="card-channel-strip">
-      <img class="card-channel-avatar" src="${chAv}" onerror="this.src='${fallback(chName)}'" alt="">
-      <span class="card-channel-name">${chName.toUpperCase()}</span>
-      <a class="card-channel-link" href="channel.html?channelId=${encodeURIComponent(chId)}">
-        VIEW CHANNEL <i class="fas fa-arrow-right" style="font-size:0.55rem;"></i>
-      </a>
-    </div>
-
-    <div class="card-post-header">
-      <img class="card-author-avatar" src="${authorAv}" onerror="this.src='${fallback(post.author)}'" alt="">
-      <div>
-        <div class="card-author-name">${post.author}</div>
-        <div class="card-post-time">${fmtTime(post.created)}</div>
+  el.innerHTML = `
+    <img class="row-avatar" src="${avatarSrc}" onerror="this.src='${fallback(fallbackName)}'" alt="">
+    <div class="row-content">
+      <div class="row-title-line">
+        <span class="row-title">${esc(title)}</span>
+        <span class="row-time">${time ? esc(time) : ''}</span>
       </div>
-    </div>
-
-    <div class="card-body">
-      ${mediaHtml}
-      ${cleanText ? `<div class="card-text">${cleanText.replace(/\n/g,'<br>')}</div>` : ''}
-    </div>
-
-    <div class="card-foot">
-      <button class="card-action like-btn ${post.likedByCurrentUser ? 'liked' : ''}"
-              data-pid="${post.postId}" data-liked="${post.likedByCurrentUser ? '1' : '0'}">
-        <i class="${post.likedByCurrentUser ? 'fas' : 'far'} fa-heart"></i>
-        <span class="like-count">${post.likes || 0}</span>
-      </button>
-      <button class="card-action comment-toggle" data-pid="${post.postId}">
-        <i class="far fa-comment"></i>
-        <span class="ccount">—</span>
-      </button>
-      <a class="card-action" href="channel.html?channelId=${encodeURIComponent(chId)}&postId=${encodeURIComponent(post.postId)}" style="text-decoration:none;">
-        <i class="fas fa-external-link-alt"></i>
-        <span>OPEN</span>
-      </a>
-    </div>
-
-    <div class="card-comments" id="cc-${post.postId}">
-      <div class="comment-list" id="cl-${post.postId}"></div>
-      <div class="comment-input-bar">
-        <input type="text" id="ci-${post.postId}" placeholder="Comment…" autocomplete="off">
-        <button class="comment-send" data-pid="${post.postId}"><i class="fas fa-paper-plane"></i></button>
+      <div class="row-sub-line">
+        <span class="row-subtitle" ${subtitleId ? `id="${subtitleId}"` : ''}>${esc(subtitle || '')}</span>
+        <span class="row-badge ${badgeClass || ''}" ${badgeId ? `id="${badgeId}"` : ''}></span>
       </div>
     </div>
   `;
 
-  // Like
-  wrap.querySelector('.like-btn').addEventListener('click', e => toggleLike(post.postId, e.currentTarget));
-
-  // Comments toggle
-  wrap.querySelector('.comment-toggle').addEventListener('click', () => {
-    const panel = document.getElementById(`cc-${post.postId}`);
-    panel.classList.toggle('open');
-    if (panel.classList.contains('open')) loadComments(post.postId);
-  });
-
-  // Send comment
-  wrap.querySelector('.comment-send').addEventListener('click', () => sendComment(post.postId, chId));
-  wrap.querySelector(`#ci-${post.postId}`).addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendComment(post.postId, chId); }
-  });
-
-  // Load comment count
-  loadCommentCount(post.postId, wrap.querySelector('.ccount'));
-
-  return wrap;
+  if (onClick) el.addEventListener('click', onClick);
+  return el;
 }
 
-/* ── LIKES ───────────────────────────────────────────────────────── */
-async function toggleLike(postId, btn) {
-  const liked = btn.dataset.liked === '1';
-  const cnt   = btn.querySelector('.like-count');
-  const icon  = btn.querySelector('i');
-  let n = parseInt(cnt.textContent) || 0;
-
-  if (liked) { n = Math.max(0, n-1); btn.dataset.liked='0'; btn.classList.remove('liked'); icon.className='far fa-heart'; }
-  else       { n++; btn.dataset.liked='1'; btn.classList.add('liked'); icon.className='fas fa-heart'; }
-  cnt.textContent = n;
-
-  try {
-    await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ operation:'toggleChannelPostLike', postId, username: userName }) });
-  } catch {
-    // revert
-    if (liked) { btn.dataset.liked='1'; btn.classList.add('liked'); icon.className='fas fa-heart'; cnt.textContent=n+1; }
-    else       { btn.dataset.liked='0'; btn.classList.remove('liked'); icon.className='far fa-heart'; cnt.textContent=n-1; }
-    toast('Like failed', 'err');
-  }
+function sectionLabel(text) {
+  const el = document.createElement('div');
+  el.className = 'list-section-label';
+  el.textContent = text;
+  return el;
 }
 
-/* ── COMMENTS ────────────────────────────────────────────────────── */
-async function loadCommentCount(postId, el) {
-  try {
-    const res  = await fetch(`${SCRIPT_URL}?operation=getChannelCommentCount&postId=${encodeURIComponent(postId)}`);
-    const data = await res.json();
-    if (data.status === 'success') el.textContent = data.count || 0;
-  } catch { el.textContent = '?'; }
-}
+/* ── BUILD THE FULL CHAT LIST ─────────────────────────────────────── */
+async function loadChatList() {
+  const list = document.getElementById('chat-list');
 
-async function loadComments(postId) {
-  const list = document.getElementById(`cl-${postId}`);
-  if (!list) return;
-  list.innerHTML = `<div style="color:var(--steel);font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;padding:10px 0;text-align:center;">Loading…</div>`;
   try {
-    const res  = await fetch(`${SCRIPT_URL}?operation=getChannelComments&postId=${encodeURIComponent(postId)}&username=${encodeURIComponent(userName)}`);
-    const data = await res.json();
-    const comments = (data.comments || []).reverse();
-    list.innerHTML = '';
-    if (!comments.length) {
-      list.innerHTML = `<div style="text-align:center;padding:16px;color:var(--steel);font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;">NO COMMENTS YET</div>`;
+    // 1. Check user status first
+    const statusRes  = await fetch(`${DASHBOARD_URL}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
+    const statusData = await statusRes.json();
+    const isApproved  = (statusData.userStatus || '').toLowerCase() === 'approved';
+
+    if (!isApproved) {
+      const badge = document.getElementById('pending-badge');
+      badge.textContent = (statusData.userStatus || 'pending').toUpperCase();
+      document.getElementById('pending-screen').classList.add('show');
+      list.innerHTML = '';
       return;
     }
-    comments.forEach(c => {
-      const isOwn = c.author === userName;
-      const av    = lh3(c.picLink) || fallback(c.author);
-      const msg   = document.createElement('div');
-      msg.className = `c-msg ${isOwn ? 'own' : ''}`;
-      msg.innerHTML = `
-        <img class="c-av" src="${av}" onerror="this.src='${fallback(c.author)}'" alt="">
-        <div class="c-bub">
-          <div class="c-name">${c.author.toUpperCase()}</div>
-          <div class="c-text">${c.content.replace(/\n/g,'<br>')}</div>
-          <span class="c-time">${fmtTime(c.created)}</span>
+
+    // 2. Fetch channels + Q&A channels in parallel
+    const [chRes, qnaRes] = await Promise.all([
+      fetch(`${DASHBOARD_URL}?operation=getAllChannels`).then(r => r.json()).catch(() => ({ channels: [] })),
+      fetch(`${DASHBOARD_URL}?operation=getAllQnAChannels`).then(r => r.json()).catch(() => ({ channels: [] }))
+    ]);
+    const channels    = chRes.channels || [];
+    const qnaChannels = qnaRes.channels || [];
+
+    // 3. Fetch latest post per channel for the preview line (best-effort, isolated)
+    const channelPosts = await Promise.all(channels.map(ch =>
+      fetch(`${SCRIPT_URL}?operation=getChannelPosts&channelId=${encodeURIComponent(ch.id)}&username=${encodeURIComponent(userName)}`)
+        .then(r => r.json())
+        .then(d => {
+          const posts = (d.posts || []).slice().sort((a, b) => new Date(b.created) - new Date(a.created));
+          return posts[0] || null;
+        })
+        .catch(() => null)
+    ));
+
+    list.innerHTML = '';
+
+    // ── Home ──
+    list.appendChild(buildRow({
+      href: 'home.html',
+      avatarSrc: ICONS.home,
+      fallbackName: 'Chat',
+      title: 'Chat',
+      subtitle: 'Direct chats'
+    }));
+
+    // ── Announcements ──
+    list.appendChild(buildRow({
+      href: 'announce.html',
+      avatarSrc: ICONS.announce,
+      fallbackName: 'Announcements',
+      title: 'Announcements',
+      subtitle: 'Loading…',
+      subtitleId: 'ann-row-sub',
+      badgeId: 'ann-row-badge'
+    }));
+
+    // ── Channels ──
+    list.appendChild(sectionLabel('CHANNELS'));
+    if (!channels.length) {
+      const empty = document.createElement('div');
+      empty.className = 'list-empty';
+      empty.textContent = 'No channels available yet';
+      list.appendChild(empty);
+    } else {
+      channels.forEach((ch, i) => {
+        const post = channelPosts[i];
+        const avatarSrc = ch.picLink ? lh3(ch.picLink) : fallback(ch.name);
+        let preview = 'No posts yet';
+        if (post) {
+          const cleanText = (post.content || '')
+            .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, '')
+            .replace(/\/view\b\S*/gi, '')
+            .replace(/usp=\S+/gi, '')
+            .replace(/\s{2,}/g, ' ').trim();
+          preview = cleanText || (post.media?.link ? '📎 Attachment' : 'New post');
+        }
+        list.appendChild(buildRow({
+          href: `channel.html?channelId=${encodeURIComponent(ch.id)}`,
+          avatarSrc,
+          fallbackName: ch.name,
+          title: ch.name,
+          subtitle: preview,
+          time: post ? fmtTime(post.created) : ''
+        }));
+      });
+    }
+
+    // ── Q&A ──
+    list.appendChild(sectionLabel('Q&A'));
+    if (!qnaChannels.length) {
+      const empty = document.createElement('div');
+      empty.className = 'list-empty';
+      empty.textContent = 'No Q&A spaces yet';
+      list.appendChild(empty);
+    } else {
+      qnaChannels.forEach(ch => {
+        const avatarSrc = ch.picLink ? lh3(ch.picLink) : fallback(ch.name);
+        list.appendChild(buildRow({
+          href: `Q&A.html?channelId=${encodeURIComponent(ch.id)}`,
+          avatarSrc,
+          fallbackName: ch.name,
+          title: ch.name,
+          subtitle: 'Tap to ask or answer a question'
+        }));
+      });
+    }
+
+    // ── More / tools ──
+    list.appendChild(sectionLabel('MORE'));
+
+    list.appendChild(buildRow({
+      href: 'split.html',
+      avatarSrc: ICONS.split,
+      fallbackName: 'Split',
+      title: 'Split',
+      subtitle: 'Track & split cash'
+    }));
+
+    list.appendChild(buildRow({
+      href: 'user.html',
+      avatarSrc: ICONS.profile,
+      fallbackName: 'Profile',
+      title: 'Profile',
+      subtitle: 'Your account & settings'
+    }));
+
+    list.appendChild(buildRow({
+      id: 'notif-row',
+      avatarSrc: ICONS.notifs,
+      fallbackName: 'Notifs',
+      title: 'Notifications',
+      subtitle: 'Push alerts for this device',
+      badgeId: 'notif-row-badge',
+      onClick: toggleNotifications
+    }));
+    updateNotifRowUI();
+
+    // Cache the finished list so returning to this page paints instantly
+    // instead of showing the loading state again.
+    try { sessionStorage.setItem(CACHE_KEY, list.innerHTML); } catch {}
+
+  } catch (err) {
+    console.error('Chat list load error:', err);
+    // Only show the error state if we have nothing cached on screen already.
+    if (!sessionStorage.getItem(CACHE_KEY)) {
+      list.innerHTML = `
+        <div class="list-error">
+          <i class="fas fa-wifi" style="animation:none;"></i>
+          <div class="list-error-title">LOAD FAILED</div>
+          <div class="list-error-sub">CHECK CONNECTION AND RELOAD</div>
         </div>`;
-      list.appendChild(msg);
-    });
-    list.scrollTop = list.scrollHeight;
-  } catch {
-    list.innerHTML = `<div style="color:#f87171;padding:12px;font-size:0.8rem;text-align:center;">Failed to load</div>`;
+    } else {
+      toast('Could not refresh list', 'err');
+    }
   }
 }
 
-async function sendComment(postId, channelId) {
-  const input   = document.getElementById(`ci-${postId}`);
-  const content = input.value.trim();
-  if (!content) return;
-  input.value = '';
-  try {
-    await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ operation:'createChannelComment', postId, channelId, author: userName, content }) });
-    loadComments(postId);
-    const ccount = document.querySelector(`.feed-card[data-post-id="${postId}"] .ccount`);
-    if (ccount) loadCommentCount(postId, ccount);
-  } catch { toast('Comment failed', 'err'); }
-}
-
-/* ── SCROLL TRACKING ─────────────────────────────────────────────── */
-const viewedPosts = new Set();
-
-function setupViewTracking() {
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      const pid = entry.target.dataset.postId;
-      if (!pid || viewedPosts.has(pid)) return;
-      viewedPosts.add(pid);
-      const chId = entry.target.querySelector('.card-channel-link')?.href?.match(/channelId=([^&]+)/)?.[1];
-      if (chId) fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ operation:'recordChannelPostView', postId:pid, username:userName, channelId: decodeURIComponent(chId) }) }).catch(()=>{});
-    });
-  }, { threshold: 0.55 });
-
-  document.querySelectorAll('.feed-card[data-post-id]').forEach(el => obs.observe(el));
-}
-
-function setupScrollProgress() {
-  const feed = document.getElementById('feed');
-  const fill = document.getElementById('feed-progress-fill');
-  const counter = document.getElementById('feed-counter');
-
-  feed.addEventListener('scroll', () => {
-    const total = allPosts.length;
-    if (!total) return;
-    const cardH = feed.clientHeight;
-    const idx   = Math.round(feed.scrollTop / cardH);
-    const pct   = total > 1 ? (idx / (total - 1)) * 100 : 100;
-    fill.style.height = pct + '%';
-    counter.textContent = total ? `${idx + 1} / ${total}` : '';
-  }, { passive: true });
-}
 /* ── REFRESH ─────────────────────────────────────────────────────── */
 let isRefreshing = false;
 async function refreshAll() {
@@ -1359,8 +909,8 @@ async function refreshAll() {
   btn.classList.add('spinning');
   btn.disabled = true;
   try {
-    await Promise.all([loadFeed(), loadMorePanelData(), loadAnnBadge()]);
-    toast('Feed refreshed', 'ok', 1500);
+    await Promise.all([loadChatList(), loadAnnBadge(), loadLiveBadge()]);
+    toast('Refreshed', 'ok', 1500);
   } catch {
     toast('Refresh failed', 'err');
   } finally {
@@ -1370,95 +920,40 @@ async function refreshAll() {
   }
 }
 
-/* ── LOAD ALL CHANNEL POSTS ──────────────────────────────────────── */
-async function loadFeed() {
-  const feed = document.getElementById('feed');
+/* ── INSTANT RESTORE ──────────────────────────────────────────────── */
+// Paints the last-known list immediately (no spinner) while loadChatList()
+// quietly re-fetches and swaps in fresh content underneath.
+function restoreCachedList() {
+  let cached;
+  try { cached = sessionStorage.getItem(CACHE_KEY); } catch { cached = null; }
+  if (!cached) return false;
 
-  try {
-    // 1. Check user status
-    const statusRes  = await fetch(`${DASHBOARD_URL}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
-    const statusData = await statusRes.json();
-    const isApproved = (statusData.userStatus || '').toLowerCase() === 'approved';
+  const list = document.getElementById('chat-list');
+  list.innerHTML = cached;
 
-    if (!isApproved) {
-      const badge = document.getElementById('pending-badge');
-      badge.textContent = (statusData.userStatus || 'pending').toUpperCase();
-      document.getElementById('pending-screen').classList.add('show');
-      feed.innerHTML = '';
-      return;
-    }
-
-    // 2. Fetch all channels
-    const chRes  = await fetch(`${DASHBOARD_URL}?operation=getAllChannels`);
-    const chData = await chRes.json();
-    const channels = chData.channels || [];
-
-    if (!channels.length) {
-      feed.innerHTML = `
-        <div class="feed-state">
-          <div class="feed-state-title">NO CHANNELS</div>
-          <div class="feed-state-sub">NO CHANNELS AVAILABLE YET</div>
-        </div>`;
-      return;
-    }
-
-    // 3. Fetch posts for all channels in parallel
-    const postFetches = channels.map(ch =>
-      fetch(`${SCRIPT_URL}?operation=getChannelPosts&channelId=${encodeURIComponent(ch.id)}&username=${encodeURIComponent(userName)}`)
-        .then(r => r.json())
-        .then(d => (d.posts || []).map(p => ({ ...p, _channel: ch })))
-        .catch(() => [])
-    );
-
-    const results = await Promise.all(postFetches);
-
-    // 4. Merge, sort newest first
-    allPosts = results.flat().sort((a, b) => new Date(b.created) - new Date(a.created));
-
-    if (!allPosts.length) {
-      feed.innerHTML = `
-        <div class="feed-state">
-          <div class="feed-state-title">ALL QUIET</div>
-          <div class="feed-state-sub">NO POSTS ACROSS ANY CHANNEL YET</div>
-        </div>`;
-      return;
-    }
-
-    // 5. Build cards
-    feed.innerHTML = '';
-    allPosts.forEach((p, i) => {
-      const ch = p._channel;
-      const chAv = ch.picLink ? lh3(ch.picLink) : '';
-      feed.appendChild(buildCard(p, ch.name, chAv, ch.id, i, allPosts.length));
-    });
-
-    document.getElementById('feed-counter').textContent = `1 / ${allPosts.length}`;
-    setupScrollProgress();
-    setupViewTracking();
-
-    // Show swipe hint once
-    if (!localStorage.getItem('rv_swipe_seen')) {
-      document.getElementById('swipe-hint').style.opacity = '1';
-      localStorage.setItem('rv_swipe_seen', '1');
-    }
-
-  } catch (err) {
-    console.error('Feed load error:', err);
-    feed.innerHTML = `
-      <div class="feed-state">
-        <div class="feed-state-icon" style="animation:none;opacity:0.45;"><i class="fas fa-wifi"></i></div>
-        <div class="feed-state-title">LOAD FAILED</div>
-        <div class="feed-state-sub">CHECK CONNECTION AND RELOAD</div>
-      </div>`;
-  }
+  // innerHTML restore drops JS listeners — reattach the Notifs row handler.
+  const notifRow = document.getElementById('notif-row');
+  if (notifRow) notifRow.addEventListener('click', toggleNotifications);
+  updateNotifRowUI();
+  return true;
 }
 
 /* ── INIT ─────────────────────────────────────────────────────────── */
+// Restore synchronously as soon as this script runs — before waiting on
+// DOMContentLoaded or any network call — so there's nothing to "load" on
+// the way back from another page.
+const hadCache = restoreCachedList();
+
 window.addEventListener('DOMContentLoaded', () => {
-  loadFeed();
-  loadMorePanelData();
-  loadAnnBadge();
+  loadChatList().then(() => {
+    loadAnnBadge();
+    loadLiveBadge();
+  });
+  // Every app open: register a fresh FCM token with the backend, period.
+  registerFcmToken(false).catch(err => console.error('FCM registration failed:', err));
+
   setInterval(loadAnnBadge, 30000);
+  setInterval(loadLiveBadge, 30000);
   document.getElementById('refresh-btn').addEventListener('click', refreshAll);
 });
 </script>
