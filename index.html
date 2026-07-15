@@ -433,8 +433,6 @@
     <i class="fas fa-rotate"></i>
   </button>
 
-  
-
   <a href="announce.html" class="tb-icon-btn" id="tb-ann" title="Notifications">
     <i class="fas fa-bell"></i>
     <span class="tb-badge" id="ann-badge-tb">0</span>
@@ -507,15 +505,16 @@ function lh3(url) {
 function fallback(name) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=60a5fa&size=88`;
 }
-/* Drop real image URLs in here whenever you have them — every row below
-   pulls from this object, so swapping an icon is a one-line change. */
-const APP_ICON = 'maskable_icon_x192.png';
+/* ── ICON SOURCES ─────────────────────────────────────────────────
+   One line per row, each with its own literal path. All point at the
+   same placeholder for now — replace each value individually once
+   you have real filenames/URLs for that row. */
 const ICONS = {
-  home:     APP_ICON,
-  announce: APP_ICON,
-  split:    APP_ICON,
-  profile:  APP_ICON,
-  notifs:   APP_ICON
+  home:     'maskable_icon_x192.png',
+  announce: 'maskable_icon_x192.png',
+  split:    'maskable_icon_x192.png',
+  profile:  'maskable_icon_x192.png',
+  notifs:   'maskable_icon_x192.png'
 };
 function fmtTime(ts) {
   if (!ts) return '';
@@ -637,49 +636,6 @@ installBtn.addEventListener('click', async () => {
   }
 });
 window.addEventListener('appinstalled', () => installBar.classList.remove('show'));
-
-/* ── LIVE BADGE (top bar) ─────────────────────────────────────────── */
-async function loadLiveBadge() {
-  try {
-    const chRes  = await fetch(`${SCRIPT_URL}?operation=getLiveChannels`);
-    const chData = await chRes.json();
-    const channels = chData.channels || [];
-
-    const counts = await Promise.all(channels.map(ch =>
-      fetch(`${SCRIPT_URL}?operation=getLiveBroadcasts&channelId=${encodeURIComponent(ch.id)}`)
-        .then(r => r.json())
-        .then(d => (d.broadcasts || []).filter(b => b.status === 'live').length)
-        .catch(() => 0)
-    ));
-
-    const total = counts.reduce((a, b) => a + b, 0);
-    const btn   = document.getElementById('tb-live');
-    const badge = document.getElementById('live-badge-tb');
-
-    if (total > 0) {
-      badge.textContent = total > 99 ? '99+' : total;
-      badge.classList.add('visible');
-      btn.classList.add('is-live');
-    } else {
-      badge.classList.remove('visible');
-      btn.classList.remove('is-live');
-    }
-
-    // Reflect in the row too, if the list has been built already
-    const rowBadge = document.getElementById('live-row-badge');
-    const rowSub   = document.getElementById('live-row-sub');
-    if (rowBadge && rowSub) {
-      if (total > 0) {
-        rowBadge.textContent = total > 99 ? '99+' : total;
-        rowBadge.className = 'row-badge visible live';
-        rowSub.textContent = `${total} stream${total > 1 ? 's' : ''} live now`;
-      } else {
-        rowBadge.classList.remove('visible');
-        rowSub.textContent = 'No live streams right now';
-      }
-    }
-  } catch {}
-}
 
 /* ── ANNOUNCEMENTS BADGE ──────────────────────────────────────────── */
 async function loadAnnBadge() {
@@ -909,7 +865,7 @@ async function refreshAll() {
   btn.classList.add('spinning');
   btn.disabled = true;
   try {
-    await Promise.all([loadChatList(), loadAnnBadge(), loadLiveBadge()]);
+    await Promise.all([loadChatList(), loadAnnBadge()]);
     toast('Refreshed', 'ok', 1500);
   } catch {
     toast('Refresh failed', 'err');
@@ -947,13 +903,11 @@ const hadCache = restoreCachedList();
 window.addEventListener('DOMContentLoaded', () => {
   loadChatList().then(() => {
     loadAnnBadge();
-    loadLiveBadge();
   });
   // Every app open: register a fresh FCM token with the backend, period.
   registerFcmToken(false).catch(err => console.error('FCM registration failed:', err));
 
   setInterval(loadAnnBadge, 30000);
-  setInterval(loadLiveBadge, 30000);
   document.getElementById('refresh-btn').addEventListener('click', refreshAll);
 });
 </script>
