@@ -496,6 +496,15 @@ if (!userName) { window.location.href = 'login.html'; }
 let isNotificationEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
 const CACHE_KEY = 'rc_chatlist_html_v1';
 
+/* ── SERVICE WORKER REGISTRATION (independent of notifications/FCM) ──── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(reg => console.log('[SW] registered', reg.scope))
+      .catch(err => console.error('[SW] registration failed', err));
+  });
+}
+
 /* ── HELPERS ──────────────────────────────────────────────────── */
 function lh3(url) {
   if (!url) return '';
