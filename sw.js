@@ -103,28 +103,37 @@ self.addEventListener("notificationclick", (event) => {
 // sw.js — Powerful offline-first PWA support for Riverside Connect (WhatsApp-style)
 // Now caches comments, announcements, view counts & approval status
 
-const CACHE_NAME = 'Riverside-Connect-v6';   // ← bumped version for announcements + view counts
+const CACHE_NAME = 'Riverside-Connect-v8'; // bumped — play.html restored + offline fixes
 
 const STATIC_ASSETS = [
   './',
   './login.html',
   './index.html',
   './home.html',
-   './user.html',
+  './user.html',
   './Q&A.html',
   './play.html',
   './split.html',
- './announce.html',
+  './announce.html',
   './channel.html',
   './manifest.json',
   './maskable_icon_x192.png',
   './maskable_icon_x512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/webfonts/fa-solid-900.woff2'
+  // Caching is now done file-by-file below (not cache.addAll()), so even
+  // if one of these ever 404s, it only skips itself — it can't wipe out
+  // caching for the rest of the app the way addAll() did before.
 ];
 
+// These are the operations your pages actually call and that benefit from
+// "show last-known data while offline" behavior.
 const API_CACHE_PATTERNS = [
+  '?operation=getUserStatus',
+  '?operation=getAllChannels',
   '?operation=getAllQnAChannels',
+  '?operation=getUnseenAnnCount',
+  '?operation=getChannelPosts',
   '?operation=getQnAGames',
   '?operation=getQnAQuestionsAndChoices',
   '?operation=getQnALeaderboard',
@@ -140,11 +149,22 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('[SW] Installing v' + CACHE_NAME + ' — caching core assets');
-        return cache.addAll(STATIC_ASSETS);
+        // IMPORTANT: cache each file independently instead of cache.addAll().
+        // addAll() is atomic — one missing/blocked file fails the WHOLE
+        // install and leaves the cache empty. Caching one-by-one means a
+        // single bad URL only skips itself, everything else still gets cached.
+        return Promise.all(
+          STATIC_ASSETS.map(url =>
+            cache.add(url).catch(err => {
+              console.warn('[SW] Skipped (missing or blocked):', url, err.message);
+            })
+          )
+        );
       })
-      .then(() => self.skipWaiting())
-      .catch(err => console.error('[SW] Install failed:', err))
+      .then(() => {
+        console.log('[SW] Install complete for', CACHE_NAME);
+        return self.skipWaiting();
+      })
   );
 });
 
@@ -171,102 +191,105 @@ self.addEventListener('fetch', event => {
 
   if (url.href.startsWith(API_BASE)) {
 
-  // ────────────────────────────────────────────────
-  // GET requests → cache-first + stale-while-revalidate pattern
-  // ────────────────────────────────────────────────
-if (event.request.method === 'GET') {
+    // ────────────────────────────────────────────────
+    // GET requests → cache-first + stale-while-revalidate pattern
+    // ────────────────────────────────────────────────
+    if (event.request.method === 'GET') {
 
-  // ── Only cache these specific Q&A API calls (and announcements/comments if you want)
-  const isCacheableApiCall = API_CACHE_PATTERNS.some(pattern => 
-    event.request.url.includes(pattern)
-  );
+      const isCacheableApiCall = API_CACHE_PATTERNS.some(pattern =>
+        event.request.url.includes(pattern)
+      );
 
-  // You can also add announcement/comment patterns here if needed
-  // const isAnnouncementRelated = event.request.url.includes('getAnnouncements') || event.request.url.includes('getComments');
+      if (!isCacheableApiCall) {
+        // Not one of ours to special-case — let the browser do a normal
+        // network fetch (page-level try/catch already handles failures).
+        return;
+      }
 
-  if (!isCacheableApiCall /* && !isAnnouncementRelated */) {
-    // Let it go through normal network-first or whatever your current logic is
-    // (or just skip special caching for other endpoints)
-    return; // or continue with default fetch
+      event.respondWith(
+        caches.open(CACHE_NAME).then(cache => {
+          return cache.match(event.request).then(cachedResponse => {
+            const networkedFetch = fetch(event.request)
+              .then(freshResponse => {
+                if (freshResponse && freshResponse.status === 200 &&
+                    freshResponse.headers.get('content-type')?.includes('application/json')) {
+                  cache.put(event.request, freshResponse.clone());
+                }
+                return freshResponse;
+              })
+              .catch(() => {
+                // No network AND nothing cached yet for this exact call —
+                // return a graceful offline placeholder instead of an error.
+                return new Response(
+                  JSON.stringify({
+                    status: "offline",
+                    offline: true,
+                    userStatus: "pending",
+                    comments: [],
+                    announcements: [{
+                      id: "offline-notice-1",
+                      title: "Offline Mode",
+                      content: "You are currently offline.\n\nShowing last known data if previously loaded.\n\nConnect to see latest announcements, channels, games, etc.",
+                      created: new Date().toISOString(),
+                      creator: "System",
+                      pinned: true
+                    }],
+                    viewCounts: [],
+                    announcementsViewCounts: [],
+                    channels: [],
+                    games: [],
+                    questions: [],
+                    leaders: [],
+                    results: [],
+                    participants: [],
+                    posts: [],
+                    unseenCount: 0,
+                    message: "Offline — last known data or placeholder"
+                  }),
+                  { status: 200, headers: { 'Content-Type': 'application/json' } }
+                );
+              });
+
+            return cachedResponse || networkedFetch;
+          });
+        })
+      );
+      return;
+    }
+
+    // ────────────────────────────────────────────────
+    // POST / mutations → network-first, graceful offline failure
+    // ────────────────────────────────────────────────
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return new Response(
+          JSON.stringify({
+            status: "offline",
+            offline: true,
+            message: "Cannot create, delete, submit scores, post announcements or modify data while offline. Action will be retried when you reconnect."
+          }),
+          {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      })
+    );
+    return;
   }
 
-  // ── Only if it's one of our important patterns → do the cache-first logic
-  event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.match(event.request).then(cachedResponse => {
-        const networkedFetch = fetch(event.request)
-          .then(freshResponse => {
-            if (freshResponse && freshResponse.status === 200 && 
-                freshResponse.headers.get('content-type')?.includes('application/json')) {
-              cache.put(event.request, freshResponse.clone());
-            }
-            return freshResponse;
-          })
-          .catch(() => {
-            // your nice fallback object here
-            return new Response(
-              JSON.stringify({
-                status: "offline",
-                offline: true,
-                userStatus: "pending",
-                comments: [],
-                announcements: [{
-                  id: "offline-notice-1",
-                  title: "Offline Mode",
-                  content: "You are currently offline.\n\nShowing last known data if previously loaded.\n\nConnect to see latest announcements, channels, games, etc.",
-                  created: new Date().toISOString(),
-                  creator: "System",
-                  pinned: true
-                }],
-                viewCounts: [],
-                announcementsViewCounts: [],
-                channels: [],
-                games: [],
-                questions: [],
-                leaders: [],
-                results: [],
-                participants: [],
-                message: "Offline — last known data or placeholder"
-              }),
-              { status: 200, headers: { 'Content-Type': 'application/json' } }
-            );
-          });
-
-        return cachedResponse || networkedFetch;
-      });
-    })
-  );
-  return;
-}
   // ────────────────────────────────────────────────
-  // POST / mutations (create channel, create game, submit score, delete game, post announcement, etc.)
-  // → network-first, graceful offline failure
+  // Navigation & HTML pages → network-first, cache fallback,
+  // and a hard fallback to index.html so a bad/missing exact-URL
+  // cache match never leaves respondWith() with nothing to return.
   // ────────────────────────────────────────────────
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      return new Response(
-        JSON.stringify({
-          status: "offline",
-          offline: true,
-          message: "Cannot create, delete, submit scores, post announcements or modify data while offline. Action will be retried when you reconnect."
-        }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    })
-  );
-  return;
-}
-  // ────────────────────────────────────────────────
-  // Navigation & HTML pages → network-first + cache fallback
-  // ────────────────────────────────────────────────
-  if (event.request.mode === 'navigate' || 
-      url.pathname.endsWith('.html') || 
+  if (event.request.mode === 'navigate' ||
+      url.pathname.endsWith('.html') ||
       url.pathname === '/') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request).catch(() =>
+        caches.match(event.request).then(cached => cached || caches.match('./index.html'))
+      )
     );
     return;
   }
@@ -303,7 +326,7 @@ if (event.request.method === 'GET') {
         return networkResponse;
       }).catch(() => {
         if (event.request.mode === 'navigate') {
-          return caches.match('./home.html');
+          return caches.match('./index.html');
         }
         return new Response('', { status: 503 });
       });
@@ -318,9 +341,7 @@ self.addEventListener('sync', event => {
   }
 });
 
-
 async function syncPendingMessages() {
   console.log('[SW] Background sync triggered — attempting to send pending messages/announcements');
   // → Add IndexedDB queue + retry logic here in future if needed
 }
-
