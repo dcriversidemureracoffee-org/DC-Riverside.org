@@ -40,7 +40,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Riverside Connect chat preview">
-  <style>
+   <style>
     :root {
       --bg-deep:        #080d17;
       --bg-mid:         #0d1525;
@@ -1248,6 +1248,58 @@
     }
 
     .empty-state i { font-size: 2.5rem; opacity: 0.3; }
+
+    /* ══════════════════════════════
+       SWIPE DAY NAVIGATION
+    ══════════════════════════════ */
+    .chat-container {
+      touch-action: pan-y; /* allow vertical scroll natively; horizontal handled by JS */
+      will-change: transform, opacity;
+    }
+
+    #offline-pill {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: rgba(224,82,82,0.12);
+      border: 1px solid rgba(224,82,82,0.3);
+      color: #e8968f;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    #offline-pill i { font-size: 0.65rem; }
+
+    /* ══════════════════════════════
+       PENDING / FAILED MESSAGE STATE
+    ══════════════════════════════ */
+    .message.pending .message-content {
+      opacity: 0.55;
+    }
+
+    .message.pending .msg-text { font-style: italic; }
+
+    .message.failed .message-content {
+      border-color: rgba(224,82,82,0.45);
+    }
+
+    .msg-time.pending-time, .msg-time.failed-time {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .msg-time.failed-time { color: #e0827a; }
+
+    .pending-time i { animation: pendingSpin 1.6s linear infinite; }
+
+    @keyframes pendingSpin {
+      0%, 85%, 100% { opacity: 0.55; }
+      42% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -1297,6 +1349,9 @@
   </span>
   <span id="thread-pill" onclick="toggleThread()">
     <i class="fas fa-times"></i> My Thread
+  </span>
+  <span id="offline-pill">
+    <i class="fas fa-wifi"></i> Offline — last synced
   </span>
 </div>
 
@@ -1428,7 +1483,7 @@
 <canvas id="cropCanvas" style="display:none;"></canvas>
 
 <script>
-const scriptUrl = 'https://script.google.com/macros/s/AKfycby3qdljC5TNQo2xOFth13eMUm4JvpSA9yewJJ6n3xgc6J26pV_jzAeia6TGRI6ylZIe/exec';
+const scriptUrl = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
 
 let userName = localStorage.getItem('userName');
 let callType = 'all';
@@ -1444,6 +1499,12 @@ let memberMap = {};
 let allComments = [];         // all raw comments from server (reversed = oldest first)
 let activeDateStr = null;     // 'YYYY-MM-DD' of the currently shown date; null = "today"
 let threadMode = false;       // true = My Thread filter active
+let isOnline = navigator.onLine;
+let swipePreviewActive = false; // true while a live swipe-preview label is shown
+
+/* ── Local persistence keys ── */
+const CACHE_KEY   = 'rc_cached_comments_v1';
+const PENDING_KEY = 'rc_pending_drafts_v1';
 
 if (!userName) window.location.href = 'login.html';
 
@@ -1498,6 +1559,9 @@ function extractFileId(url) {
   const m = url.match(/[-\w]{25,}/);
   return m ? m[0] : '';
 }
+function maybeFlushPending() {
+  if (!isFlushingDrafts && getPendingDrafts().length) flushPendingDrafts();
+}
 
 function getLh3Link(url) {
   const id = extractFileId(url);
@@ -1550,16 +1614,21 @@ function scrollToBottom(force = false) {
 function updateViewBar() {
   const label = document.getElementById('view-bar-text');
   const pill  = document.getElementById('thread-pill');
+  const offlinePill = document.getElementById('offline-pill');
 
-  if (activeDateStr === null || activeDateStr === todayStr()) {
-    label.textContent = 'Today';
-  } else {
-    label.textContent = formatDateLabel(activeDateStr);
+  if (!swipePreviewActive) {
+    if (activeDateStr === null || activeDateStr === todayStr()) {
+      label.textContent = 'Today';
+    } else {
+      label.textContent = formatDateLabel(activeDateStr);
+    }
   }
 
   pill.style.display = threadMode ? 'inline-flex' : 'none';
   const threadBtn = document.getElementById('threadBtn');
   threadBtn.classList.toggle('thread-active', threadMode);
+
+  if (offlinePill) offlinePill.style.display = isOnline ? 'none' : 'inline-flex';
 }
 
 /* ════════════════════════════════
@@ -1681,7 +1750,10 @@ function renderComments(commentsForDate, silent = false) {
           <strong>@${c.replyTo.name}</strong>: ${c.replyTo.text.substring(0,60)}${c.replyTo.text.length>60?'…':''}
         </div>` : '';
 
-      const actionsHtml = `
+      const isPending = !!c.pending;
+      const isFailed  = !!c.failed;
+
+      const actionsHtml = isPending ? '' : `
         <div class="msg-actions">
           <button class="action-btn" onclick="setReply('${c.name}','${c.comment.replace(/'/g,"\\'")}')"><i class="fas fa-reply"></i> Reply</button>
           ${isOwn ? `
@@ -1690,10 +1762,16 @@ function renderComments(commentsForDate, silent = false) {
           ` : ''}
         </div>`;
 
+      const timeHtml = isFailed
+        ? `<span class="msg-time failed-time"><i class="fas fa-exclamation-circle"></i> Failed — will retry</span>`
+        : isPending
+          ? `<span class="msg-time pending-time"><i class="fas fa-clock"></i> Sending…</span>`
+          : `<span class="msg-time">${formatTime(c.timestamp)}</span>`;
+
       const avatarSrc = `https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}`;
 
       const msg = document.createElement('div');
-      msg.className = `message ${isOwn ? 'own' : ''} ${!isSame ? 'new-sender' : 'same-sender'}`;
+      msg.className = `message ${isOwn ? 'own' : ''} ${!isSame ? 'new-sender' : 'same-sender'} ${isPending ? 'pending' : ''} ${isFailed ? 'failed' : ''}`;
 
       msg.innerHTML = `
         ${!isOwn ? `<img src="${avatarSrc}" class="avatar" onerror="this.style.visibility='hidden'">` : ''}
@@ -1707,7 +1785,7 @@ function renderComments(commentsForDate, silent = false) {
           ${mediaHtml}
           <div class="msg-text" id="text-${c.timestamp}">${c.comment}</div>
           <div class="msg-footer">
-            <span class="msg-time">${formatTime(c.timestamp)}</span>
+            ${timeHtml}
             ${actionsHtml}
           </div>
         </div>
@@ -1754,18 +1832,177 @@ async function loadComments(silent = true) {
     const response = await fetch(`${scriptUrl}?operation=getData`);
     const data = await response.json();
 
-    if (silent && data.comments.length === lastCommentCount) return;
+    if (data.offline) throw new Error('offline-response');
+
+    if (silent && data.comments.length === lastCommentCount) {
+      setOnlineStatus(true);
+      maybeFlushPending();          
+      return;
+    }
     lastCommentCount = data.comments.length;
 
     if (data.announcements) updateAnnBadge(data.announcements.length);
 
     allComments = [...data.comments].reverse(); // oldest first
+    cacheComments(allComments, data.announcements);
+    setOnlineStatus(true);
+    mergeInPendingDrafts();
+    maybeFlushPending();           
 
     const filtered = getCommentsForActiveDate();
     renderComments(filtered, silent);
   } catch(err) {
     console.error('Failed to load messages:', err);
+    setOnlineStatus(false);
+    if (!silent) loadFromCache();
   }
+}
+
+/* ════════════════════════════════
+   OFFLINE CACHE (view)
+════════════════════════════════ */
+function cacheComments(comments, announcements) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      comments, announcements: announcements || [], cachedAt: Date.now()
+    }));
+  } catch(e) { /* storage full/unavailable — fail quietly */ }
+}
+
+function loadFromCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) {
+      if (!allComments.length) {
+        commentsDiv.innerHTML = `<div class="empty-state"><i class="fas fa-wifi"></i><span>No cached messages yet. Connect once to sync.</span></div>`;
+      }
+      return;
+    }
+    const cached = JSON.parse(raw);
+    allComments = cached.comments || [];
+    mergeInPendingDrafts();
+    renderComments(getCommentsForActiveDate());
+    showToast('Offline — showing last synced messages', 'info');
+  } catch(e) { /* corrupted cache — ignore */ }
+}
+
+function setOnlineStatus(online) {
+  const wasOnline = isOnline;
+  isOnline = online;
+  updateViewBar();
+  if (!wasOnline && online) flushPendingDrafts();
+}
+
+/* ════════════════════════════════
+   OFFLINE DRAFTS (send)
+════════════════════════════════ */
+function getPendingDrafts() {
+  try { return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function savePendingDrafts(list) {
+  try { localStorage.setItem(PENDING_KEY, JSON.stringify(list)); } catch(e) {}
+}
+
+function mergeInPendingDrafts() {
+  const pending = getPendingDrafts();
+  if (!pending.length) return;
+  const existingIds = new Set(allComments.map(c => String(c.timestamp)));
+  pending.forEach(p => {
+    if (!existingIds.has(String(p.timestamp))) {
+      allComments.push({
+        name: userName,
+        comment: p.comment,
+        timestamp: p.timestamp,
+        picLink: localStorage.getItem('userPicLink') || '',
+        fileLink: '', fileType: '',
+        replyTo: p.replyTo || null,
+        pending: true,
+        failed: !!p.failed
+      });
+    }
+  });
+  allComments.sort((a, b) => a.timestamp - b.timestamp);
+}
+
+function queueDraft(text) {
+  const draft = {
+    localId: 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+    timestamp: Date.now(),
+    comment: text,
+    replyTo: replyingTo,
+    failed: false
+  };
+  const pending = getPendingDrafts();
+  pending.push(draft);
+  savePendingDrafts(pending);
+
+  if (activeDateStr && activeDateStr !== todayStr()) {
+    activeDateStr = todayStr();
+    threadMode = false;
+  }
+  mergeInPendingDrafts();
+  registerBackgroundSync();
+}
+
+let isFlushingDrafts = false;
+async function flushPendingDrafts() {
+  if (isFlushingDrafts) return;
+  isFlushingDrafts = true;
+  try {
+    let pending = getPendingDrafts();
+    if (!pending.length) return;
+
+    for (const draft of [...pending]) {
+      try {
+        const res = await fetch(scriptUrl, {
+          method: 'POST',
+          body: JSON.stringify({ operation: 'postComment', name: userName, comment: draft.comment, file: null, replyTo: draft.replyTo })
+        });
+        const r = await res.json();
+        if (r.status === 'success') {
+          pending = pending.filter(p => p.localId !== draft.localId);
+          savePendingDrafts(pending);
+        } else if (r.status === 'queued' || r.offline) {
+          break; // still offline per SW — stop trying this round
+        } else {
+          draft.failed = true;
+        }
+      } catch (e) {
+        break; // network still down — stop, will retry on next 'online' event
+      }
+    }
+    savePendingDrafts(pending);
+    await loadComments(false);
+  } finally {
+    isFlushingDrafts = false;
+  }
+}
+
+async function registerBackgroundSync() {
+  try {
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.sync.register('sync-pending-messages');
+    }
+  } catch(e) { /* background sync unsupported — 'online' listener still covers it */ }
+}
+
+window.addEventListener('online', () => {
+  showToast('Back online — syncing…', 'info');
+  setOnlineStatus(true);
+  if (isApproved) { loadComments(true); startPolling(); }
+});
+
+window.addEventListener('offline', () => {
+  setOnlineStatus(false);
+  if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+});
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'FLUSH_PENDING_MESSAGES') flushPendingDrafts();
+  });
 }
 
 /* ════════════════════════════════
@@ -1882,6 +2119,141 @@ document.getElementById('cal-modal').addEventListener('click', e => {
 document.getElementById('calBtn').addEventListener('click', () => openCalModal());
 
 /* ════════════════════════════════
+   SWIPE DAY NAVIGATION
+   (shares activeDateStr with the calendar — jumping via calendar or
+    swiping both just move the same pointer)
+════════════════════════════════ */
+function getSortedActiveDates() {
+  return Array.from(getActiveDates()).sort();
+}
+
+function getEffectiveDate() {
+  return activeDateStr || todayStr();
+}
+
+/* direction: +1 = forward in time (toward today), -1 = backward (toward past) */
+function findAdjacentDate(direction) {
+  const dates = getSortedActiveDates();
+  if (!dates.length) return null;
+  const cur = getEffectiveDate();
+  const idx = dates.indexOf(cur);
+
+  if (idx === -1) {
+    // Current day (e.g. an empty "Today") has no messages of its own.
+    if (direction < 0) {
+      for (let i = dates.length - 1; i >= 0; i--) {
+        if (dates[i] < cur) return dates[i];
+      }
+    }
+    return null;
+  }
+
+  const newIdx = idx + direction;
+  if (newIdx < 0 || newIdx >= dates.length) return null;
+  return dates[newIdx];
+}
+
+function goToDay(dateStr, direction) {
+  if (!dateStr) { bounceComments(direction); return; }
+  threadMode = false;
+  animateDaySwitch(() => {
+    activeDateStr = dateStr;
+    renderComments(getCommentsForActiveDate());
+  }, direction);
+}
+
+/* Slide + fade transition (~220ms) so day changes never feel like an abrupt swap */
+function animateDaySwitch(applyFn, direction) {
+  const el = commentsDiv;
+  el.style.transition = 'transform 220ms ease, opacity 220ms ease';
+  el.style.transform = direction > 0 ? 'translateX(-24px)' : 'translateX(24px)';
+  el.style.opacity = '0';
+  setTimeout(() => {
+    applyFn();
+    el.style.transition = 'none';
+    el.style.transform = direction > 0 ? 'translateX(24px)' : 'translateX(-24px)';
+    void el.offsetWidth; // force reflow before re-enabling transition
+    el.style.transition = 'transform 220ms ease, opacity 220ms ease';
+    el.style.transform = 'translateX(0)';
+    el.style.opacity = '1';
+  }, 220);
+}
+
+/* Small bounce when there's no more day to swipe to in that direction */
+function bounceComments(direction) {
+  const el = commentsDiv;
+  el.style.transition = 'transform 120ms ease';
+  el.style.transform = direction > 0 ? 'translateX(-14px)' : 'translateX(14px)';
+  setTimeout(() => { el.style.transition = 'transform 160ms ease'; el.style.transform = 'translateX(0)'; }, 120);
+  updateViewBar();
+}
+
+/* Touch handling — only hijacks the gesture once it's clearly horizontal,
+   so vertical message scrolling is never interrupted. */
+let swipeStartX = 0, swipeStartY = 0, swipeAxis = null, swipePreviewShown = false;
+const SWIPE_THRESHOLD = 50;
+
+function onSwipeStart(e) {
+  const t = e.touches[0];
+  swipeStartX = t.clientX; swipeStartY = t.clientY;
+  swipeAxis = null; swipePreviewShown = false;
+}
+
+function onSwipeMove(e) {
+  const t = e.touches[0];
+  const dx = t.clientX - swipeStartX;
+  const dy = t.clientY - swipeStartY;
+
+  if (swipeAxis === null) {
+    if (Math.abs(dx) > 12 || Math.abs(dy) > 12) {
+      swipeAxis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    } else {
+      return;
+    }
+  }
+  if (swipeAxis !== 'h') return; // vertical drag — let normal scrolling happen
+
+  e.preventDefault(); // stop the page from also trying to scroll while swiping days
+
+  const pastThreshold = Math.abs(dx) > SWIPE_THRESHOLD;
+  if (pastThreshold && !swipePreviewShown) {
+    swipePreviewShown = true;
+    const direction = dx < 0 ? 1 : -1; // swipe left -> forward, swipe right -> backward
+    const target = findAdjacentDate(direction);
+    if (target) {
+      swipePreviewActive = true;
+      document.getElementById('view-bar-text').textContent = formatDateLabel(target);
+    }
+  } else if (!pastThreshold && swipePreviewShown) {
+    swipePreviewShown = false;
+    swipePreviewActive = false;
+    updateViewBar();
+  }
+}
+
+function onSwipeEnd(e) {
+  if (swipeAxis === 'h') {
+    const dx = (e.changedTouches[0].clientX - swipeStartX);
+    swipePreviewActive = false;
+    if (Math.abs(dx) > SWIPE_THRESHOLD) {
+      const direction = dx < 0 ? 1 : -1;
+      goToDay(findAdjacentDate(direction), direction);
+    } else {
+      updateViewBar();
+    }
+  }
+  swipeAxis = null; swipePreviewShown = false;
+}
+
+function attachSwipeHandlers() {
+  const zone = commentsDiv;
+  zone.addEventListener('touchstart', onSwipeStart, { passive: true });
+  zone.addEventListener('touchmove', onSwipeMove, { passive: false });
+  zone.addEventListener('touchend', onSwipeEnd, { passive: true });
+}
+attachSwipeHandlers();
+
+/* ════════════════════════════════
    STATUS CHECK
 ════════════════════════════════ */
 async function checkUserStatus() {
@@ -1892,6 +2264,8 @@ async function checkUserStatus() {
 
     const status = data.userStatus.toLowerCase();
     isApproved = (status === 'approved');
+    localStorage.setItem('rc_last_approved', isApproved ? '1' : '0');
+    setOnlineStatus(true);
 
     memberMap[userName] = { isAdmin: data.isAdmin, role: data.role };
     fetch(`${scriptUrl}?operation=getMembers`)
@@ -1920,7 +2294,17 @@ async function checkUserStatus() {
     }
   } catch(err) {
     console.error(err);
-    commentsDiv.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><span>Could not verify account. Please try again.</span></div>`;
+    setOnlineStatus(false);
+    const lastApproved = localStorage.getItem('rc_last_approved') === '1';
+    if (lastApproved) {
+      // Fully offline: fall back to last-known approved state and cached messages
+      isApproved = true;
+      loadFromCache();
+      commentInput.focus();
+      startPolling();
+    } else {
+      commentsDiv.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><span>Could not verify account. Please try again.</span></div>`;
+    }
   }
 }
 
@@ -2012,6 +2396,18 @@ async function saveEdit(timestamp) {
 async function sendMessage() {
   const text = commentInput.value.trim();
   if (!text && !selectedFileData) return;
+
+  // Offline (and no attachment, which we can't queue reliably): draft locally
+  if (!isOnline && !selectedFileData) {
+    queueDraft(text);
+    commentInput.value = '';
+    cancelReply();
+    updateViewBar();
+    renderComments(getCommentsForActiveDate());
+    showToast('No connection — message will send automatically once you\'re back online', 'info');
+    return;
+  }
+
   sendBtn.disabled = true;
   try {
     const res = await fetch(scriptUrl, {
@@ -2029,9 +2425,27 @@ async function sendMessage() {
         threadMode = false;
         updateViewBar();
       }
+      setOnlineStatus(true);
       await loadComments(false);
+    } else if (r.status === 'queued' || r.offline) {
+      setOnlineStatus(false);
+      queueDraft(text);
+      commentInput.value = '';
+      cancelReply();
+      updateViewBar();
+      renderComments(getCommentsForActiveDate());
+      showToast('No connection — message queued to send', 'info');
     } else showToast(r.message||'Failed to send','error');
-  } catch { showToast('Network error','error'); }
+  } catch {
+    // Network genuinely unreachable — queue instead of showing a hard error
+    setOnlineStatus(false);
+    queueDraft(text);
+    commentInput.value = '';
+    cancelReply();
+    updateViewBar();
+    renderComments(getCommentsForActiveDate());
+    showToast('Connection lost — message queued to send', 'info');
+  }
   finally { sendBtn.disabled = false; }
 }
 
@@ -2301,6 +2715,7 @@ window.addEventListener('appinstalled', () => {
 });
 
 /* ── Kick off ── */
+setOnlineStatus(navigator.onLine);
 checkUserStatus();
 updateAnnBadge();
 </script>
@@ -2316,7 +2731,7 @@ if ('serviceWorker' in navigator) {
 
 <!-- ══ FCM PUSH ══ -->
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3qdljC5TNQo2xOFth13eMUm4JvpSA9yewJJ6n3xgc6J26pV_jzAeia6TGRI6ylZIe/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
