@@ -287,7 +287,7 @@
       letter-spacing: 0.06em;
     }
 
-    .list-loading, .list-error {
+    .list-error {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -296,24 +296,19 @@
       padding: 60px 20px;
       text-align: center;
     }
-    .list-loading i, .list-error i {
+    .list-error i {
       font-size: 2rem;
       color: var(--accent2);
       opacity: 0.4;
-      animation: pulse 1.5s ease-in-out infinite;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.2; }
-      50%       { opacity: 0.5; }
-    }
-    .list-loading-title, .list-error-title {
+    .list-error-title {
       font-family: var(--font-head);
       font-size: 1.4rem;
       letter-spacing: 0.1em;
       color: var(--lead);
       opacity: 0.5;
     }
-    .list-loading-sub, .list-error-sub {
+    .list-error-sub {
       font-family: var(--font-mono);
       font-size: 0.7rem;
       letter-spacing: 0.1em;
@@ -415,7 +410,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .list-loading i, .list-error i { animation: none; opacity: 0.4; }
+      .list-error i { opacity: 0.4; }
     }
   </style>
 </head>
@@ -444,13 +439,95 @@
   </a>
 </header>
 
-<!-- ══ CHAT LIST ═══════════════════════════════════════════════════ -->
+<!-- ══ CHAT LIST ═══════════════════════════════════════════════════
+     Static rows are written directly in the markup so they exist the
+     instant the page parses — no fetch required to see them. Only the
+     Channels and Q&A sections depend on network data, and each has its
+     own small "slot" that loads independently of everything else. ══ -->
 <div id="chat-list">
-  <div class="list-loading" id="list-loading">
-    <i class="fas fa-church"></i>
-    <div class="list-loading-title">RIVERSIDE</div>
-    <div class="list-loading-sub">LOADING…</div>
+
+  <a href="home.html" class="chat-row">
+    <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Chat&background=1e293b&color=60a5fa&size=88'" alt="">
+    <div class="row-content">
+      <div class="row-title-line">
+        <span class="row-title">Chat</span>
+        <span class="row-time"></span>
+      </div>
+      <div class="row-sub-line">
+        <span class="row-subtitle">Direct chats</span>
+        <span class="row-badge"></span>
+      </div>
+    </div>
+  </a>
+
+  <a href="announce.html" class="chat-row" id="ann-row">
+    <img class="row-avatar" src="announce.png" onerror="this.src='https://ui-avatars.com/api/?name=Announcements&background=1e293b&color=60a5fa&size=88'" alt="">
+    <div class="row-content">
+      <div class="row-title-line">
+        <span class="row-title">Announcements</span>
+        <span class="row-time"></span>
+      </div>
+      <div class="row-sub-line">
+        <span class="row-subtitle" id="ann-row-sub">Loading…</span>
+        <span class="row-badge" id="ann-row-badge"></span>
+      </div>
+    </div>
+  </a>
+
+  <div class="list-section-label">CHANNELS</div>
+  <div id="channels-slot">
+    <div class="list-empty">Loading channels…</div>
   </div>
+
+  <div class="list-section-label">Q&amp;A</div>
+  <div id="qna-slot">
+    <div class="list-empty">Loading Q&amp;A…</div>
+  </div>
+
+  <div class="list-section-label">MORE</div>
+
+  <a href="split.html" class="chat-row">
+    <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Split&background=1e293b&color=60a5fa&size=88'" alt="">
+    <div class="row-content">
+      <div class="row-title-line">
+        <span class="row-title">Split</span>
+        <span class="row-time"></span>
+      </div>
+      <div class="row-sub-line">
+        <span class="row-subtitle">Track & split cash</span>
+        <span class="row-badge"></span>
+      </div>
+    </div>
+  </a>
+
+  <a href="user.html" class="chat-row">
+    <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Profile&background=1e293b&color=60a5fa&size=88'" alt="">
+    <div class="row-content">
+      <div class="row-title-line">
+        <span class="row-title">Profile</span>
+        <span class="row-time"></span>
+      </div>
+      <div class="row-sub-line">
+        <span class="row-subtitle">Your account & settings</span>
+        <span class="row-badge"></span>
+      </div>
+    </div>
+  </a>
+
+  <button class="chat-row" id="notif-row">
+    <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Notifs&background=1e293b&color=60a5fa&size=88'" alt="">
+    <div class="row-content">
+      <div class="row-title-line">
+        <span class="row-title">Notifications</span>
+        <span class="row-time"></span>
+      </div>
+      <div class="row-sub-line">
+        <span class="row-subtitle">Push alerts for this device</span>
+        <span class="row-badge" id="notif-row-badge"></span>
+      </div>
+    </div>
+  </button>
+
 </div>
 
 <!-- ══ PENDING SCREEN ════════════════════════════════════════════════ -->
@@ -494,7 +571,12 @@ const userName = localStorage.getItem('userName') || '';
 if (!userName) { window.location.href = 'login.html'; }
 
 let isNotificationEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
-const CACHE_KEY = 'rc_chatlist_html_v1';
+
+/* Per-section caches so a returning visit can paint instantly while the
+   fresh fetch quietly re-validates underneath — same idea as before, just
+   scoped to the piece of the page that actually needs it. */
+const CHANNELS_CACHE_KEY = 'rc_channels_html_v1';
+const QNA_CACHE_KEY = 'rc_qna_html_v1';
 
 /* ── SERVICE WORKER REGISTRATION (independent of notifications/FCM) ──── */
 if ('serviceWorker' in navigator) {
@@ -514,17 +596,6 @@ function lh3(url) {
 function fallback(name) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=60a5fa&size=88`;
 }
-/* ── ICON SOURCES ─────────────────────────────────────────────────
-   One line per row, each with its own literal path. All point at the
-   same placeholder for now — replace each value individually once
-   you have real filenames/URLs for that row. */
-const ICONS = {
-  home:     'maskable_icon_x192.png',
-  announce: 'announce.png',
-  split:    'maskable_icon_x192.png',
-  profile:  'maskable_icon_x192.png',
-  notifs:   'maskable_icon_x192.png'
-};
 function fmtTime(ts) {
   if (!ts) return '';
   const d = new Date(ts);
@@ -572,6 +643,8 @@ function updateNotifRowUI() {
     badge.className = 'row-badge visible off';
   }
 }
+updateNotifRowUI();
+document.getElementById('notif-row').addEventListener('click', toggleNotifications);
 
 async function toggleNotifications() {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) {
@@ -646,32 +719,6 @@ installBtn.addEventListener('click', async () => {
 });
 window.addEventListener('appinstalled', () => installBar.classList.remove('show'));
 
-/* ── ANNOUNCEMENTS BADGE ──────────────────────────────────────────── */
-async function loadAnnBadge() {
-  try {
-    const res  = await fetch(`${DASHBOARD_URL}?operation=getUnseenAnnCount&name=${encodeURIComponent(userName)}`);
-    const data = await res.json();
-    const n    = data.unseenCount || 0;
-
-    const tb = document.getElementById('ann-badge-tb');
-    if (n > 0) { tb.textContent = n > 99 ? '99+' : n; tb.classList.add('visible'); }
-    else       { tb.classList.remove('visible'); }
-
-    const rowBadge = document.getElementById('ann-row-badge');
-    const rowSub   = document.getElementById('ann-row-sub');
-    if (rowBadge && rowSub) {
-      if (n > 0) {
-        rowBadge.textContent = n > 99 ? '99+' : n;
-        rowBadge.classList.add('visible');
-        rowSub.textContent = `${n} new update${n > 1 ? 's' : ''}`;
-      } else {
-        rowBadge.classList.remove('visible');
-        rowSub.textContent = 'No new updates';
-      }
-    }
-  } catch {}
-}
-
 /* ── ROW BUILDER ──────────────────────────────────────────────────── */
 function buildRow({ id, href, onClick, avatarSrc, fallbackName, title, subtitle, subtitleId, time, badgeId, badgeClass }) {
   const tag = href ? 'a' : 'button';
@@ -698,169 +745,155 @@ function buildRow({ id, href, onClick, avatarSrc, fallbackName, title, subtitle,
   return el;
 }
 
-function sectionLabel(text) {
-  const el = document.createElement('div');
-  el.className = 'list-section-label';
-  el.textContent = text;
-  return el;
+/* ── STATUS (pending/approved gate) — own slot, own failure mode ───── */
+async function loadStatus() {
+  try {
+    const res = await fetch(`${DASHBOARD_URL}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
+    const data = await res.json();
+    if ((data.userStatus || '').toLowerCase() !== 'approved') {
+      document.getElementById('pending-badge').textContent = (data.userStatus || 'pending').toUpperCase();
+      document.getElementById('pending-screen').classList.add('show');
+    }
+  } catch {
+    /* fail silently — don't block the shell just because the status check hiccuped */
+  }
 }
 
-/* ── BUILD THE FULL CHAT LIST ─────────────────────────────────────── */
-async function loadChatList() {
-  const list = document.getElementById('chat-list');
+/* ── ANNOUNCEMENTS BADGE ──────────────────────────────────────────── */
+async function loadAnnBadge() {
+  try {
+    const res  = await fetch(`${DASHBOARD_URL}?operation=getUnseenAnnCount&name=${encodeURIComponent(userName)}`);
+    const data = await res.json();
+    const n    = data.unseenCount || 0;
+
+    const tb = document.getElementById('ann-badge-tb');
+    if (n > 0) { tb.textContent = n > 99 ? '99+' : n; tb.classList.add('visible'); }
+    else       { tb.classList.remove('visible'); }
+
+    const rowBadge = document.getElementById('ann-row-badge');
+    const rowSub   = document.getElementById('ann-row-sub');
+    if (rowBadge && rowSub) {
+      if (n > 0) {
+        rowBadge.textContent = n > 99 ? '99+' : n;
+        rowBadge.classList.add('visible');
+        rowSub.textContent = `${n} new update${n > 1 ? 's' : ''}`;
+      } else {
+        rowBadge.classList.remove('visible');
+        rowSub.textContent = 'No new updates';
+      }
+    }
+  } catch {}
+}
+
+/* ── CHANNELS — own slot, own failure mode, previews load after rows ── */
+function channelPreviewText(post) {
+  if (!post) return 'No posts yet';
+  const cleanText = (post.content || '')
+    .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, '')
+    .replace(/\/view\b\S*/gi, '')
+    .replace(/usp=\S+/gi, '')
+    .replace(/\s{2,}/g, ' ').trim();
+  return cleanText || (post.media?.link ? '📎 Attachment' : 'New post');
+}
+
+function updateChannelRowPreview(channelId, post) {
+  const row = document.getElementById(`ch-row-${channelId}`);
+  if (!row) return;
+  const sub = row.querySelector('.row-subtitle');
+  const time = row.querySelector('.row-time');
+  if (sub) sub.textContent = channelPreviewText(post);
+  if (time && post) time.textContent = fmtTime(post.created);
+}
+
+async function loadChannels() {
+  const slot = document.getElementById('channels-slot');
+
+  // Paint from cache first, if we have it, so a returning visit isn't blank either.
+  let cached;
+  try { cached = sessionStorage.getItem(CHANNELS_CACHE_KEY); } catch { cached = null; }
+  if (cached) slot.innerHTML = cached;
 
   try {
-    // 1. Check user status first
-    const statusRes  = await fetch(`${DASHBOARD_URL}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
-    const statusData = await statusRes.json();
-    const isApproved  = (statusData.userStatus || '').toLowerCase() === 'approved';
+    const chRes = await fetch(`${DASHBOARD_URL}?operation=getAllChannels`);
+    const { channels = [] } = await chRes.json();
 
-    if (!isApproved) {
-      const badge = document.getElementById('pending-badge');
-      badge.textContent = (statusData.userStatus || 'pending').toUpperCase();
-      document.getElementById('pending-screen').classList.add('show');
-      list.innerHTML = '';
+    if (!channels.length) {
+      slot.innerHTML = `<div class="list-empty">No channels available yet</div>`;
+      try { sessionStorage.removeItem(CHANNELS_CACHE_KEY); } catch {}
       return;
     }
 
-    // 2. Fetch channels + Q&A channels in parallel
-    const [chRes, qnaRes] = await Promise.all([
-      fetch(`${DASHBOARD_URL}?operation=getAllChannels`).then(r => r.json()).catch(() => ({ channels: [] })),
-      fetch(`${DASHBOARD_URL}?operation=getAllQnAChannels`).then(r => r.json()).catch(() => ({ channels: [] }))
-    ]);
-    const channels    = chRes.channels || [];
-    const qnaChannels = qnaRes.channels || [];
+    slot.innerHTML = '';
+    channels.forEach(ch => {
+      const avatarSrc = ch.picLink ? lh3(ch.picLink) : fallback(ch.name);
+      slot.appendChild(buildRow({
+        id: `ch-row-${ch.id}`,
+        href: `channel.html?channelId=${encodeURIComponent(ch.id)}`,
+        avatarSrc,
+        fallbackName: ch.name,
+        title: ch.name,
+        subtitle: 'Loading…'
+      }));
+    });
 
-    // 3. Fetch latest post per channel for the preview line (best-effort, isolated)
-    const channelPosts = await Promise.all(channels.map(ch =>
-      fetch(`${SCRIPT_URL}?operation=getChannelPosts&channelId=${encodeURIComponent(ch.id)}&username=${encodeURIComponent(userName)}`)
-        .then(r => r.json())
-        .then(d => {
-          const posts = (d.posts || []).slice().sort((a, b) => new Date(b.created) - new Date(a.created));
-          return posts[0] || null;
-        })
-        .catch(() => null)
-    ));
+    try { sessionStorage.setItem(CHANNELS_CACHE_KEY, slot.innerHTML); } catch {}
 
-    list.innerHTML = '';
-
-    // ── Home ──
-    list.appendChild(buildRow({
-      href: 'home.html',
-      avatarSrc: ICONS.home,
-      fallbackName: 'Chat',
-      title: 'Chat',
-      subtitle: 'Direct chats'
-    }));
-
-    // ── Announcements ──
-    list.appendChild(buildRow({
-      href: 'announce.html',
-      avatarSrc: ICONS.announce,
-      fallbackName: 'Announcements',
-      title: 'Announcements',
-      subtitle: 'Loading…',
-      subtitleId: 'ann-row-sub',
-      badgeId: 'ann-row-badge'
-    }));
-
-    // ── Channels ──
-    list.appendChild(sectionLabel('CHANNELS'));
-    if (!channels.length) {
-      const empty = document.createElement('div');
-      empty.className = 'list-empty';
-      empty.textContent = 'No channels available yet';
-      list.appendChild(empty);
+    // Previews load AFTER the rows are already visible — enhancement, not a blocker.
+    channels.forEach(async ch => {
+      try {
+        const d = await fetch(`${SCRIPT_URL}?operation=getChannelPosts&channelId=${encodeURIComponent(ch.id)}&username=${encodeURIComponent(userName)}`).then(r => r.json());
+        const post = (d.posts || []).slice().sort((a, b) => new Date(b.created) - new Date(a.created))[0] || null;
+        updateChannelRowPreview(ch.id, post);
+        try { sessionStorage.setItem(CHANNELS_CACHE_KEY, slot.innerHTML); } catch {}
+      } catch {
+        updateChannelRowPreview(ch.id, null);
+      }
+    });
+  } catch {
+    if (!cached) {
+      slot.innerHTML = `<div class="list-empty">Couldn't load channels — tap refresh</div>`;
     } else {
-      channels.forEach((ch, i) => {
-        const post = channelPosts[i];
-        const avatarSrc = ch.picLink ? lh3(ch.picLink) : fallback(ch.name);
-        let preview = 'No posts yet';
-        if (post) {
-          const cleanText = (post.content || '')
-            .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, '')
-            .replace(/\/view\b\S*/gi, '')
-            .replace(/usp=\S+/gi, '')
-            .replace(/\s{2,}/g, ' ').trim();
-          preview = cleanText || (post.media?.link ? '📎 Attachment' : 'New post');
-        }
-        list.appendChild(buildRow({
-          href: `channel.html?channelId=${encodeURIComponent(ch.id)}`,
-          avatarSrc,
-          fallbackName: ch.name,
-          title: ch.name,
-          subtitle: preview,
-          time: post ? fmtTime(post.created) : ''
-        }));
-      });
+      toast('Could not refresh channels', 'err');
     }
+  }
+}
 
-    // ── Q&A ──
-    list.appendChild(sectionLabel('Q&A'));
+/* ── Q&A — own slot, own failure mode ─────────────────────────────── */
+async function loadQnA() {
+  const slot = document.getElementById('qna-slot');
+
+  let cached;
+  try { cached = sessionStorage.getItem(QNA_CACHE_KEY); } catch { cached = null; }
+  if (cached) slot.innerHTML = cached;
+
+  try {
+    const qnaRes = await fetch(`${DASHBOARD_URL}?operation=getAllQnAChannels`);
+    const { channels: qnaChannels = [] } = await qnaRes.json();
+
     if (!qnaChannels.length) {
-      const empty = document.createElement('div');
-      empty.className = 'list-empty';
-      empty.textContent = 'No Q&A spaces yet';
-      list.appendChild(empty);
-    } else {
-      qnaChannels.forEach(ch => {
-        const avatarSrc = ch.picLink ? lh3(ch.picLink) : fallback(ch.name);
-        list.appendChild(buildRow({
-          href: `Q&A.html?channelId=${encodeURIComponent(ch.id)}`,
-          avatarSrc,
-          fallbackName: ch.name,
-          title: ch.name,
-          subtitle: 'Tap to interact with the questions'
-        }));
-      });
+      slot.innerHTML = `<div class="list-empty">No Q&A spaces yet</div>`;
+      try { sessionStorage.removeItem(QNA_CACHE_KEY); } catch {}
+      return;
     }
 
-    // ── More / tools ──
-    list.appendChild(sectionLabel('MORE'));
+    slot.innerHTML = '';
+    qnaChannels.forEach(ch => {
+      const avatarSrc = ch.picLink ? lh3(ch.picLink) : fallback(ch.name);
+      slot.appendChild(buildRow({
+        href: `Q&A.html?channelId=${encodeURIComponent(ch.id)}`,
+        avatarSrc,
+        fallbackName: ch.name,
+        title: ch.name,
+        subtitle: 'Tap to interact with the questions'
+      }));
+    });
 
-    list.appendChild(buildRow({
-      href: 'split.html',
-      avatarSrc: ICONS.split,
-      fallbackName: 'Split',
-      title: 'Split',
-      subtitle: 'Track & split cash'
-    }));
-
-    list.appendChild(buildRow({
-      href: 'user.html',
-      avatarSrc: ICONS.profile,
-      fallbackName: 'Profile',
-      title: 'Profile',
-      subtitle: 'Your account & settings'
-    }));
-
-    list.appendChild(buildRow({
-      id: 'notif-row',
-      avatarSrc: ICONS.notifs,
-      fallbackName: 'Notifs',
-      title: 'Notifications',
-      subtitle: 'Push alerts for this device',
-      badgeId: 'notif-row-badge',
-      onClick: toggleNotifications
-    }));
-    updateNotifRowUI();
-
-    // Cache the finished list so returning to this page paints instantly
-    // instead of showing the loading state again.
-    try { sessionStorage.setItem(CACHE_KEY, list.innerHTML); } catch {}
-
-  } catch (err) {
-    console.error('Chat list load error:', err);
-    // Only show the error state if we have nothing cached on screen already.
-    if (!sessionStorage.getItem(CACHE_KEY)) {
-      list.innerHTML = `
-        <div class="list-error">
-          <i class="fas fa-wifi" style="animation:none;"></i>
-          <div class="list-error-title">LOAD FAILED</div>
-          <div class="list-error-sub">CHECK CONNECTION AND RELOAD</div>
-        </div>`;
+    try { sessionStorage.setItem(QNA_CACHE_KEY, slot.innerHTML); } catch {}
+  } catch {
+    if (!cached) {
+      slot.innerHTML = `<div class="list-empty">Couldn't load Q&A — tap refresh</div>`;
     } else {
-      toast('Could not refresh list', 'err');
+      toast('Could not refresh Q&A', 'err');
     }
   }
 }
@@ -874,7 +907,7 @@ async function refreshAll() {
   btn.classList.add('spinning');
   btn.disabled = true;
   try {
-    await Promise.all([loadChatList(), loadAnnBadge()]);
+    await Promise.all([loadStatus(), loadChannels(), loadQnA(), loadAnnBadge()]);
     toast('Refreshed', 'ok', 1500);
   } catch {
     toast('Refresh failed', 'err');
@@ -885,35 +918,15 @@ async function refreshAll() {
   }
 }
 
-/* ── INSTANT RESTORE ──────────────────────────────────────────────── */
-// Paints the last-known list immediately (no spinner) while loadChatList()
-// quietly re-fetches and swaps in fresh content underneath.
-function restoreCachedList() {
-  let cached;
-  try { cached = sessionStorage.getItem(CACHE_KEY); } catch { cached = null; }
-  if (!cached) return false;
-
-  const list = document.getElementById('chat-list');
-  list.innerHTML = cached;
-
-  // innerHTML restore drops JS listeners — reattach the Notifs row handler.
-  const notifRow = document.getElementById('notif-row');
-  if (notifRow) notifRow.addEventListener('click', toggleNotifications);
-  updateNotifRowUI();
-  return true;
-}
-
 /* ── INIT ─────────────────────────────────────────────────────────── */
-// Restore synchronously as soon as this script runs — before waiting on
-// DOMContentLoaded or any network call — so there's nothing to "load" on
-// the way back from another page.
-const hadCache = restoreCachedList();
-
+// Every section kicks off independently and in parallel — none of them
+// await each other, and none of them touch rows outside their own slot.
+// A slow or failed fetch only ever affects its own small piece of the page.
 window.addEventListener('DOMContentLoaded', () => {
-  loadChatList().then(() => {
-    loadAnnBadge();
-  });
-  // Every app open: register a fresh FCM token with the backend, period.
+  loadStatus();
+  loadChannels();
+  loadQnA();
+  loadAnnBadge();
   registerFcmToken(false).catch(err => console.error('FCM registration failed:', err));
 
   setInterval(loadAnnBadge, 30000);
