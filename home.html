@@ -40,7 +40,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Riverside Connect chat preview">
-   <style>
+  <style>
     :root {
       --bg-deep:        #080d17;
       --bg-mid:         #0d1525;
@@ -1300,6 +1300,36 @@
       0%, 85%, 100% { opacity: 0.55; }
       42% { opacity: 1; }
     }
+
+    #swipe-hint {
+  position: fixed;
+  bottom: 92px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-med);
+  color: var(--text-secondary);
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  white-space: nowrap;
+}
+#swipe-hint.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#swipe-hint i { font-size: 0.7rem; color: var(--blue-bright); animation: hintNudge 1.4s ease-in-out infinite; }
+#swipe-hint i.fa-chevron-right { animation-direction: reverse; }
+@keyframes hintNudge {
+  0%,100% { transform: translateX(0); }
+  50% { transform: translateX(-4px); }
+}
+
   </style>
 </head>
 <body>
@@ -1372,6 +1402,12 @@
     <span id="reply-text">Replying to…</span>
   </span>
   <button class="reply-cancel-btn" onclick="cancelReply()"><i class="fas fa-times"></i></button>
+</div>
+
+<div id="swipe-hint">
+  <i class="fas fa-chevron-left"></i>
+  <span>Swipe to browse previous days</span>
+  <i class="fas fa-chevron-right"></i>
 </div>
 
 <!-- ══ FILE PREVIEW ══ -->
@@ -1483,7 +1519,7 @@
 <canvas id="cropCanvas" style="display:none;"></canvas>
 
 <script>
-const scriptUrl = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+const scriptUrl = 'https://script.google.com/macros/s/AKfycby3qdljC5TNQo2xOFth13eMUm4JvpSA9yewJJ6n3xgc6J26pV_jzAeia6TGRI6ylZIe/exec';
 
 let userName = localStorage.getItem('userName');
 let callType = 'all';
@@ -1501,6 +1537,7 @@ let activeDateStr = null;     // 'YYYY-MM-DD' of the currently shown date; null 
 let threadMode = false;       // true = My Thread filter active
 let isOnline = navigator.onLine;
 let swipePreviewActive = false; // true while a live swipe-preview label is shown
+let initialDateSet = false;
 
 /* ── Local persistence keys ── */
 const CACHE_KEY   = 'rc_cached_comments_v1';
@@ -1561,6 +1598,21 @@ function extractFileId(url) {
 }
 function maybeFlushPending() {
   if (!isFlushingDrafts && getPendingDrafts().length) flushPendingDrafts();
+}
+
+function maybeShowSwipeHint() {
+  if (localStorage.getItem('rc_swipe_hint_seen')) return;
+  const dates = getSortedActiveDates();
+  if (dates.length < 2) return; // nothing to swipe to yet — don't tease a feature with no history
+  const hint = document.getElementById('swipe-hint');
+  if (!hint) return;
+  setTimeout(() => {
+    hint.classList.add('show');
+    setTimeout(() => {
+      hint.classList.remove('show');
+      localStorage.setItem('rc_swipe_hint_seen', '1');
+    }, 3200);
+  }, 700);
 }
 
 function getLh3Link(url) {
@@ -1847,7 +1899,18 @@ async function loadComments(silent = true) {
     cacheComments(allComments, data.announcements);
     setOnlineStatus(true);
     mergeInPendingDrafts();
-    maybeFlushPending();           
+    maybeFlushPending();    
+
+    if (!initialDateSet) {
+  initialDateSet = true;
+  const dates = getSortedActiveDates();
+  if (dates.length && dates[dates.length - 1] !== todayStr()) {
+    activeDateStr = dates[dates.length - 1]; // jump to most recent day that actually has messages
+  }
+  maybeShowSwipeHint(); // added in step 2 below
+}
+
+    
 
     const filtered = getCommentsForActiveDate();
     renderComments(filtered, silent);
@@ -2731,7 +2794,7 @@ if ('serviceWorker' in navigator) {
 
 <!-- ══ FCM PUSH ══ -->
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3qdljC5TNQo2xOFth13eMUm4JvpSA9yewJJ6n3xgc6J26pV_jzAeia6TGRI6ylZIe/exec';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
@@ -2740,18 +2803,18 @@ if ('serviceWorker' in navigator) {
       const { initializeApp }               = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
       const { getMessaging, getToken, onMessage } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
 
-          const firebaseConfig = {
-       apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
-  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
-  projectId: "dc-riverside-murera-coffee",
-  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
-  messagingSenderId: "373863707096",
-  appId: "1:373863707096:web:5e3c703655687b96e442ad"
+      const firebaseConfig = {
+        apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+        authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+        projectId: "dc-riverside-murera-coffee",
+        storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+        messagingSenderId: "373863707096",
+        appId: "1:373863707096:web:5e3c703655687b96e442ad"
       };
 
-
+      const app = initializeApp(firebaseConfig);
       const messaging = getMessaging(app);
-     const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
+      const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
 
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') return;
@@ -2793,6 +2856,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-
 </body>
 </html>
