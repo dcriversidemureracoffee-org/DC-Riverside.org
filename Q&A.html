@@ -1574,6 +1574,8 @@ function fileToBase64(file) {
 
 /* ── LOAD CHANNELS ───────────────────────────────────────────────── */
 async function loadChannels() {
+  checkAdminStatus(); // runs once, independent of whether any channel exists
+
   try {
     const data = await api({ operation: 'getAllQnAChannels' });
     allChannels = data.channels || [];
@@ -1703,18 +1705,21 @@ async function openChannel(ch) {
   const activeTick = document.querySelector(`.ticker-ch[data-id="${ch.id}"]`);
   if (activeTick) activeTick.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
-  // Show write btn only to channel creator
+ // Show write btn only to channel creator
   const isCreator = (ch.creator || '').trim().toLowerCase() === currentUser.trim().toLowerCase();
   document.getElementById('btn-write').style.display = isCreator ? 'flex' : 'none';
 
-  // Check admin for drawer create btn
+  await loadGames(ch.id);
+}
+
+/* ── CHECK ADMIN (global, independent of channels existing) ────────── */
+async function checkAdminStatus() {
   try {
-    const d = await api({ operation: 'getUserStatus', name: currentUser });
-    isAdmin = d.userStatus === 'approved' && d.isAdmin === true;
-    document.getElementById('drawer-create-btn').style.display = isAdmin ? 'flex' : 'none';
+    const data = await api({ operation: 'getUserStatus', name: currentUser });
+    isAdmin = !!data.isAdmin;
   } catch { isAdmin = false; }
 
-  await loadGames(ch.id);
+  document.getElementById('drawer-create-btn').style.display = isAdmin ? 'flex' : 'none';
 }
 
 /* ── LOAD GAMES ───────────────────────────────────────────────────── */
