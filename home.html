@@ -40,7 +40,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Riverside Connect chat preview">
-  <style>
+<style>
     :root {
       --bg-deep:        #080d17;
       --bg-mid:         #0d1525;
@@ -156,8 +156,8 @@
       background: var(--blue-dim);
     }
 
-    /* My Thread toggle — glows accent when active */
-    .hbtn.thread-active {
+    /* Active-state highlight, used by People / All Messages / My Thread toggles */
+    .hbtn.nav-active {
       border-color: var(--accent);
       color: var(--accent);
       background: var(--accent-dim);
@@ -196,14 +196,14 @@
     }
 
     /* ══════════════════════════════
-       VIEW CONTEXT BAR  (date label + filter indicator)
+       VIEW CONTEXT BAR
     ══════════════════════════════ */
     #view-bar {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      padding: 7px 20px;
+      padding: 7px 16px;
       background: rgba(8,13,23,0.6);
       border-bottom: 1px solid var(--border-subtle);
       font-size: 0.78rem;
@@ -216,31 +216,82 @@
     #view-bar-label {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       font-weight: 500;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
+      flex: 1;
+      min-width: 0;
+      justify-content: center;
     }
 
-    #view-bar-label i { font-size: 0.72rem; opacity: 0.7; }
+    #view-back-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    #view-back-btn:hover { color: var(--blue-bright); }
 
-    #thread-pill {
+    #view-thread-avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border-med);
+      display: none;
+      flex-shrink: 0;
+    }
+
+    #view-bar-text {
+      font-weight: 600;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #view-call-btn {
       display: none;
       align-items: center;
       gap: 5px;
-      background: var(--accent-dim);
-      border: 1px solid rgba(232,168,76,0.3);
-      color: var(--accent);
+      background: rgba(34,197,94,0.14);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: #4ade80;
       border-radius: 999px;
-      padding: 2px 10px 2px 7px;
-      font-size: 0.72rem;
+      padding: 4px 12px;
+      font-size: 0.74rem;
       font-weight: 600;
       cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    #view-call-btn:hover { background: rgba(34,197,94,0.22); }
+
+    #offline-pill {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: rgba(224,82,82,0.12);
+      border: 1px solid rgba(224,82,82,0.3);
+      color: #e8968f;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    #thread-pill i { font-size: 0.65rem; }
+    #offline-pill i { font-size: 0.65rem; }
 
     /* ══════════════════════════════
-       CHAT CONTAINER
+       CHAT / LIST CONTAINER
     ══════════════════════════════ */
     .chat-wrap {
       flex: 1;
@@ -268,7 +319,7 @@
     .chat-container::-webkit-scrollbar-track { background: transparent; }
     .chat-container::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }
 
-    /* ── Date Divider ── */
+    /* ── Date Divider (kept for readability inside a feed/thread) ── */
     .date-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 8px; }
 
     .date-divider {
@@ -354,15 +405,17 @@
       color: var(--blue-bright);
       margin-bottom: 4px;
       letter-spacing: 0.02em;
+      cursor: pointer;
     }
 
-    .message.own .msg-name { color: rgba(255,255,255,0.65); }
+    .message.own .msg-name { color: rgba(255,255,255,0.65); cursor: default; }
     .message.same-sender .msg-name { display: none; }
 
     .msg-text {
       font-size: 0.93rem;
       line-height: 1.5;
       word-break: break-word;
+      white-space: pre-wrap;
       color: var(--text-primary);
     }
 
@@ -450,7 +503,7 @@
       font-size: 0.9rem;
       outline: none;
       margin-bottom: 6px;
-      resize: none;
+      resize: vertical;
     }
 
     /* ══════════════════════════════
@@ -512,7 +565,102 @@
     .join-call-btn.ended:hover { transform: none; box-shadow: none; }
 
     /* ══════════════════════════════
-       TODAY EMPTY STATE
+       PEOPLE LIST (new landing view)
+    ══════════════════════════════ */
+    #people-search-wrap {
+      padding: 2px 2px 14px;
+      position: sticky;
+      top: 0;
+      background: linear-gradient(var(--bg-deep) 70%, transparent);
+      z-index: 5;
+    }
+
+    #people-search {
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 999px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      outline: none;
+    }
+    #people-search:focus { border-color: var(--border-blue); }
+    #people-search::placeholder { color: var(--text-muted); }
+
+    .person-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-radius: 10px;
+    }
+
+    .person-row:hover { background: var(--bg-glass); }
+
+    .person-row .avatar { width: 46px; height: 46px; }
+
+    .person-info { flex: 1; min-width: 0; }
+
+    .person-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .person-name { font-weight: 600; font-size: 0.94rem; color: var(--text-primary); }
+    .person-name.self-tag::after {
+      content: 'You';
+      margin-left: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 1px 7px;
+      border-radius: 999px;
+      letter-spacing: 0.03em;
+    }
+
+    .person-snippet {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .person-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .person-time { font-size: 0.68rem; color: var(--text-muted); }
+
+    .person-call-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.28);
+      color: #4ade80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+    }
+    .person-call-btn:hover { background: rgba(34,197,94,0.22); transform: scale(1.05); }
+
+    /* ══════════════════════════════
+       THREAD EMPTY / EMPTY STATE
     ══════════════════════════════ */
     .today-empty {
       display: flex;
@@ -548,7 +696,7 @@
     .today-empty p {
       font-size: 0.85rem;
       color: var(--text-muted);
-      max-width: 260px;
+      max-width: 280px;
       line-height: 1.5;
     }
 
@@ -572,174 +720,6 @@
       background: rgba(232,168,76,0.26);
       box-shadow: 0 4px 16px rgba(232,168,76,0.15);
     }
-
-    /* ══════════════════════════════
-       CALENDAR MODAL
-    ══════════════════════════════ */
-    #cal-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(4,8,16,0.82);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      z-index: 2500;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-
-    .cal-panel {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-med);
-      border-radius: 22px;
-      padding: 24px;
-      width: 100%;
-      max-width: 360px;
-      animation: panelIn 0.3s cubic-bezier(.22,.68,0,1.2) both;
-    }
-
-    @keyframes panelIn {
-      from { opacity: 0; transform: scale(0.94) translateY(20px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .cal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-
-    .cal-month-label {
-      font-family: var(--font-serif);
-      font-style: italic;
-      font-size: 1.2rem;
-      color: var(--text-primary);
-    }
-
-    .cal-nav {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: 1px solid var(--border-subtle);
-      background: none;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.15s;
-    }
-
-    .cal-nav:hover { border-color: var(--border-blue); color: var(--blue-bright); background: var(--blue-dim); }
-
-    .cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-    }
-
-    .cal-day-name {
-      text-align: center;
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 4px 0 8px;
-    }
-
-    .cal-day {
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      cursor: default;
-      transition: all 0.15s;
-      position: relative;
-    }
-
-    /* Has messages — becomes interactive */
-    .cal-day.has-msgs {
-      color: var(--text-primary);
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .cal-day.has-msgs::after {
-      content: '';
-      position: absolute;
-      bottom: 3px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--accent);
-    }
-
-    .cal-day.has-msgs:hover {
-      background: var(--blue-dim);
-      color: var(--blue-bright);
-    }
-
-    .cal-day.has-msgs::after { bottom: 2px; }
-
-    /* Today ring */
-    .cal-day.is-today {
-      border: 1.5px solid var(--blue-bright);
-      color: var(--blue-bright) !important;
-    }
-
-    /* Selected */
-    .cal-day.selected {
-      background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
-      color: white !important;
-    }
-
-    .cal-day.selected::after { background: white !important; }
-
-    .cal-day.empty { visibility: hidden; }
-
-    .cal-footer {
-      margin-top: 18px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .cal-today-btn {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-secondary);
-      font-family: var(--font-ui);
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .cal-today-btn:hover { background: rgba(255,255,255,0.09); color: var(--text-primary); }
-
-    .cal-close-btn {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #2563eb, #3b82f6);
-      border: none;
-      color: white;
-      font-family: var(--font-ui);
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .cal-close-btn:hover { box-shadow: 0 4px 14px rgba(37,99,235,0.38); }
 
     /* ══════════════════════════════
        INPUT AREA
@@ -804,7 +784,7 @@
       margin: 0 auto;
       display: flex;
       gap: 10px;
-      align-items: center;
+      align-items: flex-end;
     }
 
     .input-icon-btn {
@@ -844,6 +824,10 @@
       border: 1px solid var(--border-subtle);
       outline: none;
       transition: border-color 0.2s, background 0.2s;
+      resize: none;
+      max-height: 140px;
+      line-height: 1.4;
+      overflow-y: auto;
     }
 
     #comment:focus { border-color: var(--border-blue); background: rgba(20,34,60,0.8); }
@@ -933,6 +917,11 @@
       animation: panelIn 0.3s cubic-bezier(.22,.68,0,1.2) both;
       max-height: 88vh;
       overflow-y: auto;
+    }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: scale(0.94) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     .modal-title {
@@ -1250,30 +1239,6 @@
     .empty-state i { font-size: 2.5rem; opacity: 0.3; }
 
     /* ══════════════════════════════
-       SWIPE DAY NAVIGATION
-    ══════════════════════════════ */
-    .chat-container {
-      touch-action: pan-y; /* allow vertical scroll natively; horizontal handled by JS */
-      will-change: transform, opacity;
-    }
-
-    #offline-pill {
-      display: none;
-      align-items: center;
-      gap: 5px;
-      background: rgba(224,82,82,0.12);
-      border: 1px solid rgba(224,82,82,0.3);
-      color: #e8968f;
-      border-radius: 999px;
-      padding: 2px 10px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    #offline-pill i { font-size: 0.65rem; }
-
-    /* ══════════════════════════════
        PENDING / FAILED MESSAGE STATE
     ══════════════════════════════ */
     .message.pending .message-content {
@@ -1300,36 +1265,6 @@
       0%, 85%, 100% { opacity: 0.55; }
       42% { opacity: 1; }
     }
-
-    #swipe-hint {
-  position: fixed;
-  bottom: 92px;
-  left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-med);
-  color: var(--text-secondary);
-  padding: 9px 16px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 500;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-  white-space: nowrap;
-}
-#swipe-hint.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-#swipe-hint i { font-size: 0.7rem; color: var(--blue-bright); animation: hintNudge 1.4s ease-in-out infinite; }
-#swipe-hint i.fa-chevron-right { animation-direction: reverse; }
-@keyframes hintNudge {
-  0%,100% { transform: translateX(0); }
-  50% { transform: translateX(-4px); }
-}
-
   </style>
 </head>
 <body>
@@ -1344,14 +1279,19 @@
 
     <div class="header-logo">Riverside <span>Connect</span></div>
 
-    <!-- My Thread toggle -->
-    <button id="threadBtn" class="hbtn" title="My Thread">
-      <i class="fas fa-user-check"></i>
+    <!-- All Messages (global feed) toggle -->
+    <button id="allMsgBtn" class="hbtn" title="All Messages">
+      <i class="fas fa-comments"></i>
     </button>
 
-    <!-- Calendar button -->
-    <button id="calBtn" class="hbtn" title="Browse by date">
-      <i class="fas fa-calendar-alt"></i>
+    <!-- People toggle — the new home / landing view -->
+    <button id="peopleBtn" class="hbtn" title="People">
+      <i class="fas fa-users"></i>
+    </button>
+
+    <!-- My Thread shortcut -->
+    <button id="threadBtn" class="hbtn" title="My Thread">
+      <i class="fas fa-user-check"></i>
     </button>
 
     <a href="index.html" class="hbtn" title="Home" style="text-decoration:none;">
@@ -1373,24 +1313,25 @@
 
 <!-- ══ VIEW CONTEXT BAR ══ -->
 <div id="view-bar">
+  <button id="view-back-btn" onclick="goHome()"><i class="fas fa-chevron-left"></i></button>
   <span id="view-bar-label">
-    <i class="fas fa-circle" style="color:var(--accent);font-size:0.5rem;"></i>
-    <span id="view-bar-text">Today</span>
+    <img id="view-thread-avatar" src="" alt="">
+    <span id="view-bar-text">People</span>
   </span>
-  <span id="thread-pill" onclick="toggleThread()">
-    <i class="fas fa-times"></i> My Thread
-  </span>
+  <button id="view-call-btn" onclick="callActiveThreadUser()">
+    <i class="fas fa-phone"></i> Call
+  </button>
   <span id="offline-pill">
     <i class="fas fa-wifi"></i> Offline — last synced
   </span>
 </div>
 
-<!-- ══ CHAT ══ -->
+<!-- ══ MAIN CONTENT ══ -->
 <div class="chat-wrap">
   <div class="chat-container" id="comments">
     <div class="empty-state">
       <i class="fas fa-comments"></i>
-      <span>Loading messages…</span>
+      <span>Loading…</span>
     </div>
   </div>
 </div>
@@ -1402,12 +1343,6 @@
     <span id="reply-text">Replying to…</span>
   </span>
   <button class="reply-cancel-btn" onclick="cancelReply()"><i class="fas fa-times"></i></button>
-</div>
-
-<div id="swipe-hint">
-  <i class="fas fa-chevron-left"></i>
-  <span>Swipe to browse previous days</span>
-  <i class="fas fa-chevron-right"></i>
 </div>
 
 <!-- ══ FILE PREVIEW ══ -->
@@ -1422,9 +1357,9 @@
 <div class="input-area">
   <div class="input-wrapper">
     <input type="file" id="fileInput" accept="image/*,video/*,audio/*" style="display:none;">
-    <button id="callBtn" class="input-icon-btn" title="Start call"><i class="fas fa-video"></i></button>
+    <button id="callBtn" class="input-icon-btn" title="Start a call"><i class="fas fa-video"></i></button>
     <button id="addFileBtn" class="input-icon-btn" title="Attach file"><i class="fas fa-paperclip"></i></button>
-    <input type="text" id="comment" placeholder="Write a message…" autocomplete="off">
+    <textarea id="comment" placeholder="Write a message…" rows="1"></textarea>
     <button id="sendBtn"><i class="fas fa-paper-plane" style="margin-left:2px;"></i></button>
   </div>
 </div>
@@ -1485,22 +1420,6 @@
   </div>
 </div>
 
-<!-- ══ CALENDAR MODAL ══ -->
-<div id="cal-modal">
-  <div class="cal-panel">
-    <div class="cal-header">
-      <button class="cal-nav" id="calPrev"><i class="fas fa-chevron-left"></i></button>
-      <span class="cal-month-label" id="calMonthLabel">Month Year</span>
-      <button class="cal-nav" id="calNext"><i class="fas fa-chevron-right"></i></button>
-    </div>
-    <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-footer">
-      <button class="cal-today-btn" id="calGoToday">Today</button>
-      <button class="cal-close-btn" id="calClose">Done</button>
-    </div>
-  </div>
-</div>
-
 <!-- ══ INSTALL MODAL ══ -->
 <div id="installModal">
   <div class="modal-panel" style="max-width:320px;text-align:center;">
@@ -1523,7 +1442,8 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby3qdljC5TNQo2xOFth13
 
 let userName = localStorage.getItem('userName');
 let callType = 'all';
-let allMembersCache = [];
+let allMembersCache = [];   // approved members excluding self, used by the "Start a Call" modal
+let allMembers = [];        // every known member (incl. self), used by the People view
 let isApproved = false;
 let lastCommentCount = 0;
 let pollingInterval = null;
@@ -1531,13 +1451,13 @@ let selectedFileData = null;
 let replyingTo = null;
 let memberMap = {};
 
-/* ── View state ── */
-let allComments = [];         // all raw comments from server (reversed = oldest first)
-let activeDateStr = null;     // 'YYYY-MM-DD' of the currently shown date; null = "today"
-let threadMode = false;       // true = My Thread filter active
+/* ── View state ──
+   view: 'people' | 'all' | 'thread'
+   activeThreadUser: username whose thread is being viewed (only relevant when view === 'thread')
+*/
+let currentView = 'people';
+let activeThreadUser = null;
 let isOnline = navigator.onLine;
-let swipePreviewActive = false; // true while a live swipe-preview label is shown
-let initialDateSet = false;
 
 /* ── Local persistence keys ── */
 const CACHE_KEY   = 'rc_cached_comments_v1';
@@ -1588,6 +1508,12 @@ removeFileBtn.addEventListener('click', () => {
   previewBar.style.display = 'none';
 });
 
+/* ── Auto-growing textarea (paragraph support) ── */
+commentInput.addEventListener('input', () => {
+  commentInput.style.height = 'auto';
+  commentInput.style.height = Math.min(commentInput.scrollHeight, 140) + 'px';
+});
+
 /* ════════════════════════════════
    HELPERS
 ════════════════════════════════ */
@@ -1600,38 +1526,19 @@ function maybeFlushPending() {
   if (!isFlushingDrafts && getPendingDrafts().length) flushPendingDrafts();
 }
 
-function maybeShowSwipeHint() {
-  if (localStorage.getItem('rc_swipe_hint_seen')) return;
-  const dates = getSortedActiveDates();
-  if (dates.length < 2) return; // nothing to swipe to yet — don't tease a feature with no history
-  const hint = document.getElementById('swipe-hint');
-  if (!hint) return;
-  setTimeout(() => {
-    hint.classList.add('show');
-    setTimeout(() => {
-      hint.classList.remove('show');
-      localStorage.setItem('rc_swipe_hint_seen', '1');
-    }, 3200);
-  }, 700);
-}
-
 function getLh3Link(url) {
   const id = extractFileId(url);
   return id ? `https://lh3.googleusercontent.com/d/${id}` : '';
 }
 
 function toDateStr(timestamp) {
-  // Returns 'YYYY-MM-DD' in local time
   const d = new Date(timestamp);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function todayStr() {
-  return toDateStr(Date.now());
-}
+function todayStr() { return toDateStr(Date.now()); }
 
 function formatDateLabel(dateStr) {
-  // dateStr is 'YYYY-MM-DD'
   const today = todayStr();
   const yd = new Date(Date.now() - 86400000);
   const yStr = `${yd.getFullYear()}-${String(yd.getMonth()+1).padStart(2,'0')}-${String(yd.getDate()).padStart(2,'0')}`;
@@ -1644,6 +1551,18 @@ function formatDateLabel(dateStr) {
 
 function formatTime(timestamp) {
   return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatRelative(timestamp) {
+  const diff = Date.now() - timestamp;
+  const mins = Math.floor(diff/60000);
+  if (mins < 1) return 'now';
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins/60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs/24);
+  if (days < 7) return `${days}d`;
+  return new Date(timestamp).toLocaleDateString([], { month:'short', day:'numeric' });
 }
 
 function showToast(message, type='success') {
@@ -1660,78 +1579,208 @@ function scrollToBottom(force = false) {
   if (force || near) commentsDiv.scrollTop = commentsDiv.scrollHeight;
 }
 
-/* ════════════════════════════════
-   VIEW BAR UPDATE
-════════════════════════════════ */
-function updateViewBar() {
-  const label = document.getElementById('view-bar-text');
-  const pill  = document.getElementById('thread-pill');
-  const offlinePill = document.getElementById('offline-pill');
-
-  if (!swipePreviewActive) {
-    if (activeDateStr === null || activeDateStr === todayStr()) {
-      label.textContent = 'Today';
-    } else {
-      label.textContent = formatDateLabel(activeDateStr);
-    }
-  }
-
-  pill.style.display = threadMode ? 'inline-flex' : 'none';
-  const threadBtn = document.getElementById('threadBtn');
-  threadBtn.classList.toggle('thread-active', threadMode);
-
-  if (offlinePill) offlinePill.style.display = isOnline ? 'none' : 'inline-flex';
+function avatarSrcFor(name) {
+  const pic = memberMap[name]?.picLink || (name === userName ? localStorage.getItem('userPicLink') : '');
+  const id = extractFileId(pic);
+  return id ? `https://lh3.googleusercontent.com/d/${id}` : 'https://via.placeholder.com/40?text=@';
 }
 
 /* ════════════════════════════════
-   RENDER — shared by all views
+   VIEW STATE (people / all / thread)
 ════════════════════════════════ */
-function renderComments(commentsForDate, silent = false) {
-  const wasAtBottom = Math.abs(commentsDiv.scrollHeight - commentsDiv.clientHeight - commentsDiv.scrollTop) < 150;
+function setNavActive() {
+  document.getElementById('peopleBtn').classList.toggle('nav-active', currentView === 'people');
+  document.getElementById('allMsgBtn').classList.toggle('nav-active', currentView === 'all');
+  document.getElementById('threadBtn').classList.toggle('nav-active', currentView === 'thread' && activeThreadUser === userName);
+}
 
-  /* Apply My Thread filter on top of date filter */
-  let msgs = commentsForDate;
-  if (threadMode) {
-    msgs = msgs.filter(c => {
-      if (c.name === userName) return true;
-      if (c.replyTo && c.replyTo.name === userName) return true;
-      // Check if it's a call card mentioning user
-      if (c.comment && c.comment.startsWith('{"type":"call"')) {
-        try {
-          const cd = JSON.parse(c.comment);
-          if (cd.isAllUsers || (cd.invitees||[]).some(i=>i.username===userName)) return true;
-        } catch(e) {}
-      }
-      return false;
+function updateViewBar() {
+  const label      = document.getElementById('view-bar-text');
+  const backBtn    = document.getElementById('view-back-btn');
+  const callBtn    = document.getElementById('view-call-btn');
+  const threadAv   = document.getElementById('view-thread-avatar');
+  const offlinePill = document.getElementById('offline-pill');
+
+  if (currentView === 'people') {
+    label.textContent = 'People';
+    backBtn.style.display = 'none';
+    callBtn.style.display = 'none';
+    threadAv.style.display = 'none';
+  } else if (currentView === 'all') {
+    label.textContent = 'All Messages';
+    backBtn.style.display = 'none';
+    callBtn.style.display = 'none';
+    threadAv.style.display = 'none';
+  } else if (currentView === 'thread') {
+    const isSelf = activeThreadUser === userName;
+    label.textContent = isSelf ? 'My Thread' : `${activeThreadUser}'s Thread`;
+    backBtn.style.display = 'flex';
+    threadAv.style.display = 'inline-block';
+    threadAv.src = avatarSrcFor(activeThreadUser);
+    threadAv.onerror = () => threadAv.style.display = 'none';
+    callBtn.style.display = isSelf ? 'none' : 'flex';
+  }
+
+  setNavActive();
+  if (offlinePill) offlinePill.style.display = isOnline ? 'none' : 'inline-flex';
+}
+
+function goHome() {
+  currentView = 'people';
+  activeThreadUser = null;
+  renderPeopleList();
+  updateViewBar();
+}
+
+function showAllMessages() {
+  currentView = 'all';
+  activeThreadUser = null;
+  cancelReply();
+  renderComments(allComments);
+  updateViewBar();
+}
+
+function openUserThread(username) {
+  currentView = 'thread';
+  activeThreadUser = username;
+  const thread = getThreadFor(username);
+  renderComments(thread, false, { isThread: true, threadUser: username });
+  updateViewBar();
+
+  // Prefill a reply to that person's most recent message so replying feels natural —
+  // the visitor can still cancel it or tap Reply on a specific message instead.
+  if (username !== userName) {
+    const lastByThem = [...thread].reverse().find(c => c.name === username && c.comment && !c.comment.startsWith('{"type":"call"'));
+    if (lastByThem) setReplySafe(username, lastByThem.comment);
+    else cancelReply();
+  } else {
+    cancelReply();
+  }
+}
+
+document.getElementById('peopleBtn').addEventListener('click', goHome);
+document.getElementById('allMsgBtn').addEventListener('click', showAllMessages);
+document.getElementById('threadBtn').addEventListener('click', () => openUserThread(userName));
+
+/* ════════════════════════════════
+   THREAD FILTER — messages authored by a user, plus replies to them
+════════════════════════════════ */
+function getThreadFor(username) {
+  return allComments.filter(c => {
+    if (c.name === username) return true;
+    if (c.replyTo && c.replyTo.name === username) return true;
+    return false;
+  });
+}
+
+/* ════════════════════════════════
+   PEOPLE LIST RENDER
+════════════════════════════════ */
+function lastRealMessage(username) {
+  for (let i = allComments.length - 1; i >= 0; i--) {
+    const c = allComments[i];
+    if (c.name !== username) continue;
+    if (c.comment && c.comment.startsWith('{"type":"call"')) {
+      return { snippet: 'Started a call', timestamp: c.timestamp };
+    }
+    return { snippet: c.comment || '', timestamp: c.timestamp };
+  }
+  return null;
+}
+
+function renderPeopleList(filterText = '') {
+  commentsDiv.innerHTML = '';
+
+  const wrap = document.createElement('div');
+  wrap.id = 'people-search-wrap';
+  wrap.innerHTML = `<input type="text" id="people-search" placeholder="Search people…" value="${filterText.replace(/"/g,'&quot;')}">`;
+  commentsDiv.appendChild(wrap);
+
+  const q = filterText.trim().toLowerCase();
+  let people = allMembers.filter(m => !q || m.name.toLowerCase().includes(q));
+
+  // Sort: self first, then by most recent activity
+  people = people.map(m => ({ ...m, last: lastRealMessage(m.name) }))
+    .sort((a, b) => {
+      if (a.name === userName) return -1;
+      if (b.name === userName) return 1;
+      const ta = a.last ? a.last.timestamp : 0;
+      const tb = b.last ? b.last.timestamp : 0;
+      return tb - ta;
+    });
+
+  if (!people.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.innerHTML = `<i class="fas fa-user-slash"></i><span>No people found</span>`;
+    commentsDiv.appendChild(empty);
+  } else {
+    people.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'person-row';
+      const isSelf = p.name === userName;
+      const av = avatarSrcFor(p.name);
+      row.innerHTML = `
+        <img src="${av}" class="avatar" onerror="this.src='https://via.placeholder.com/46?text=@'">
+        <div class="person-info">
+          <div class="person-name-row">
+            <span class="person-name ${isSelf ? 'self-tag' : ''}">${p.name}</span>
+          </div>
+          <div class="person-snippet">${p.last ? p.last.snippet.substring(0,60) : (isSelf ? 'Visit your thread' : 'No messages yet')}</div>
+        </div>
+        <div class="person-meta">
+          <span class="person-time">${p.last ? formatRelative(p.last.timestamp) : ''}</span>
+          ${!isSelf ? `<button class="person-call-btn" title="Call ${p.name}" data-call="${p.name}"><i class="fas fa-phone"></i></button>` : `<span style="width:32px;height:32px;"></span>`}
+        </div>`;
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.person-call-btn')) return;
+        openUserThread(p.name);
+      });
+      const callIcon = row.querySelector('.person-call-btn');
+      if (callIcon) callIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        quickCall(p.name);
+      });
+      commentsDiv.appendChild(row);
     });
   }
 
+  document.getElementById('people-search').addEventListener('input', (e) => {
+    renderPeopleList(e.target.value);
+    document.getElementById('people-search').focus();
+    const el = document.getElementById('people-search');
+    el.setSelectionRange(el.value.length, el.value.length);
+  });
+}
+
+/* ════════════════════════════════
+   RENDER — used by "All Messages" and Thread views
+════════════════════════════════ */
+function renderComments(msgsIn, silent = false, opts = {}) {
+  const wasAtBottom = Math.abs(commentsDiv.scrollHeight - commentsDiv.clientHeight - commentsDiv.scrollTop) < 150;
+
+  let msgs = msgsIn;
   commentsDiv.innerHTML = '';
 
-  if (msgs.length === 0) {
-    const tStr = activeDateStr || todayStr();
-    const isToday = (tStr === todayStr());
+  if (!msgs.length) {
+    const isThread = opts.isThread;
+    const tUser = opts.threadUser;
     commentsDiv.innerHTML = `
       <div class="today-empty">
         <div class="today-empty-icon">
-          <i class="fas fa-${threadMode ? 'user-check' : (isToday ? 'moon' : 'calendar-times')}"></i>
+          <i class="fas fa-${isThread ? 'user-check' : 'moon'}"></i>
         </div>
-        <h3>${threadMode ? 'No messages here yet' : (isToday ? 'Quiet today' : 'Nothing on this day')}</h3>
-        <p>${threadMode
-          ? 'Messages you sent or conversations you were mentioned in will show here.'
-          : (isToday
-              ? 'No messages have been sent today. Be the first to say something!'
-              : 'No messages were sent on this day.')
+        <h3>${isThread ? (tUser === userName ? 'No messages yet' : `Nothing from ${tUser} yet`) : 'Quiet in here'}</h3>
+        <p>${isThread
+          ? (tUser === userName
+              ? 'Messages you send, and replies to them, will show up here.'
+              : `Messages ${tUser} sends, and replies to them, will show up here. Say hello to start the conversation.`)
+          : 'No messages have been sent yet. Be the first to say something!'
         }</p>
-        ${!threadMode ? `<button class="open-cal-btn" onclick="openCalModal()">
-          <i class="fas fa-calendar-alt"></i> Browse past dates
-        </button>` : ''}
       </div>`;
-    updateViewBar();
     return;
   }
 
-  /* Group messages within the same "date bucket" by date (for thread mode spanning multiple days) */
   const grouped = {};
   msgs.forEach(c => {
     const ds = toDateStr(c.timestamp);
@@ -1807,9 +1856,9 @@ function renderComments(commentsForDate, silent = false) {
 
       const actionsHtml = isPending ? '' : `
         <div class="msg-actions">
-          <button class="action-btn" onclick="setReply('${c.name}','${c.comment.replace(/'/g,"\\'")}')"><i class="fas fa-reply"></i> Reply</button>
+          <button class="action-btn" onclick="setReply('${c.name}','${(c.comment||'').replace(/'/g,"\\'")}')"><i class="fas fa-reply"></i> Reply</button>
           ${isOwn ? `
-            <button class="action-btn" onclick="startEdit('${c.timestamp}','${c.comment.replace(/'/g,"\\'")}')"><i class="fas fa-edit"></i> Edit</button>
+            <button class="action-btn" onclick="startEdit('${c.timestamp}','${(c.comment||'').replace(/'/g,"\\'")}')"><i class="fas fa-edit"></i> Edit</button>
             <button class="action-btn delete-btn" onclick="deleteMsg('${c.timestamp}')"><i class="fas fa-trash"></i></button>
           ` : ''}
         </div>`;
@@ -1820,15 +1869,15 @@ function renderComments(commentsForDate, silent = false) {
           ? `<span class="msg-time pending-time"><i class="fas fa-clock"></i> Sending…</span>`
           : `<span class="msg-time">${formatTime(c.timestamp)}</span>`;
 
-      const avatarSrc = `https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}`;
+      const avSrc = `https://lh3.googleusercontent.com/d/${extractFileId(c.picLink)}`;
 
       const msg = document.createElement('div');
       msg.className = `message ${isOwn ? 'own' : ''} ${!isSame ? 'new-sender' : 'same-sender'} ${isPending ? 'pending' : ''} ${isFailed ? 'failed' : ''}`;
 
       msg.innerHTML = `
-        ${!isOwn ? `<img src="${avatarSrc}" class="avatar" onerror="this.style.visibility='hidden'">` : ''}
+        ${!isOwn ? `<img src="${avSrc}" class="avatar" onerror="this.style.visibility='hidden'">` : ''}
         <div class="message-content">
-          ${!isSame ? `<div class="msg-name">
+          ${!isSame ? `<div class="msg-name" onclick="${isOwn ? '' : `openUserThread('${c.name.replace(/'/g,"\\'")}')`}">
             ${c.name}
             <img src="${(memberMap[c.name]?.isAdmin) ? 'admin-icon.svg' : 'member-icon.svg'}"
                  style="width:16px;height:16px;vertical-align:middle;margin-left:4px;opacity:0.85;position:relative;top:-1px;">
@@ -1841,7 +1890,7 @@ function renderComments(commentsForDate, silent = false) {
             ${actionsHtml}
           </div>
         </div>
-        ${isOwn ? `<img src="${avatarSrc}" class="avatar ${isSame ? 'same-sender' : ''}" onerror="this.style.visibility='hidden'">` : ''}
+        ${isOwn ? `<img src="${avSrc}" class="avatar ${isSame ? 'same-sender' : ''}" onerror="this.style.visibility='hidden'">` : ''}
       `;
 
       groupDiv.appendChild(msg);
@@ -1851,34 +1900,29 @@ function renderComments(commentsForDate, silent = false) {
     commentsDiv.appendChild(groupDiv);
   });
 
-  updateViewBar();
   if (!silent || wasAtBottom) scrollToBottom(true);
 }
 
 /* ════════════════════════════════
-   FILTER FOR ACTIVE DATE
+   RE-RENDER CURRENT VIEW (after new data arrives)
 ════════════════════════════════ */
-function getCommentsForActiveDate() {
-  const ds = activeDateStr || todayStr();
-  if (threadMode) {
-    // In thread mode: show ALL dates that match the thread, not just one day
-    return allComments;
+function refreshCurrentView(silent) {
+  if (currentView === 'people') {
+    const q = document.getElementById('people-search')?.value || '';
+    renderPeopleList(q);
+  } else if (currentView === 'all') {
+    renderComments(allComments, silent);
+  } else if (currentView === 'thread' && activeThreadUser) {
+    renderComments(getThreadFor(activeThreadUser), silent, { isThread: true, threadUser: activeThreadUser });
   }
-  return allComments.filter(c => toDateStr(c.timestamp) === ds);
-}
-
-/* ════════════════════════════════
-   DATE SETS (for calendar highlights)
-════════════════════════════════ */
-function getActiveDates() {
-  const set = new Set();
-  allComments.forEach(c => set.add(toDateStr(c.timestamp)));
-  return set;
+  updateViewBar();
 }
 
 /* ════════════════════════════════
    LOAD COMMENTS FROM SERVER
 ════════════════════════════════ */
+let allComments = []; // oldest first
+
 async function loadComments(silent = true) {
   try {
     const response = await fetch(`${scriptUrl}?operation=getData`);
@@ -1888,7 +1932,7 @@ async function loadComments(silent = true) {
 
     if (silent && data.comments.length === lastCommentCount) {
       setOnlineStatus(true);
-      maybeFlushPending();          
+      maybeFlushPending();
       return;
     }
     lastCommentCount = data.comments.length;
@@ -1899,21 +1943,9 @@ async function loadComments(silent = true) {
     cacheComments(allComments, data.announcements);
     setOnlineStatus(true);
     mergeInPendingDrafts();
-    maybeFlushPending();    
+    maybeFlushPending();
 
-    if (!initialDateSet) {
-  initialDateSet = true;
-  const dates = getSortedActiveDates();
-  if (dates.length && dates[dates.length - 1] !== todayStr()) {
-    activeDateStr = dates[dates.length - 1]; // jump to most recent day that actually has messages
-  }
-  maybeShowSwipeHint(); // added in step 2 below
-}
-
-    
-
-    const filtered = getCommentsForActiveDate();
-    renderComments(filtered, silent);
+    refreshCurrentView(silent);
   } catch(err) {
     console.error('Failed to load messages:', err);
     setOnlineStatus(false);
@@ -1944,7 +1976,7 @@ function loadFromCache() {
     const cached = JSON.parse(raw);
     allComments = cached.comments || [];
     mergeInPendingDrafts();
-    renderComments(getCommentsForActiveDate());
+    refreshCurrentView(true);
     showToast('Offline — showing last synced messages', 'info');
   } catch(e) { /* corrupted cache — ignore */ }
 }
@@ -1999,11 +2031,6 @@ function queueDraft(text) {
   const pending = getPendingDrafts();
   pending.push(draft);
   savePendingDrafts(pending);
-
-  if (activeDateStr && activeDateStr !== todayStr()) {
-    activeDateStr = todayStr();
-    threadMode = false;
-  }
   mergeInPendingDrafts();
   registerBackgroundSync();
 }
@@ -2027,12 +2054,12 @@ async function flushPendingDrafts() {
           pending = pending.filter(p => p.localId !== draft.localId);
           savePendingDrafts(pending);
         } else if (r.status === 'queued' || r.offline) {
-          break; // still offline per SW — stop trying this round
+          break;
         } else {
           draft.failed = true;
         }
       } catch (e) {
-        break; // network still down — stop, will retry on next 'online' event
+        break;
       }
     }
     savePendingDrafts(pending);
@@ -2069,254 +2096,6 @@ if ('serviceWorker' in navigator) {
 }
 
 /* ════════════════════════════════
-   THREAD MODE TOGGLE
-════════════════════════════════ */
-function toggleThread() {
-  threadMode = !threadMode;
-  if (threadMode) {
-    // Show all messages involving user across all time
-    renderComments(allComments);
-    showToast('Showing your thread', 'info');
-  } else {
-    renderComments(getCommentsForActiveDate());
-  }
-  updateViewBar();
-}
-
-document.getElementById('threadBtn').addEventListener('click', toggleThread);
-
-/* ════════════════════════════════
-   CALENDAR MODAL
-════════════════════════════════ */
-let calYear, calMonth;
-
-function openCalModal() {
-  const now = new Date();
-  calYear  = now.getFullYear();
-  calMonth = now.getMonth(); // 0-indexed
-  renderCal();
-  document.getElementById('cal-modal').style.display = 'flex';
-}
-
-function renderCal() {
-  const activeDates = getActiveDates();
-  const today = todayStr();
-  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('calMonthLabel').textContent = `${monthNames[calMonth]} ${calYear}`;
-
-  const grid = document.getElementById('calGrid');
-  grid.innerHTML = '';
-
-  // Day names
-  ['S','M','T','W','T','F','S'].forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'cal-day-name';
-    el.textContent = d;
-    grid.appendChild(el);
-  });
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-
-  // Empty cells before first day
-  for (let i = 0; i < firstDay; i++) {
-    const el = document.createElement('div');
-    el.className = 'cal-day empty';
-    grid.appendChild(el);
-  }
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const el = document.createElement('div');
-    el.className = 'cal-day';
-    el.textContent = d;
-
-    if (ds === today)           el.classList.add('is-today');
-    if (ds === activeDateStr)   el.classList.add('selected');
-    if (activeDates.has(ds))    el.classList.add('has-msgs');
-
-    if (activeDates.has(ds)) {
-      el.addEventListener('click', () => {
-        activeDateStr = ds;
-        threadMode = false;
-        renderCal(); // re-render to update selected state
-        renderComments(getCommentsForActiveDate());
-        updateViewBar();
-        document.getElementById('cal-modal').style.display = 'none';
-      });
-    }
-
-    grid.appendChild(el);
-  }
-}
-
-document.getElementById('calPrev').addEventListener('click', () => {
-  calMonth--;
-  if (calMonth < 0) { calMonth = 11; calYear--; }
-  renderCal();
-});
-
-document.getElementById('calNext').addEventListener('click', () => {
-  calMonth++;
-  if (calMonth > 11) { calMonth = 0; calYear++; }
-  renderCal();
-});
-
-document.getElementById('calGoToday').addEventListener('click', () => {
-  activeDateStr = todayStr();
-  threadMode = false;
-  renderComments(getCommentsForActiveDate());
-  updateViewBar();
-  document.getElementById('cal-modal').style.display = 'none';
-});
-
-document.getElementById('calClose').addEventListener('click', () => {
-  document.getElementById('cal-modal').style.display = 'none';
-});
-
-document.getElementById('cal-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('cal-modal'))
-    document.getElementById('cal-modal').style.display = 'none';
-});
-
-document.getElementById('calBtn').addEventListener('click', () => openCalModal());
-
-/* ════════════════════════════════
-   SWIPE DAY NAVIGATION
-   (shares activeDateStr with the calendar — jumping via calendar or
-    swiping both just move the same pointer)
-════════════════════════════════ */
-function getSortedActiveDates() {
-  return Array.from(getActiveDates()).sort();
-}
-
-function getEffectiveDate() {
-  return activeDateStr || todayStr();
-}
-
-/* direction: +1 = forward in time (toward today), -1 = backward (toward past) */
-function findAdjacentDate(direction) {
-  const dates = getSortedActiveDates();
-  if (!dates.length) return null;
-  const cur = getEffectiveDate();
-  const idx = dates.indexOf(cur);
-
-  if (idx === -1) {
-    // Current day (e.g. an empty "Today") has no messages of its own.
-    if (direction < 0) {
-      for (let i = dates.length - 1; i >= 0; i--) {
-        if (dates[i] < cur) return dates[i];
-      }
-    }
-    return null;
-  }
-
-  const newIdx = idx + direction;
-  if (newIdx < 0 || newIdx >= dates.length) return null;
-  return dates[newIdx];
-}
-
-function goToDay(dateStr, direction) {
-  if (!dateStr) { bounceComments(direction); return; }
-  threadMode = false;
-  animateDaySwitch(() => {
-    activeDateStr = dateStr;
-    renderComments(getCommentsForActiveDate());
-  }, direction);
-}
-
-/* Slide + fade transition (~220ms) so day changes never feel like an abrupt swap */
-function animateDaySwitch(applyFn, direction) {
-  const el = commentsDiv;
-  el.style.transition = 'transform 220ms ease, opacity 220ms ease';
-  el.style.transform = direction > 0 ? 'translateX(-24px)' : 'translateX(24px)';
-  el.style.opacity = '0';
-  setTimeout(() => {
-    applyFn();
-    el.style.transition = 'none';
-    el.style.transform = direction > 0 ? 'translateX(24px)' : 'translateX(-24px)';
-    void el.offsetWidth; // force reflow before re-enabling transition
-    el.style.transition = 'transform 220ms ease, opacity 220ms ease';
-    el.style.transform = 'translateX(0)';
-    el.style.opacity = '1';
-  }, 220);
-}
-
-/* Small bounce when there's no more day to swipe to in that direction */
-function bounceComments(direction) {
-  const el = commentsDiv;
-  el.style.transition = 'transform 120ms ease';
-  el.style.transform = direction > 0 ? 'translateX(-14px)' : 'translateX(14px)';
-  setTimeout(() => { el.style.transition = 'transform 160ms ease'; el.style.transform = 'translateX(0)'; }, 120);
-  updateViewBar();
-}
-
-/* Touch handling — only hijacks the gesture once it's clearly horizontal,
-   so vertical message scrolling is never interrupted. */
-let swipeStartX = 0, swipeStartY = 0, swipeAxis = null, swipePreviewShown = false;
-const SWIPE_THRESHOLD = 50;
-
-function onSwipeStart(e) {
-  const t = e.touches[0];
-  swipeStartX = t.clientX; swipeStartY = t.clientY;
-  swipeAxis = null; swipePreviewShown = false;
-}
-
-function onSwipeMove(e) {
-  const t = e.touches[0];
-  const dx = t.clientX - swipeStartX;
-  const dy = t.clientY - swipeStartY;
-
-  if (swipeAxis === null) {
-    if (Math.abs(dx) > 12 || Math.abs(dy) > 12) {
-      swipeAxis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
-    } else {
-      return;
-    }
-  }
-  if (swipeAxis !== 'h') return; // vertical drag — let normal scrolling happen
-
-  e.preventDefault(); // stop the page from also trying to scroll while swiping days
-
-  const pastThreshold = Math.abs(dx) > SWIPE_THRESHOLD;
-  if (pastThreshold && !swipePreviewShown) {
-    swipePreviewShown = true;
-    const direction = dx < 0 ? 1 : -1; // swipe left -> forward, swipe right -> backward
-    const target = findAdjacentDate(direction);
-    if (target) {
-      swipePreviewActive = true;
-      document.getElementById('view-bar-text').textContent = formatDateLabel(target);
-    }
-  } else if (!pastThreshold && swipePreviewShown) {
-    swipePreviewShown = false;
-    swipePreviewActive = false;
-    updateViewBar();
-  }
-}
-
-function onSwipeEnd(e) {
-  if (swipeAxis === 'h') {
-    const dx = (e.changedTouches[0].clientX - swipeStartX);
-    swipePreviewActive = false;
-    if (Math.abs(dx) > SWIPE_THRESHOLD) {
-      const direction = dx < 0 ? 1 : -1;
-      goToDay(findAdjacentDate(direction), direction);
-    } else {
-      updateViewBar();
-    }
-  }
-  swipeAxis = null; swipePreviewShown = false;
-}
-
-function attachSwipeHandlers() {
-  const zone = commentsDiv;
-  zone.addEventListener('touchstart', onSwipeStart, { passive: true });
-  zone.addEventListener('touchmove', onSwipeMove, { passive: false });
-  zone.addEventListener('touchend', onSwipeEnd, { passive: true });
-}
-attachSwipeHandlers();
-
-/* ════════════════════════════════
    STATUS CHECK
 ════════════════════════════════ */
 async function checkUserStatus() {
@@ -2330,17 +2109,22 @@ async function checkUserStatus() {
     localStorage.setItem('rc_last_approved', isApproved ? '1' : '0');
     setOnlineStatus(true);
 
-    memberMap[userName] = { isAdmin: data.isAdmin, role: data.role };
-    fetch(`${scriptUrl}?operation=getMembers`)
-      .then(r => r.json())
-      .then(d => {
-        (d.users || []).forEach(u => {
-          memberMap[u.name] = { isAdmin: u.isAdmin, role: u.role };
-        });
-      }).catch(() => {});
+    memberMap[userName] = { isAdmin: data.isAdmin, role: data.role, picLink: localStorage.getItem('userPicLink') || '' };
+    allMembers = [{ name: userName, isAdmin: data.isAdmin, role: data.role, picLink: localStorage.getItem('userPicLink') || '' }];
+
+    try {
+      const mres = await fetch(`${scriptUrl}?operation=getMembers`);
+      const mdata = await mres.json();
+      (mdata.users || []).forEach(u => {
+        memberMap[u.name] = { isAdmin: u.isAdmin, role: u.role, picLink: u.picLink || '' };
+        if (u.name !== userName) allMembers.push({ name: u.name, isAdmin: u.isAdmin, role: u.role, picLink: u.picLink || '', status: u.status });
+      });
+    } catch(e) {}
 
     if (isApproved) {
-      loadComments(false);
+      await loadComments(false);
+      renderPeopleList();
+      updateViewBar();
       startPolling();
       commentInput.focus();
     } else {
@@ -2360,7 +2144,6 @@ async function checkUserStatus() {
     setOnlineStatus(false);
     const lastApproved = localStorage.getItem('rc_last_approved') === '1';
     if (lastApproved) {
-      // Fully offline: fall back to last-known approved state and cached messages
       isApproved = true;
       loadFromCache();
       commentInput.focus();
@@ -2397,6 +2180,13 @@ function setReply(name, text) {
   document.getElementById('reply-text').innerHTML = `Replying to <strong>${name}</strong>: <em style="opacity:.7;">${text.substring(0,35)}${text.length>35?'…':''}</em>`;
   document.getElementById('reply-preview').style.display = 'flex';
   commentInput.focus();
+}
+
+/* Same as setReply, but doesn't steal focus — used for the auto-prefill when opening a thread */
+function setReplySafe(name, text) {
+  replyingTo = { name, text };
+  document.getElementById('reply-text').innerHTML = `Replying to <strong>${name}</strong>: <em style="opacity:.7;">${text.substring(0,35)}${text.length>35?'…':''}</em>`;
+  document.getElementById('reply-preview').style.display = 'flex';
 }
 
 function cancelReply() {
@@ -2436,7 +2226,7 @@ function startEdit(timestamp, originalText) {
     <textarea class="edit-input" id="ef-${timestamp}">${originalText}</textarea>
     <div style="display:flex;gap:6px;">
       <button class="action-btn" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);color:#4ade80;" onclick="saveEdit('${timestamp}')">Save</button>
-      <button class="action-btn" onclick="loadComments(false)">Cancel</button>
+      <button class="action-btn" onclick="refreshCurrentView(false)">Cancel</button>
     </div>`;
   const input = document.getElementById(`ef-${timestamp}`);
   if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
@@ -2460,13 +2250,12 @@ async function sendMessage() {
   const text = commentInput.value.trim();
   if (!text && !selectedFileData) return;
 
-  // Offline (and no attachment, which we can't queue reliably): draft locally
   if (!isOnline && !selectedFileData) {
     queueDraft(text);
     commentInput.value = '';
+    commentInput.style.height = 'auto';
     cancelReply();
-    updateViewBar();
-    renderComments(getCommentsForActiveDate());
+    if (currentView !== 'people') refreshCurrentView(false);
     showToast('No connection — message will send automatically once you\'re back online', 'info');
     return;
   }
@@ -2480,41 +2269,36 @@ async function sendMessage() {
     const r = await res.json();
     if (r.status==='success') {
       commentInput.value = '';
+      commentInput.style.height = 'auto';
       cancelReply();
       if (selectedFileData) removeFileBtn.click();
-      // After sending: jump to today if we're on a different date
-      if (activeDateStr && activeDateStr !== todayStr()) {
-        activeDateStr = todayStr();
-        threadMode = false;
-        updateViewBar();
-      }
       setOnlineStatus(true);
       await loadComments(false);
     } else if (r.status === 'queued' || r.offline) {
       setOnlineStatus(false);
       queueDraft(text);
       commentInput.value = '';
+      commentInput.style.height = 'auto';
       cancelReply();
-      updateViewBar();
-      renderComments(getCommentsForActiveDate());
+      if (currentView !== 'people') refreshCurrentView(false);
       showToast('No connection — message queued to send', 'info');
     } else showToast(r.message||'Failed to send','error');
   } catch {
-    // Network genuinely unreachable — queue instead of showing a hard error
     setOnlineStatus(false);
     queueDraft(text);
     commentInput.value = '';
+    commentInput.style.height = 'auto';
     cancelReply();
-    updateViewBar();
-    renderComments(getCommentsForActiveDate());
+    if (currentView !== 'people') refreshCurrentView(false);
     showToast('Connection lost — message queued to send', 'info');
   }
   finally { sendBtn.disabled = false; }
 }
 
 sendBtn.addEventListener('click', sendMessage);
-commentInput.addEventListener('keypress', e => {
-  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+commentInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  // Shift+Enter inserts a newline naturally — paragraphs are supported.
 });
 
 function startPolling() {
@@ -2642,7 +2426,7 @@ document.getElementById('copy-recovery-btn').addEventListener('click', () => {
 });
 
 /* ══════════════════════════════
-   CALL MODAL
+   CALL MODAL (general — all members or a hand-picked group)
 ══════════════════════════════ */
 function setCallType(type) {
   callType = type;
@@ -2712,6 +2496,40 @@ document.getElementById('startCallBtn').addEventListener('click', async () => {
   } catch { showToast('Network error','error'); }
   finally { btn.disabled=false; btn.innerHTML='<i class="fas fa-phone"></i> Start Call'; }
 });
+
+/* ══════════════════════════════
+   DIRECT / PER-PERSON CALL
+   Used by the People list call icon and the thread header call button —
+   dials a single person straight away, no modal needed.
+══════════════════════════════ */
+async function quickCall(username) {
+  if (!isApproved) { showToast('Account not yet approved','error'); return; }
+  if (username === userName) return;
+  const picLink = memberMap[username]?.picLink || '';
+  showToast(`Calling ${username}…`, 'info');
+  try {
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        operation: 'initiateCall',
+        username: userName,
+        picLink: localStorage.getItem('userPicLink') || '',
+        title: `${userName} → ${username}`,
+        invitees: [{ username, picLink }],
+        isAllUsers: false
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      window.location.href = `call.html?callId=${data.callId}&host=1`;
+      loadComments(false);
+    } else showToast(data.message || 'Failed to start call', 'error');
+  } catch { showToast('Network error', 'error'); }
+}
+
+function callActiveThreadUser() {
+  if (activeThreadUser && activeThreadUser !== userName) quickCall(activeThreadUser);
+}
 
 /* ── Call card builder ── */
 function buildCallCard(c, callData) {
@@ -2796,65 +2614,121 @@ if ('serviceWorker' in navigator) {
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3qdljC5TNQo2xOFth13eMUm4JvpSA9yewJJ6n3xgc6J26pV_jzAeia6TGRI6ylZIe/exec';
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
+async function registerFcmForChat() {
+  if (window.Capacitor?.isNativePlatform?.()) {
     try {
-      const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-      const { initializeApp }               = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
-      const { getMessaging, getToken, onMessage } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
+      const { PushNotifications } = window.Capacitor.Plugins;
+      const perm = await PushNotifications.checkPermissions();
+      let status = perm.receive;
+      if (status === 'prompt') {
+        const req = await PushNotifications.requestPermissions();
+        status = req.receive;
+      }
+      if (status !== 'granted') return;
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+      await PushNotifications.register();
+
+      PushNotifications.addListener('registration', async token => {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            operation: 'saveFcmToken',
+            username: userName,
+            fcmToken: token.value,
+            platform: 'android'
+          })
+        });
+      });
+
+      PushNotifications.addListener('registrationError', err => {
+        console.error('Native push registration error:', err);
+      });
+
+      PushNotifications.addListener('pushNotificationActionPerformed', notification => {
+        const data = notification.notification.data || {};
+        if (data.callId) window.location.href = `call.html?callId=${data.callId}`;
+        else if (data.channelId) window.location.href = `channel.html?channelId=${data.channelId}&postId=${data.postId||''}`;
+        else if (data.gameId) window.location.href = `Q&A.html?gameId=${data.gameId}`;
+        else if (data.announcement) window.location.href = 'announce.html';
+      });
+
+    } catch (err) {
+      console.error('Native push setup failed:', err);
+    }
+    return;
+  }
+
+  if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
+
+  try {
+    const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
+    const { getMessaging, getToken, onMessage } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
+
+    const app = initializeApp({
+      apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
         authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
         projectId: "dc-riverside-murera-coffee",
         storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
         messagingSenderId: "373863707096",
         appId: "1:373863707096:web:5e3c703655687b96e442ad"
-      };
+    });
 
-      const app = initializeApp(firebaseConfig);
-      const messaging = getMessaging(app);
-      const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
+    const messaging = getMessaging(app);
+    const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
 
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') return;
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
 
-      const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
-      if (token) {
-        const res = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ operation:'saveFcmToken', username: userName, fcmToken: token }) });
-        const r   = await res.json();
-        if (r.status==='success') localStorage.setItem('fcmTokenSaved','true');
-      }
-
-      onMessage(messaging, payload => {
-        const title  = payload.data?.title || 'Riverside Connect';
-        const body   = payload.data?.body  || 'New message';
-        const callId = payload.data?.callId || '';
-
-        if (callId) {
-          const banner = document.createElement('div');
-          banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
-          banner.innerHTML = `
-            <div style="display:flex;align-items:center;gap:12px;min-width:0;">
-              <i class="fas fa-phone-volume" style="font-size:1.3rem;flex-shrink:0;"></i>
-              <div style="min-width:0;"><div style="font-weight:700;font-size:0.95rem;">${title}</div><div style="font-size:0.8rem;opacity:.85;">${body}</div></div>
-            </div>
-            <div style="display:flex;gap:8px;flex-shrink:0;">
-              <button onclick="window.location.href='call.html?callId=${callId}'" style="padding:7px 16px;background:white;color:#16a34a;border:none;border-radius:999px;font-weight:700;cursor:pointer;font-size:0.83rem;">Join</button>
-              <button onclick="this.closest('div[style]').remove()" style="padding:7px 12px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:999px;cursor:pointer;font-size:0.83rem;">×</button>
-            </div>`;
-          document.body.appendChild(banner);
-          setTimeout(() => banner.remove(), 30000);
-        } else {
-          showToast(`${title}: ${body}`, 'info');
-          if (isApproved) loadComments(false);
-        }
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (token) {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          operation: 'saveFcmToken',
+          username: userName,
+          fcmToken: token,
+          platform: 'web'
+        })
       });
-    } catch(err) {
-      console.error('FCM error:', err);
     }
-  });
+
+    onMessage(messaging, payload => {
+      const title  = payload.data?.title || 'Riverside Connect';
+      const body   = payload.data?.body  || 'New message';
+      const callId = payload.data?.callId || '';
+
+      if (callId) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+        banner.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+            <i class="fas fa-phone-volume" style="font-size:1.3rem;flex-shrink:0;"></i>
+            <div style="min-width:0;"><div style="font-weight:700;font-size:0.95rem;">${title}</div><div style="font-size:0.8rem;opacity:.85;">${body}</div></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button onclick="window.location.href='call.html?callId=${callId}'" style="padding:7px 16px;background:white;color:#16a34a;border:none;border-radius:999px;font-weight:700;cursor:pointer;font-size:0.83rem;">Join</button>
+            <button onclick="this.closest('div[style]').remove()" style="padding:7px 12px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:999px;cursor:pointer;font-size:0.83rem;">×</button>
+          </div>`;
+        document.body.appendChild(banner);
+        setTimeout(() => banner.remove(), 30000);
+      } else {
+        showToast(`${title}: ${body}`, 'info');
+        if (isApproved) loadComments(false);
+      }
+    });
+  } catch (err) {
+    console.error('Web FCM error:', err);
+  }
 }
+
+window.addEventListener('load', () => {
+  registerFcmForChat().catch(err => console.error('FCM registration failed:', err));
+});
 </script>
+
 </body>
 </html>
+
+
+
