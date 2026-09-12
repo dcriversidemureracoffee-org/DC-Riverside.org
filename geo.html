@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Riverside Mapping — Riverside Connect</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="manifest" href="./manifest.json">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Riverside Connect">
+  <link rel="apple-touch-icon" sizes="180x180" href="maskable_icon_x192.png">
+
+  <style>
+    :root {
+      --ink:       #e2e8f0;
+      --paper:     #0a0f1e;
+      --surface:   #0f172a;
+      --lift:      #1a2540;
+      --wire:      rgba(96,165,250,0.18);
+      --steel:     #64748b;
+      --lead:      #94a3b8;
+      --accent:    #3b82f6;
+      --accent2:   #60a5fa;
+      --gold:      #facc15;
+      --danger:    #ef4444;
+      --green:     #10b981;
+
+      --font-head: 'Bebas Neue', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+
+      --bar-h: 50px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    html, body {
+      height: 100dvh;
+      overflow: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--bar-h);
+      background: rgba(10,15,30,0.92);
+      border-bottom: 1px solid var(--wire);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 8px;
+      backdrop-filter: blur(16px);
+    }
+    .tb-icon-btn {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none; border-radius: 9px;
+      color: var(--lead); cursor: pointer; font-size: 0.95rem;
+      transition: all 0.15s; flex-shrink: 0; text-decoration: none;
+    }
+    .tb-icon-btn:hover { color: var(--accent2); background: var(--lift); }
+    .tb-title {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      letter-spacing: 0.06em;
+      color: var(--accent2);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .tb-spacer { flex: 1; }
+
+    #scroll-area {
+      position: fixed;
+      top: var(--bar-h); left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 90px;
+    }
+
+    .geo-intro { padding: 16px 16px 4px; }
+    .geo-intro h1 {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+    }
+    .geo-intro p { font-size: 0.82rem; color: var(--lead); margin-top: 2px; }
+
+    .loc-permission-row {
+      margin: 10px 16px 0;
+      padding: 10px 12px;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid var(--wire);
+      border-radius: 10px;
+      font-size: 0.78rem;
+      color: var(--lead);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .loc-permission-row i { color: var(--accent2); }
+
+    /* ── SEARCH BAR ─────────────────────────────────────────────── */
+    .search-row {
+      margin: 12px 16px 0;
+      position: relative;
+    }
+    .search-row i.fa-magnifying-glass {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--steel);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+    #event-search {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--wire);
+      border-radius: 10px;
+      padding: 10px 36px;
+      color: var(--ink);
+      font-size: 0.85rem;
+      font-family: var(--font-body);
+    }
+    #event-search:focus { outline: none; border-color: var(--accent2); }
+    .search-clear-btn {
+      position: absolute;
+      right: 6px; top: 50%;
+      transform: translateY(-50%);
+      width: 26px; height: 26px;
+      border: none;
+      background: var(--lift);
+      color: var(--lead);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .search-clear-btn.show { display: flex; }
+
+    #events-list { padding: 12px 16px 0; display: flex; flex-direction: column; gap: 12px; }
+
+    .event-card {
+      background: var(--surface);
+      border: 1px solid var(--wire);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .event-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .event-title { font-weight: 700; font-size: 1rem; color: var(--ink); }
+    .event-distance {
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--green);
+      background: rgba(16,185,129,0.12);
+      padding: 3px 9px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+    .event-distance.unknown { color: var(--steel); background: rgba(100,116,139,0.12); }
+
+    .event-desc { margin-top: 6px; font-size: 0.85rem; line-height: 1.5; color: var(--lead); white-space: pre-wrap; }
+
+    .event-actions { margin-top: 12px; display: flex; gap: 8px; }
+    .event-btn {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 9px;
+      border-radius: 9px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: var(--font-body);
+      transition: all .15s;
+      text-decoration: none;
+    }
+    .event-btn.primary { background: var(--accent); color: #fff; }
+    .event-btn.primary:hover { background: #2563eb; }
+    .event-btn.ghost { background: var(--lift); color: var(--lead); }
+    .event-btn.ghost:hover { color: var(--accent2); }
+
+    .list-empty, .list-error-inline {
+      padding: 30px 16px;
+      text-align: center;
+      color: var(--steel);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+    }
+    .list-error-inline { color: var(--danger); }
+
+    #fab-add {
+      position: fixed;
+      right: 18px;
+      bottom: 24px;
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-size: 1.3rem;
+      display: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+      cursor: pointer;
+      z-index: 800;
+    }
+    #fab-add.visible { display: flex; }
+    #fab-add:active { transform: scale(0.94); }
+
+    #modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-end;
+    }
+    #modal-backdrop.show { display: flex; }
+    #modal-sheet {
+      width: 100%;
+      max-height: 88vh;
+      background: var(--surface);
+      border-radius: 18px 18px 0 0;
+      border-top: 1px solid var(--wire);
+      display: flex;
+      flex-direction: column;
+      animation: sheetUp 0.2s ease;
+    }
+    @keyframes sheetUp { from { transform: translateY(24px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--wire); flex-shrink: 0; }
+    .modal-header h2 { font-family: var(--font-head); font-size: 1.2rem; letter-spacing: 0.05em; color: var(--ink); }
+    .modal-close { width: 30px; height: 30px; border-radius: 50%; background: var(--lift); border: none; color: var(--lead); cursor: pointer; }
+
+    .modal-body { padding: 16px; overflow-y: auto; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 0.72rem; font-family: var(--font-mono); letter-spacing: 0.06em; color: var(--steel); margin-bottom: 6px; }
+    .field input, .field textarea {
+      width: 100%;
+      background: var(--lift);
+      border: 1px solid var(--wire);
+      border-radius: 9px;
+      padding: 10px 12px;
+      color: var(--ink);
+      font-size: 0.88rem;
+      font-family: var(--font-body);
+      resize: vertical;
+    }
+    .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent2); }
+    .field-hint { font-size: 0.7rem; color: var(--steel); margin-top: 4px; }
+    .latlng-row { display: flex; gap: 8px; }
+    .latlng-row .field { flex: 1; margin-bottom: 0; }
+    .latlng-status { margin-top: 8px; font-family: var(--font-mono); font-size: 0.7rem; padding: 6px 10px; border-radius: 7px; display: none; }
+    .latlng-status.show { display: block; }
+    .latlng-status.ok { background: rgba(16,185,129,0.12); color: var(--green); }
+    .latlng-status.err { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+    /* ── USE MY LOCATION BUTTON ───────────────────────────────────── */
+    .use-location-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 9px;
+      border: 1px dashed var(--wire);
+      background: rgba(59,130,246,0.08);
+      color: var(--accent2);
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: var(--font-body);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .use-location-btn:active { transform: scale(0.98); }
+    .use-location-btn:disabled { opacity: 0.5; }
+    .field-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0;
+      color: var(--steel);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+    }
+    .field-divider::before, .field-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--wire);
+    }
+
+    .modal-footer { padding: 12px 16px 20px; border-top: 1px solid var(--wire); display: flex; gap: 10px; flex-shrink: 0; }
+    .modal-btn { flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; border: none; cursor: pointer; font-family: var(--font-body); }
+    .modal-btn.save { background: var(--accent); color: #fff; }
+    .modal-btn.save:disabled { opacity: 0.5; }
+    .modal-btn.delete { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+    #toast-area {
+      position: fixed; top: calc(var(--bar-h) + 10px); left: 50%;
+      transform: translateX(-50%); z-index: 9999;
+      display: flex; flex-direction: column; gap: 6px;
+      pointer-events: none; align-items: center;
+    }
+    .toast-msg {
+      padding: 9px 16px; border-radius: 100px;
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.06em; color: white; white-space: nowrap;
+      animation: toastIn 0.25s ease; pointer-events: auto; max-width: 90vw;
+    }
+    .toast-msg.ok  { background: rgba(16,185,129,0.92); }
+    .toast-msg.err { background: rgba(239,68,68,0.92); }
+    .toast-msg.inf { background: rgba(59,130,246,0.92); }
+    @keyframes toastIn { from { opacity:0; transform: translateY(-8px) scale(0.95);} to { opacity:1; transform: translateY(0) scale(1);} }
+  </style>
+</head>
+<body>
+
+<header id="topbar">
+  <a href="index.html" class="tb-icon-btn" title="Back">
+    <i class="fas fa-arrow-left"></i>
+  </a>
+  <div class="tb-title">RIVERSIDE MAPPING</div>
+  <div class="tb-spacer"></div>
+  <button class="tb-icon-btn" id="refresh-btn" title="Refresh">
+    <i class="fas fa-rotate"></i>
+  </button>
+</header>
+
+<div id="scroll-area">
+  <div class="geo-intro">
+    <h1>Fellowships &amp; Locations</h1>
+    <p>Find events and gathering spots near you.</p>
+  </div>
+
+  <div class="loc-permission-row" id="loc-permission-row">
+    <i class="fas fa-location-crosshairs"></i>
+    <span id="loc-permission-text">Tap to enable your location and see distances</span>
+  </div>
+
+  <div class="search-row">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="text" id="event-search" placeholder="Search events…" autocomplete="off">
+    <button class="search-clear-btn" id="search-clear-btn" title="Clear"><i class="fas fa-xmark"></i></button>
+  </div>
+
+  <div id="events-list">
+    <div class="list-empty">Loading events…</div>
+  </div>
+</div>
+
+<button id="fab-add" title="New Event">
+  <i class="fas fa-plus"></i>
+</button>
+
+<div id="modal-backdrop">
+  <div id="modal-sheet">
+    <div class="modal-header">
+      <h2 id="modal-title">New Event</h2>
+      <button class="modal-close" id="modal-close"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Event Title</label>
+        <input type="text" id="f-title" placeholder="Sunday Fellowship — Riverside Park">
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="f-desc" rows="4" placeholder="What's happening, time, what to bring…"></textarea>
+      </div>
+
+      <button type="button" class="use-location-btn" id="use-location-btn">
+        <i class="fas fa-location-crosshairs"></i> Use My Current Location
+      </button>
+
+      <div class="field-divider">OR PASTE A LINK</div>
+
+      <div class="field">
+        <label>Google Maps Link</label>
+        <input type="text" id="f-maplink" placeholder="Paste a Google Maps share link">
+        <div class="field-hint">Open the location in Google Maps → Share → Copy link, then paste it here.</div>
+        <div class="latlng-status" id="latlng-status"></div>
+      </div>
+      <div class="latlng-row">
+        <div class="field">
+          <label>Latitude</label>
+          <input type="text" id="f-lat" placeholder="auto-filled">
+        </div>
+        <div class="field">
+          <label>Longitude</label>
+          <input type="text" id="f-lng" placeholder="auto-filled">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn delete" id="modal-delete" style="display:none;">Remove</button>
+      <button class="modal-btn save" id="modal-save">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-area"></div>
+
+<script>
+'use strict';
+
+/* ── TWO BACKENDS ─────────────────────────────────────────────────
+   EVENTS_SCRIPT_URL: your new, separate Apps Script/Sheet that only
+   stores event rows (title, description, mapLink, lat, lng...).
+   It does NOT know about users, so it is never used for status/role
+   checks — only for getEvents / createEvent / updateEvent.
+
+   USER_SCRIPT_URL: the SAME backend your index.html already uses
+   for login/status/roles. geo.html calls this one for getUserStatus
+   so "who is Admin" always comes from your one source of truth for
+   users, no matter which script the events live in. */
+const EVENTS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqAd5h07uJYow9sWkYCTZbrMF9WWSvcMYM9r7Yn6Ib6FvlsqZ5K_VQq4q07WJcSLIQ/exec';
+const USER_SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+
+const userName = localStorage.getItem('userName') || '';
+if (!userName) { window.location.href = 'login.html'; }
+
+/* ── ADMIN DETECTION ──────────────────────────────────────────────
+   Reuses the exact same call your index.html already makes
+   (operation=getUserStatus) against the ORIGINAL script, so role
+   detection here matches the rest of the app automatically.
+   Adjust the field name(s) below only if index.html reads the role
+   from a different key than isAdmin/userRole/role. */
+let isAdmin = (localStorage.getItem('userRole') || '').toLowerCase() === 'admin'
+           || localStorage.getItem('isAdmin') === 'true';
+
+async function confirmAdminFromBackend() {
+  try {
+    const res = await fetch(`${USER_SCRIPT_URL}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
+    const data = await res.json();
+    if (data && (data.isAdmin === true || (data.userRole || data.role || '').toString().toLowerCase() === 'admin')) {
+      isAdmin = true;
+    }
+  } catch {}
+  document.getElementById('fab-add').classList.toggle('visible', isAdmin);
+  renderEvents(); // re-render so Edit buttons show/hide correctly
+}
+
+/* ── STATE ─────────────────────────────────────────────────────── */
+let events = [];
+let userCoords = null; // { lat, lng }
+let editingId = null;
+let searchQuery = '';
+
+/* ── HELPERS ──────────────────────────────────────────────────── */
+function toast(msg, type = 'inf', dur = 3000) {
+  const area = document.getElementById('toast-area');
+  const el = document.createElement('div');
+  el.className = `toast-msg ${type}`;
+  el.textContent = msg;
+  area.appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+function esc(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function extractLatLng(url) {
+  if (!url) return null;
+  const patterns = [
+    /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+    /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/
+  ];
+  for (const re of patterns) {
+    const m = url.match(re);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  }
+  return null;
+}
+
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function fmtDistance(km) {
+  if (km < 1) return `${Math.round(km * 1000)} m away`;
+  return `${km.toFixed(1)} km away`;
+}
+
+const locRow = document.getElementById('loc-permission-row');
+const locText = document.getElementById('loc-permission-text');
+
+function requestLocation() {
+  if (!('geolocation' in navigator)) {
+    locText.textContent = 'Location not supported on this device';
+    return;
+  }
+  locText.textContent = 'Locating…';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      locRow.style.display = 'none';
+      renderEvents();
+    },
+    err => {
+      locText.textContent = 'Location unavailable — distances hidden';
+    },
+    { enableHighAccuracy: false, timeout: 8000 }
+  );
+}
+locRow.addEventListener('click', requestLocation);
+requestLocation();
+
+/* ── SEARCH ───────────────────────────────────────────────────── */
+const searchInput = document.getElementById('event-search');
+const searchClearBtn = document.getElementById('search-clear-btn');
+
+function getFilteredEvents() {
+  if (!searchQuery) return events;
+  const q = searchQuery.toLowerCase();
+  return events.filter(ev =>
+    (ev.title || '').toLowerCase().includes(q) ||
+    (ev.description || '').toLowerCase().includes(q)
+  );
+}
+
+searchInput.addEventListener('input', () => {
+  searchQuery = searchInput.value.trim();
+  searchClearBtn.classList.toggle('show', searchQuery.length > 0);
+  renderEvents();
+});
+searchClearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  searchQuery = '';
+  searchClearBtn.classList.remove('show');
+  renderEvents();
+  searchInput.focus();
+});
+
+function renderEvents() {
+  const list = document.getElementById('events-list');
+  const filtered = getFilteredEvents();
+
+  if (!events.length) {
+    list.innerHTML = `<div class="list-empty">No events posted yet</div>`;
+    return;
+  }
+  if (!filtered.length) {
+    list.innerHTML = `<div class="list-empty">No events match "${esc(searchQuery)}"</div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+  filtered.forEach(ev => {
+    const card = document.createElement('div');
+    card.className = 'event-card';
+
+    let distanceHtml = `<span class="event-distance unknown">Distance N/A</span>`;
+    if (userCoords && ev.lat && ev.lng && !isNaN(parseFloat(ev.lat)) && !isNaN(parseFloat(ev.lng))) {
+      const km = haversineKm(userCoords.lat, userCoords.lng, parseFloat(ev.lat), parseFloat(ev.lng));
+      distanceHtml = `<span class="event-distance">${fmtDistance(km)}</span>`;
+    }
+
+    card.innerHTML = `
+      <div class="event-card-top">
+        <div class="event-title">${esc(ev.title)}</div>
+        ${distanceHtml}
+      </div>
+      <div class="event-desc">${esc(ev.description)}</div>
+      <div class="event-actions">
+        <a class="event-btn primary" href="${esc(ev.mapLink)}" target="_blank" rel="noopener">
+          <i class="fas fa-map-location-dot"></i> Open Map
+        </a>
+        ${isAdmin ? `<button class="event-btn ghost" data-edit="${esc(ev.id)}"><i class="fas fa-pen"></i> Edit</button>` : ''}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  if (isAdmin) {
+    list.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => openModal(btn.dataset.edit));
+    });
+  }
+}
+
+async function loadEvents() {
+  const list = document.getElementById('events-list');
+  try {
+    const res = await fetch(`${EVENTS_SCRIPT_URL}?operation=getEvents`);
+    const data = await res.json();
+    events = (data.events || []).filter(e => e.active !== false && e.active !== 'FALSE');
+    renderEvents();
+  } catch (err) {
+    console.error('Events load error:', err);
+    list.innerHTML = `<div class="list-error-inline">Couldn't load events — tap refresh</div>`;
+  }
+}
+
+const backdrop = document.getElementById('modal-backdrop');
+const modalTitle = document.getElementById('modal-title');
+const fTitle = document.getElementById('f-title');
+const fDesc = document.getElementById('f-desc');
+const fMapLink = document.getElementById('f-maplink');
+const fLat = document.getElementById('f-lat');
+const fLng = document.getElementById('f-lng');
+const latlngStatus = document.getElementById('latlng-status');
+const deleteBtn = document.getElementById('modal-delete');
+const useLocationBtn = document.getElementById('use-location-btn');
+
+function openModal(id) {
+  editingId = id || null;
+  if (id) {
+    const ev = events.find(e => e.id === id);
+    modalTitle.textContent = 'Edit Event';
+    fTitle.value = ev.title || '';
+    fDesc.value = ev.description || '';
+    fMapLink.value = ev.mapLink || '';
+    fLat.value = ev.lat || '';
+    fLng.value = ev.lng || '';
+    deleteBtn.style.display = 'block';
+    latlngStatus.classList.remove('show');
+  } else {
+    modalTitle.textContent = 'New Event';
+    fTitle.value = ''; fDesc.value = ''; fMapLink.value = ''; fLat.value = ''; fLng.value = '';
+    deleteBtn.style.display = 'none';
+    latlngStatus.classList.remove('show');
+  }
+  resetUseLocationBtn();
+  backdrop.classList.add('show');
+}
+function closeModal() { backdrop.classList.remove('show'); }
+
+document.getElementById('fab-add').addEventListener('click', () => openModal(null));
+document.getElementById('modal-close').addEventListener('click', closeModal);
+backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+
+/* ── USE MY CURRENT LOCATION ──────────────────────────────────────
+   Lets the admin standing at the venue auto-fill lat/lng straight
+   from the device GPS — no map link needed at all. We still write
+   a plain https://www.google.com/maps?q=lat,lng into f-maplink so
+   the "Open Map" button and existing save/validation logic (which
+   requires a mapLink) keep working unchanged. */
+function resetUseLocationBtn() {
+  useLocationBtn.disabled = false;
+  useLocationBtn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Use My Current Location';
+}
+
+useLocationBtn.addEventListener('click', () => {
+  if (!('geolocation' in navigator)) {
+    toast('Location not supported on this device', 'err');
+    return;
+  }
+  useLocationBtn.disabled = true;
+  useLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating…';
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      fLat.value = lat;
+      fLng.value = lng;
+      fMapLink.value = `https://www.google.com/maps?q=${lat},${lng}`;
+      latlngStatus.textContent = `✓ Using current location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      latlngStatus.className = 'latlng-status show ok';
+      resetUseLocationBtn();
+    },
+    err => {
+      toast('Could not get your location — check location permission', 'err');
+      resetUseLocationBtn();
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+});
+
+let resolveTimer = null;
+
+fMapLink.addEventListener('input', () => {
+  const val = fMapLink.value.trim();
+  clearTimeout(resolveTimer);
+
+  const coords = extractLatLng(val);
+  if (coords) {
+    fLat.value = coords.lat;
+    fLng.value = coords.lng;
+    latlngStatus.textContent = `✓ Coordinates found: ${coords.lat}, ${coords.lng}`;
+    latlngStatus.className = 'latlng-status show ok';
+    return;
+  }
+
+  if (!val) {
+    latlngStatus.classList.remove('show');
+    return;
+  }
+
+  // Short links (maps.app.goo.gl, goo.gl/maps) have no coords in the
+  // URL itself — ask the backend to resolve the redirect.
+  latlngStatus.textContent = 'Resolving link…';
+  latlngStatus.className = 'latlng-status show';
+  resolveTimer = setTimeout(() => resolveShortLink(val), 500);
+});
+
+async function resolveShortLink(url) {
+  try {
+    const res = await fetch(`${EVENTS_SCRIPT_URL}?operation=resolveMapLink&url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (data.success && fMapLink.value.trim() === url) {
+      fLat.value = data.lat;
+      fLng.value = data.lng;
+      latlngStatus.textContent = `✓ Coordinates found: ${data.lat}, ${data.lng}`;
+      latlngStatus.className = 'latlng-status show ok';
+    } else if (fMapLink.value.trim() === url) {
+      latlngStatus.textContent = 'Couldn\'t auto-detect coordinates — fill Latitude/Longitude manually (open the link, right-click the pin → "What\'s here?" to get numbers).';
+      latlngStatus.className = 'latlng-status show err';
+    }
+  } catch {
+    if (fMapLink.value.trim() === url) {
+      latlngStatus.textContent = 'Couldn\'t auto-detect coordinates — fill manually.';
+      latlngStatus.className = 'latlng-status show err';
+    }
+  }
+}
+document.getElementById('modal-save').addEventListener('click', async () => {
+  const title = fTitle.value.trim();
+  const description = fDesc.value.trim();
+  const mapLink = fMapLink.value.trim();
+  const lat = fLat.value.trim();
+  const lng = fLng.value.trim();
+
+  if (!title || !mapLink) {
+    toast('Title and a location (paste a link or use current location) are required', 'err');
+    return;
+  }
+
+  const saveBtn = document.getElementById('modal-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+
+  try {
+    const body = editingId
+      ? { operation: 'updateEvent', id: editingId, title, description, mapLink, lat, lng }
+      : { operation: 'createEvent', title, description, mapLink, lat, lng, createdBy: userName };
+
+    const res = await fetch(EVENTS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(body) });
+    const data = await res.json();
+
+    if (data.success === false) throw new Error(data.error || 'Save failed');
+
+    toast(editingId ? 'Event updated' : 'Event posted', 'ok');
+    closeModal();
+    await loadEvents();
+  } catch (err) {
+    console.error(err);
+    toast('Could not save event', 'err');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Event';
+  }
+});
+
+deleteBtn.addEventListener('click', async () => {
+  if (!editingId) return;
+  if (!confirm('Remove this event? It will no longer be visible to members.')) return;
+  try {
+    const res = await fetch(EVENTS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ operation: 'updateEvent', id: editingId, active: false })
+    });
+    const data = await res.json();
+    if (data.success === false) throw new Error(data.error);
+    toast('Event removed', 'ok');
+    closeModal();
+    await loadEvents();
+  } catch (err) {
+    console.error(err);
+    toast('Could not remove event', 'err');
+  }
+});
+
+let isRefreshing = false;
+async function refreshAll() {
+  if (isRefreshing) return;
+  isRefreshing = true;
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  try {
+    await Promise.all([loadEvents(), confirmAdminFromBackend()]);
+    toast('Refreshed', 'ok', 1500);
+  } finally {
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+    isRefreshing = false;
+  }
+}
+document.getElementById('refresh-btn').addEventListener('click', refreshAll);
+
+loadEvents();
+confirmAdminFromBackend();
+</script>
+</body>
+</html>
