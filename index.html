@@ -412,6 +412,16 @@
     @media (prefers-reduced-motion: reduce) {
       .list-error i { opacity: 0.4; }
     }
+
+     .row-map-thumb {
+  width: 64px;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--wire);
+  background: var(--lift);
+}
   </style>
 </head>
 <body>
@@ -445,6 +455,22 @@
      Channels and Q&A sections depend on network data, and each has its
      own small "slot" that loads independently of everything else. ══ -->
 <div id="chat-list">
+
+   <a href="geo.html" class="chat-row">
+   <img class="row-map-thumb" src="RM.png" onerror="this.src='https://ui-avatars.com/api/?name=Mapping&background=1e293b&color=60a5fa&size=88'" alt="">
+    <div class="row-content">
+      <div class="row-title-line">
+        <span class="row-title">Riverside Mapping</span>
+        <span class="row-time"></span>
+      </div>
+      <div class="row-sub-line">
+        <span class="row-subtitle">Find fellowships &amp; locations near you</span>
+        <span class="row-badge"></span>
+      </div>
+    </div>
+  </a>
+
+
 
   <a href="home.html" class="chat-row">
     <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Chat&background=1e293b&color=60a5fa&size=88'" alt="">
@@ -554,8 +580,8 @@
 'use strict';
 
 /* ── BACKEND (Riverside Murera Coffee) ───────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdt4glYcp4zY3mFunF_xNn4v4JnJXkCnonCDzLkQKo6k3UxX1sCo3dLsQ2fenHVeJm/exec';
-const DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbwdt4glYcp4zY3mFunF_xNn4v4JnJXkCnonCDzLkQKo6k3UxX1sCo3dLsQ2fenHVeJm/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
+const DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec';
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
