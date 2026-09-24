@@ -30,6 +30,7 @@
       --gold:      #facc15;
       --danger:    #ef4444;
       --green:     #10b981;
+      --trail-color: #f8fafc;
 
       --font-head: 'Bebas Neue', sans-serif;
       --font-body: 'DM Sans', sans-serif;
@@ -70,6 +71,7 @@
       transition: all 0.15s; flex-shrink: 0; text-decoration: none;
     }
     .tb-icon-btn:hover { color: var(--accent2); background: var(--lift); }
+    .tb-icon-btn.on { color: var(--accent2); background: var(--lift); box-shadow: 0 0 0 1px var(--accent2) inset; }
     .tb-title {
       font-family: var(--font-head);
       font-size: 1.1rem;
@@ -331,6 +333,237 @@
     .toast-msg.err { background: rgba(239,68,68,0.92); }
     .toast-msg.inf { background: rgba(59,130,246,0.92); }
     @keyframes toastIn { from { opacity:0; transform: translateY(-8px) scale(0.95);} to { opacity:1; transform: translateY(0) scale(1);} }
+
+    /* ════════════════════════════════════════════════════════════
+       RIVERSIDEMAP — live, in-house navigation overlay.
+       Namespaced with "rm-" so none of it collides with the list
+       view above. No external map tiles/SDK anywhere in here.
+    ════════════════════════════════════════════════════════════ */
+    #rm-view {
+      position: fixed; inset: 0;
+      background: var(--paper);
+      z-index: 950;
+      display: none;
+      flex-direction: column;
+    }
+    #rm-view.show { display: flex; }
+
+    #rm-bar {
+      height: var(--bar-h); flex-shrink: 0;
+      background: rgba(10,15,30,0.92);
+      border-bottom: 1px solid var(--wire);
+      display: flex; align-items: center; gap: 4px; padding: 0 8px;
+      backdrop-filter: blur(16px);
+      position: relative; z-index: 10;
+    }
+    #rm-nav-status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--steel); flex-shrink: 0; margin-right: 2px;
+      transition: background .2s;
+    }
+    #rm-nav-status-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    #rm-nav-status-dot.tracking { background: var(--gold); box-shadow: 0 0 6px var(--gold); animation: rmBlink 1s infinite; }
+    @keyframes rmBlink { 50% { opacity: .35; } }
+
+    #rm-wrap {
+      position: relative; flex: 1; overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(59,130,246,0.06), transparent 55%),
+        var(--paper);
+      touch-action: none;
+      cursor: grab;
+    }
+    #rm-wrap.grabbing { cursor: grabbing; }
+    #rm-svg { width: 100%; height: 100%; display: block; }
+
+    .rm-grid-line { stroke: rgba(148,163,184,0.06); stroke-width: 1; }
+
+    .rm-spoke {
+      fill: none; stroke: var(--wire); stroke-width: 2;
+      stroke-dasharray: 5 6;
+    }
+    .rm-nav-line-bg { fill: none; stroke: var(--paper); stroke-width: 7; stroke-linecap: round; }
+    .rm-nav-line     { fill: none; stroke: var(--gold); stroke-width: 3.2; stroke-linecap: round;
+      filter: drop-shadow(0 0 6px rgba(250,204,21,0.35)); }
+    .rm-nav-line.arrived { stroke: var(--green); filter: drop-shadow(0 0 6px rgba(16,185,129,0.45)); }
+
+    /* live in-progress trail: thin, no dark halo underneath so nothing
+       "double-lines" or overlaps at corners */
+    .rm-trail { fill: none; stroke: var(--accent2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: .92; }
+
+    /* saved past-walk trails: one uniform colour, solid (no dashes/dots,
+       no background halo), drawn as an exact polyline so every real
+       corner is preserved, kept thin (and non-scaling so it never gets
+       fat at high zoom and blur corners into each other) */
+    .rm-trail-past { fill: none; stroke: var(--trail-color); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; opacity: .82; }
+    .rm-trail-past.rm-trail-focused { stroke-width: 2.4; opacity: 1; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+
+    /* tiny directional arrowheads dropped along a trail so you can see
+       which way it was walked, without adding any extra bulk to the line */
+    .rm-trail-arrow { fill: var(--trail-color); opacity: .8; }
+    .rm-trail-arrow-live { fill: var(--accent2); opacity: .85; }
+
+    .rm-dist-bg { fill: var(--surface); stroke: var(--gold); stroke-width: 1; }
+    .rm-dist-txt { font-family: var(--font-mono); font-size: 11px; fill: var(--gold); font-weight: 700;
+      text-anchor: middle; dominant-baseline: middle; }
+
+    .rm-node { stroke: var(--paper); stroke-width: 3; cursor: pointer; transition: r .15s, filter .15s; }
+    .rm-node.place { fill: var(--accent2); r: 8; }
+    .rm-node.place:hover { r: 10; }
+    .rm-node.place.active-target { fill: var(--gold); r: 11; filter: drop-shadow(0 0 8px rgba(250,204,21,.6)); }
+    .rm-node.me { fill: var(--green); r: 9; }
+    .rm-node-pulse { fill: none; stroke: var(--green); stroke-width: 2; opacity: .6; pointer-events: none;
+      animation: rmPulse 2.2s ease-out infinite; }
+    @keyframes rmPulse { from { r: 9; opacity: .55; } to { r: 28; opacity: 0; } }
+
+    /* Google-Maps-style heading "beam" — a soft cone that fans out
+       ahead of the "You" dot in the direction you're facing/moving */
+    .rm-me-beam { fill: var(--green); opacity: 0.16; pointer-events: none; }
+
+    .rm-node-label {
+      font-family: var(--font-body); font-weight: 700; font-size: 12px; fill: var(--ink);
+      paint-order: stroke; stroke: var(--paper); stroke-width: 3px; stroke-linejoin: round;
+      pointer-events: none;
+    }
+    .rm-node-label.me { fill: var(--green); }
+
+    #rm-compass {
+      position: absolute; top: 12px; right: 12px; width: 48px; height: 48px; border-radius: 50%;
+      background: rgba(15,23,42,0.85); border: 1px solid var(--wire); backdrop-filter: blur(6px); z-index: 40;
+    }
+    #rm-compass svg { width: 100%; height: 100%; }
+
+    #rm-scale {
+      position: absolute; left: 12px; bottom: 14px; display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--lead); z-index: 40;
+    }
+    #rm-scale .bar { height: 4px; background: var(--accent2); border-radius: 2px; }
+
+    #rm-controls {
+      position: absolute; right: 12px; bottom: 14px; display: flex; flex-direction: column; gap: 8px; z-index: 40;
+    }
+    .rm-ctl-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(15,23,42,0.9); border: 1px solid var(--wire); color: var(--lead);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: .9rem;
+      backdrop-filter: blur(6px);
+    }
+    .rm-ctl-btn:active { transform: scale(.93); }
+    .rm-ctl-btn.on { color: var(--accent2); border-color: var(--accent2); }
+
+    /* ── floating pill to reopen the sheet when collapsed ─────── */
+    #rm-places-pill {
+      position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+      background: rgba(15,23,42,0.92); border: 1px solid var(--wire); color: var(--accent2);
+      font-family: var(--font-mono); font-size: .74rem; font-weight: 700; letter-spacing: .04em;
+      padding: 9px 16px; border-radius: 100px; z-index: 45; cursor: pointer;
+      display: none; align-items: center; gap: 8px; backdrop-filter: blur(8px);
+    }
+    #rm-places-pill.show { display: flex; }
+
+    /* ── bottom sheet: list / detail / nav-hud / trails, one container ─── */
+    #rm-sheet {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: rgba(15,23,42,0.97);
+      border-top: 1px solid var(--wire);
+      border-radius: 18px 18px 0 0;
+      max-height: 62%;
+      display: flex; flex-direction: column;
+      transform: translateY(0);
+      transition: transform .22s ease;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+    }
+    #rm-sheet.collapsed { transform: translateY(100%); }
+    #rm-sheet-handle {
+      width: 40px; height: 4px; background: var(--wire); border-radius: 100px;
+      margin: 8px auto 2px; cursor: pointer; flex-shrink: 0;
+    }
+    #rm-sheet-collapse-btn {
+      position: absolute; top: 6px; right: 8px;
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--lift); border: none; color: var(--lead);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: .78rem; z-index: 2;
+    }
+    #rm-sheet-collapse-btn:active { transform: scale(.93); }
+    #rm-sheet-body { overflow-y: auto; padding: 8px 14px calc(14px + env(safe-area-inset-bottom,0px)); }
+
+    .rm-sheet-title { font-family: var(--font-head); letter-spacing: .04em; font-size: 1.05rem; color: var(--ink); padding: 4px 2px 8px; }
+    .rm-sheet-subhead { font-size: .74rem; font-weight: 700; color: var(--ink); margin: 10px 2px 4px; }
+
+    .rm-point-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 11px 10px; border-radius: 11px; background: var(--surface);
+      border: 1px solid var(--wire); margin-bottom: 8px; cursor: pointer;
+    }
+    .rm-point-row:active { transform: scale(.99); }
+    .rm-point-name { font-weight: 700; font-size: .88rem; color: var(--ink); }
+    .rm-point-sub { font-size: .74rem; color: var(--lead); margin-top: 2px; }
+    .rm-point-dist { font-family: var(--font-mono); font-size: .68rem; color: var(--green);
+      background: rgba(16,185,129,0.12); padding: 3px 8px; border-radius: 100px; white-space: nowrap; flex-shrink:0; }
+    .rm-point-dist.unknown { color: var(--steel); background: rgba(100,116,139,0.12); }
+
+    .rm-detail-actions, .rm-nav-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .rm-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 11px; border-radius: 10px; font-size: .84rem; font-weight: 700; cursor: pointer;
+      border: none; font-family: var(--font-body); text-decoration: none;
+    }
+    .rm-btn.primary { background: var(--accent); color: #fff; }
+    .rm-btn.gold { background: var(--gold); color: #1a1400; }
+    .rm-btn.ghost { background: var(--lift); color: var(--lead); }
+    .rm-btn.danger { background: rgba(239,68,68,0.14); color: var(--danger); }
+
+    /* ── navigation HUD (shown while a route is active) ────────── */
+    #rm-hud-arrow-wrap {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: rgba(250,204,21,0.08); border: 1px solid rgba(250,204,21,0.3);
+      display: flex; align-items: center; justify-content: center; margin: 4px auto 10px;
+    }
+    #rm-hud-arrow {
+      font-size: 1.8rem; color: var(--gold);
+      transition: transform .25s ease;
+    }
+    #rm-hud-dist { text-align: center; font-family: var(--font-head); font-size: 1.7rem; letter-spacing: .03em; color: var(--ink); }
+    #rm-hud-instruction { text-align: center; font-family: var(--font-mono); font-size: .78rem; color: var(--accent2); margin-top: 2px; letter-spacing: .03em; }
+    #rm-hud-meta { display:flex; justify-content:center; gap:16px; margin-top:8px; font-family: var(--font-mono); font-size:.68rem; color: var(--steel); }
+
+    .rm-compass-perm {
+      margin-top: 8px; width: 100%; padding: 9px; border-radius: 9px;
+      border: 1px dashed var(--wire); background: rgba(59,130,246,0.08); color: var(--accent2);
+      font-size: .78rem; font-weight: 700; font-family: var(--font-body); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    /* ── colored trail run rows (trails panel) ─────────────────── */
+    .rm-trail-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 8px; background: var(--lift); border-radius: 8px; margin-bottom: 6px;
+      cursor: pointer; transition: opacity .15s;
+    }
+    .rm-trail-row:active { transform: scale(.99); }
+    .rm-trail-row.rm-trail-hidden { opacity: .4; }
+    .rm-trail-icon { color: var(--trail-color); font-size: .8rem; flex-shrink: 0; width: 18px; text-align: center; }
+    .rm-trail-meta { flex: 1; font-family: var(--font-mono); font-size: .72rem; color: var(--lead); }
+    .rm-trail-eye, .rm-trail-del {
+      width: 26px; height: 26px; border-radius: 7px; border: none;
+      cursor: pointer; font-size: .72rem; flex-shrink: 0;
+    }
+    .rm-trail-eye { background: rgba(59,130,246,0.12); color: var(--accent2); }
+    .rm-trail-del { background: rgba(239,68,68,0.12); color: var(--danger); }
+    .rm-trail-eye:active, .rm-trail-del:active { transform: scale(.9); }
+
+    .rm-following-badge {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: var(--font-mono); font-size: .7rem; color: var(--green);
+      background: rgba(16,185,129,0.12); padding: 7px 10px; border-radius: 8px; margin: 6px 0;
+    }
+
+    #rm-empty {
+      padding: 26px 10px; text-align: center; color: var(--steel);
+      font-family: var(--font-mono); font-size: .72rem; letter-spacing: .05em;
+    }
   </style>
 </head>
 <body>
@@ -343,6 +576,9 @@
   <div class="tb-spacer"></div>
   <button class="tb-icon-btn" id="refresh-btn" title="Refresh">
     <i class="fas fa-rotate"></i>
+  </button>
+  <button class="tb-icon-btn" id="rm-open-btn" title="Back to Map">
+    <i class="fas fa-map-location-dot"></i>
   </button>
 </header>
 
@@ -414,6 +650,69 @@
     <div class="modal-footer">
       <button class="modal-btn delete" id="modal-delete" style="display:none;">Remove</button>
       <button class="modal-btn save" id="modal-save">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     RIVERSIDEMAP — full-screen live navigation overlay.
+     Pure SVG/CSS/JS. No map tiles, no external map API.
+════════════════════════════════════════════════════════════ -->
+<div id="rm-view">
+  <div id="rm-bar">
+    <button class="tb-icon-btn" id="rm-back-btn" title="Events Menu"><i class="fas fa-bars"></i></button>
+    <span id="rm-nav-status-dot" title="Location status"></span>
+    <div class="tb-title" id="rm-title">RIVERSIDEMAP</div>
+    <div class="tb-spacer"></div>
+    <button class="tb-icon-btn" id="rm-trails-btn" title="Saved Trails"><i class="fas fa-route"></i></button>
+    <button class="tb-icon-btn" id="rm-recenter-btn" title="Recenter on me"><i class="fas fa-location-crosshairs"></i></button>
+    <button class="tb-icon-btn" id="rm-fit-btn" title="Fit all points"><i class="fas fa-expand"></i></button>
+  </div>
+
+  <div id="rm-wrap">
+    <svg id="rm-svg" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="rmGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0H0V40" fill="none" class="rm-grid-line"/>
+        </pattern>
+      </defs>
+      <g id="rm-pan-zoom">
+        <rect x="-1000" y="-1000" width="3000" height="3000" fill="url(#rmGrid)"/>
+        <g id="rm-spokes-layer"></g>
+        <g id="rm-trail-layer"></g>
+        <g id="rm-nav-layer"></g>
+        <g id="rm-nodes-layer"></g>
+      </g>
+    </svg>
+
+    <div id="rm-compass">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(148,163,184,0.25)" stroke-width="1"/>
+        <line x1="50" y1="10" x2="50" y2="90" stroke="rgba(148,163,184,0.25)" stroke-width="1"/>
+        <line x1="10" y1="50" x2="90" y2="50" stroke="rgba(148,163,184,0.25)" stroke-width="1"/>
+        <polygon points="50,12 44,50 50,42 56,50" fill="#ef4444"/>
+        <polygon points="50,88 44,50 50,58 56,50" fill="#94a3b8"/>
+        <text x="50" y="10" text-anchor="middle" font-size="10" fill="#e2e8f0" font-family="DM Mono">N</text>
+      </svg>
+    </div>
+
+    <div id="rm-scale">
+      <div class="bar" id="rm-scale-px" style="width:60px;"></div>
+      <span id="rm-scale-label">— km</span>
+    </div>
+
+    <div id="rm-controls">
+      <button class="rm-ctl-btn" id="rm-center-route-btn" title="Center on route"><i class="fas fa-compress"></i></button>
+      <button class="rm-ctl-btn" id="rm-zoom-in"><i class="fas fa-plus"></i></button>
+      <button class="rm-ctl-btn" id="rm-zoom-out"><i class="fas fa-minus"></i></button>
+    </div>
+
+    <button id="rm-places-pill"><i class="fas fa-list"></i> <span id="rm-places-pill-text">Places</span></button>
+
+    <div id="rm-sheet">
+      <div id="rm-sheet-handle"></div>
+      <button id="rm-sheet-collapse-btn" title="Hide"><i class="fas fa-chevron-down"></i></button>
+      <div id="rm-sheet-body"></div>
     </div>
   </div>
 </div>
@@ -587,9 +886,10 @@ function renderEvents() {
       </div>
       <div class="event-desc">${esc(ev.description)}</div>
       <div class="event-actions">
-        <a class="event-btn primary" href="${esc(ev.mapLink)}" target="_blank" rel="noopener">
-          <i class="fas fa-map-location-dot"></i> Open Map
-        </a>
+        ${(ev.lat && ev.lng && !isNaN(parseFloat(ev.lat)) && !isNaN(parseFloat(ev.lng)))
+          ? `<button class="event-btn primary" data-navigate="${esc(ev.id)}"><i class="fas fa-location-arrow"></i> Navigate</button>`
+          : `<a class="event-btn primary" href="${esc(ev.mapLink)}" target="_blank" rel="noopener"><i class="fas fa-map-location-dot"></i> Open Map</a>`
+        }
         ${isAdmin ? `<button class="event-btn ghost" data-edit="${esc(ev.id)}"><i class="fas fa-pen"></i> Edit</button>` : ''}
       </div>
     `;
@@ -601,6 +901,13 @@ function renderEvents() {
       btn.addEventListener('click', () => openModal(btn.dataset.edit));
     });
   }
+
+  list.querySelectorAll('[data-navigate]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      RM.openView();
+      RM.openDetail(btn.dataset.navigate);
+    });
+  });
 }
 
 async function loadEvents() {
@@ -610,6 +917,7 @@ async function loadEvents() {
     const data = await res.json();
     events = (data.events || []).filter(e => e.active !== false && e.active !== 'FALSE');
     renderEvents();
+    if (typeof RM !== 'undefined' && RM.open) { rmSyncPoints(); rmRenderMap(); rmRenderSheet(); }
   } catch (err) {
     console.error('Events load error:', err);
     list.innerHTML = `<div class="list-error-inline">Couldn't load events — tap refresh</div>`;
@@ -805,6 +1113,7 @@ async function refreshAll() {
   btn.disabled = true;
   try {
     await Promise.all([loadEvents(), confirmAdminFromBackend()]);
+    if (RM.open) { rmSyncPoints(); rmRenderMap(); rmRenderSheet(); }
     toast('Refreshed', 'ok', 1500);
   } finally {
     btn.classList.remove('spinning');
@@ -816,6 +1125,911 @@ document.getElementById('refresh-btn').addEventListener('click', refreshAll);
 
 loadEvents();
 confirmAdminFromBackend();
+
+/* ════════════════════════════════════════════════════════════════
+   RIVERSIDEMAP — live, in-house navigation.
+   ────────────────────────────────────────────────────────────────
+   No external map tiles or map SDK anywhere below. It reads the
+   SAME `events` array already fetched from EVENTS_SCRIPT_URL
+   (your Google Sheet) and:
+
+     1. projects every event's lat/lng onto a flat SVG canvas
+        (equirectangular, scaled by cos(latitude) — the same trick
+        used for the distance chips in the list above, just drawn
+        instead of only computed)
+     2. tracks the viewer's live position with watchPosition and
+        draws a "you are here" dot that actually moves as they walk,
+        with a soft heading "beam" fanning out ahead of it — just
+        like Google Maps' blue location puck — whenever a heading
+        (compass or movement-derived) is available
+     3. lets them tap a place → see details → Start Navigation,
+        which draws a straight guide-line to that point, shows the
+        live distance, and gives compass-based turn guidance
+        ("turn left/right", "go straight") since there is no road
+        network to route along — it can only ever point straight-
+        line direction, which is stated plainly in the UI
+     4. records the walked path as a trail, and saves it to
+        localStorage per destination — so "you've walked here 3
+        times" persists on that device across visits. Each saved
+        run gets its own id and a stable colour, tiny arrowheads
+        along it to show the direction it was walked, and can be
+        shown/hidden/deleted individually from the Trails panel,
+        which now lives behind a dedicated icon in the top bar
+        instead of being buried inside each place's detail sheet.
+     5. supports a Google-Maps-style "Recenter" / follow-me mode:
+        tapping the crosshair button snaps the camera to your live
+        position and keeps it locked there as you move — including
+        mid-navigation — until you drag the map yourself.
+     6. leaves a clearly-marked, currently-unused stub for syncing
+        a finished trail to a backend later — see
+        rmSaveTrailToBackendStub() below. Not wired up yet, on
+        purpose, per your "not now" instruction.
+════════════════════════════════════════════════════════════════ */
+
+const RM = {
+  open: false,
+  points: [],            // reshaped from `events`: {id,name,sub,mapLink,lat,lng}
+  me: null,               // { lat, lng, accuracy, heading, speed }
+  watchId: null,
+  deviceHeading: null,    // compass heading in degrees (best-effort, see note below)
+  compassEnabled: false,
+  movementHeading: null,  // fallback heading derived from consecutive GPS fixes
+  followMe: false,        // Google-Maps-style "camera locked to me" mode
+  view: { x: 0, y: 0, scale: 1 },
+  projection: null,
+  selected: null,          // point id shown in the 'detail' sheet
+  navTarget: null,         // point id currently being navigated to
+  navTrail: [],            // [{lat,lng,t}] recorded during the active run
+  lastTrailPoint: null,
+  sheetMode: 'list',        // 'list' | 'detail' | 'nav' | 'trails'
+  ARRIVE_M: 25,              // meters within which we call it "arrived"
+  TRAIL_MIN_MOVE_M: 1.5,     // only log a trail point after moving this far — tight, to catch every corner
+  hiddenTrails: new Set(),   // run ids currently hidden from the map (per-session)
+  focusedRunId: null,        // run id temporarily highlighted after "center on trail"
+  followingRunId: null,      // run id of a saved trail currently being followed live
+  followIndex: 0,            // how far along that run's points we've matched to
+  FOLLOW_SNAP_M: 12,         // how close you need to walk to a saved trail to latch onto it
+  FOLLOW_LOSE_M: 25,         // how far off it before we drop the guide and go freehand again
+};
+
+const RM_VB_W = 1000, RM_VB_H = 620;
+const RM_MIN_SCALE = 0.25, RM_MAX_SCALE = 48; // generous zoom range so you can get in extremely close
+
+/* ---- geometry helpers (bearing + compass label; haversineKm/esc/toast already exist above) ---- */
+function rmBearingDeg(a, b) {
+  const y = Math.sin((b.lng - a.lng) * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180);
+  const x = Math.cos(a.lat * Math.PI / 180) * Math.sin(b.lat * Math.PI / 180) -
+            Math.sin(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.cos((b.lng - a.lng) * Math.PI / 180);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+function rmCompassLabel(deg) {
+  return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg / 45) % 8];
+}
+function rmFmtKm(km) {
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 2 : 1)} km`;
+}
+
+/* ---- pull the live event data into map points (lat/lng required) ---- */
+function rmSyncPoints() {
+  RM.points = events
+    .filter(e => e.lat && e.lng && !isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lng)))
+    .map(e => ({ id: e.id, name: e.title, sub: e.description, mapLink: e.mapLink, lat: parseFloat(e.lat), lng: parseFloat(e.lng) }));
+}
+
+/* ---- projection: lat/lng -> flat SVG coords, scaled by cos(latRef) ---- */
+function rmBuildProjection(allPts) {
+  if (!allPts.length) return null;
+  const lats = allPts.map(p => p.lat), lngs = allPts.map(p => p.lng);
+  const latRef = lats.reduce((a,b)=>a+b,0) / lats.length;
+  const cosRef = Math.cos(latRef * Math.PI/180) || 0.0001;
+  const rawX = lng => lng * cosRef;
+  const rawY = lat => -lat;
+
+  let minX = Math.min(...lngs.map(rawX)), maxX = Math.max(...lngs.map(rawX));
+  let minY = Math.min(...lats.map(rawY)), maxY = Math.max(...lats.map(rawY));
+  const spanX = Math.max(maxX - minX, 0.002), spanY = Math.max(maxY - minY, 0.002);
+
+  const pad = 0.22;
+  const usableW = RM_VB_W * (1 - pad*2), usableH = RM_VB_H * (1 - pad*2);
+  const scale = Math.min(usableW / spanX, usableH / spanY);
+  const offsetX = RM_VB_W/2 - ((minX+maxX)/2) * scale;
+  const offsetY = RM_VB_H/2 - ((minY+maxY)/2) * scale;
+
+  function toXY(lat, lng) { return { x: rawX(lng)*scale + offsetX, y: rawY(lat)*scale + offsetY }; }
+
+  const p0 = { lat: latRef, lng: lngs[0] }, p1 = { lat: latRef, lng: lngs[0] + 0.01 };
+  const kmFor001 = haversineKm(p0.lat, p0.lng, p1.lat, p1.lng);
+  const pxFor001 = Math.abs(rawX(p1.lng) - rawX(p0.lng)) * scale;
+  const kmPerPx = pxFor001 > 0 ? kmFor001 / pxFor001 : 0.01;
+
+  return { toXY, kmPerPx };
+}
+
+function rmEl(tag, attrs) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function rmCurvePath(a, b) {
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2, dx=b.x-a.x, dy=b.y-a.y, dist=Math.hypot(dx,dy)||1;
+  const bow = Math.min(dist*0.14, 40), nx=-dy/dist, ny=dx/dist;
+  return `M ${a.x} ${a.y} Q ${mx+nx*bow} ${my+ny*bow} ${b.x} ${b.y}`;
+}
+function rmCurveMid(a, b) {
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2, dx=b.x-a.x, dy=b.y-a.y, dist=Math.hypot(dx,dy)||1;
+  const bow = Math.min(dist*0.14, 40), nx=-dy/dist, ny=dx/dist;
+  return { x: mx+nx*bow*0.5, y: my+ny*bow*0.5 };
+}
+// draws the walked trail as an exact polyline through every recorded
+// point — no smoothing, no corner-cutting. stroke-linejoin:round on the
+// CSS side rounds the joints visually without moving a single coordinate.
+function rmExactPath(pts) {
+  if (!pts.length) return '';
+  if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length; i++) d += ` L ${pts[i].x} ${pts[i].y}`;
+  return d;
+}
+function rmRotatedTriangle(cx, cy, angleDeg, size) {
+  const rad = angleDeg * Math.PI / 180;
+  return [[0,-size],[size*0.4,size*0.35],[-size*0.4,size*0.35]].map(([x,y]) => {
+    const rx = x*Math.cos(rad) - y*Math.sin(rad), ry = x*Math.sin(rad) + y*Math.cos(rad);
+    return `${cx+rx},${cy+ry}`;
+  }).join(' ');
+}
+// a soft cone (fan) shape used for the "You" heading beam, like the
+// light cone in front of Google Maps' blue location dot
+function rmBeamPath(cx, cy, headingDeg, len, spread) {
+  const a1 = (headingDeg - spread) * Math.PI / 180;
+  const a2 = (headingDeg + spread) * Math.PI / 180;
+  const p1x = cx + Math.sin(a1) * len, p1y = cy - Math.cos(a1) * len;
+  const p2x = cx + Math.sin(a2) * len, p2y = cy - Math.cos(a2) * len;
+  return `M ${cx} ${cy} L ${p1x} ${p1y} A ${len} ${len} 0 0 1 ${p2x} ${p2y} Z`;
+}
+// tiny arrowheads sampled along an already-projected point list, to show
+// the direction a trail was walked without adding any weight to the line
+function rmDrawDirectionArrows(pts, layer, cssClass) {
+  if (!pts || pts.length < 3) return;
+  const maxArrows = 16;
+  const step = Math.max(2, Math.ceil(pts.length / maxArrows));
+  for (let i = step; i < pts.length - 1; i += step) {
+    const a = pts[i - 1], b = pts[i + 1] || pts[i];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    if (Math.hypot(dx, dy) < 0.5) continue;
+    const angle = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+    layer.appendChild(rmEl('polygon', {
+      class: cssClass,
+      points: rmRotatedTriangle(pts[i].x, pts[i].y, angle, 5)
+    }));
+  }
+}
+
+/* ---- per-destination local trail storage (localStorage only, for now) ----
+   Each run carries its own id (rmGenId) so it can be shown/hidden and
+   deleted (rmDeleteRun) individually from the UI. All runs render in the
+   same single trail colour (--trail-color) — see rmRenderMap. */
+function rmGenId() { return 'run_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function rmTrailKey(id) { return 'rm_trail_' + id; }
+function rmLoadPastRuns(id) {
+  let runs;
+  try { runs = JSON.parse(localStorage.getItem(rmTrailKey(id)) || '[]'); } catch { return []; }
+  // back-compat: give any pre-existing run (saved before ids existed) a stable id
+  let changed = false;
+  runs.forEach(r => { if (!r.id) { r.id = rmGenId(); changed = true; } });
+  if (changed) { try { localStorage.setItem(rmTrailKey(id), JSON.stringify(runs)); } catch {} }
+  return runs;
+}
+function rmTrailLengthKm(points) {
+  let total = 0;
+  for (let i = 1; i < points.length; i++) total += haversineKm(points[i-1].lat, points[i-1].lng, points[i].lat, points[i].lng);
+  return total;
+}
+function rmSaveRun(id, points) {
+  if (!points || points.length < 2) return;
+  const runs = rmLoadPastRuns(id);
+  runs.push({ id: rmGenId(), date: new Date().toISOString(), points: points.map(p => ({ lat:p.lat, lng:p.lng })), km: rmTrailLengthKm(points) });
+  while (runs.length > 5) runs.shift(); // keep local storage small — last 5 walks per place
+  try { localStorage.setItem(rmTrailKey(id), JSON.stringify(runs)); } catch (e) { console.warn('Trail save skipped:', e); }
+}
+function rmDeleteRun(pointId, runId) {
+  const runs = rmLoadPastRuns(pointId).filter(r => r.id !== runId);
+  try { localStorage.setItem(rmTrailKey(pointId), JSON.stringify(runs)); } catch (e) { console.warn('Trail delete skipped:', e); }
+  RM.hiddenTrails.delete(runId);
+  if (RM.focusedRunId === runId) RM.focusedRunId = null;
+  if (RM.followingRunId === runId) { RM.followingRunId = null; RM.followIndex = 0; }
+  toast('Trail deleted', 'ok', 1500);
+}
+function rmToggleTrailVisibility(runId) {
+  if (RM.hiddenTrails.has(runId)) RM.hiddenTrails.delete(runId);
+  else RM.hiddenTrails.add(runId);
+  rmRenderSheet();
+  rmRenderMap();
+}
+/* FUTURE, NOT WIRED UP: once you're ready to make trails shared /
+   server-side, this is exactly where a finished run would be POSTed
+   to a new Apps Script operation, e.g.:
+     operation:'saveTrail', pointId, points, km, walkedBy:userName
+   Left disabled on purpose — trails stay per-device/local for now. */
+async function rmSaveTrailToBackendStub(pointId, points, km) {
+  // return fetch(EVENTS_SCRIPT_URL, { method:'POST', body: JSON.stringify({
+  //   operation: 'saveTrail', pointId, points, km, walkedBy: userName
+  // })});
+}
+
+/* ---- geolocation: live watch (not a single one-off fix) ---- */
+const rmStatusDot = document.getElementById('rm-nav-status-dot');
+function rmStartWatch() {
+  if (!('geolocation' in navigator)) { toast('Location not supported on this device', 'err'); return; }
+  rmStatusDot.className = 'tracking';
+  RM.watchId = navigator.geolocation.watchPosition(rmOnPosition, rmOnPositionError,
+    { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 });
+}
+function rmStopWatch() {
+  if (RM.watchId != null) { navigator.geolocation.clearWatch(RM.watchId); RM.watchId = null; }
+  rmStatusDot.className = '';
+}
+function rmOnPosition(pos) {
+  const prev = RM.me;
+  RM.me = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, heading: pos.coords.heading, speed: pos.coords.speed };
+  rmStatusDot.className = RM.navTarget ? 'tracking live' : 'live';
+  // if no compass permission, approximate facing direction from the
+  // last two GPS fixes once you've moved enough for it to be meaningful
+  if (!RM.compassEnabled && prev) {
+    const movedM = haversineKm(prev.lat, prev.lng, RM.me.lat, RM.me.lng) * 1000;
+    if (movedM > 3) RM.movementHeading = rmBearingDeg(prev, RM.me);
+  }
+  if (RM.navTarget) rmHandleNavTick();
+  rmScheduleRender();
+}
+function rmOnPositionError() {
+  rmStatusDot.className = '';
+  toast('Location signal lost — check GPS/permission', 'err');
+}
+
+/* ---- compass (device heading). iOS needs an explicit permission
+   tap; Android/desktop generally don't. Heading from plain
+   'deviceorientation' alpha is best-effort (not true north unless
+   the browser fires the 'absolute' event) — good enough for "turn
+   left/right" guidance, flagged in the UI as approximate. ---- */
+function rmNeedsCompassPermission() {
+  return typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function';
+}
+function rmOnOrientation(e) {
+  let heading = null;
+  if (typeof e.webkitCompassHeading === 'number') heading = e.webkitCompassHeading;
+  else if (typeof e.alpha === 'number') heading = (360 - e.alpha) % 360;
+  if (heading != null) { RM.deviceHeading = heading; rmScheduleRender(); }
+}
+function rmEnableCompass() {
+  if (rmNeedsCompassPermission()) {
+    DeviceOrientationEvent.requestPermission().then(state => {
+      if (state === 'granted') {
+        window.addEventListener('deviceorientationabsolute', rmOnOrientation, true);
+        window.addEventListener('deviceorientation', rmOnOrientation, true);
+        RM.compassEnabled = true; rmScheduleRender();
+      } else toast('Compass permission denied', 'err');
+    }).catch(() => toast('Could not enable compass', 'err'));
+  } else {
+    window.addEventListener('deviceorientationabsolute', rmOnOrientation, true);
+    window.addEventListener('deviceorientation', rmOnOrientation, true);
+    RM.compassEnabled = true; rmScheduleRender();
+  }
+}
+
+/* ---- navigation tick: distance check, arrival, trail recording ---- */
+function rmHandleNavTick() {
+  const target = RM.points.find(p => p.id === RM.navTarget);
+  if (!target || !RM.me) return;
+  const distM = haversineKm(RM.me.lat, RM.me.lng, target.lat, target.lng) * 1000;
+
+  const last = RM.lastTrailPoint;
+  if (!last || haversineKm(last.lat, last.lng, RM.me.lat, RM.me.lng) * 1000 >= RM.TRAIL_MIN_MOVE_M) {
+    RM.navTrail.push({ lat: RM.me.lat, lng: RM.me.lng, t: Date.now() });
+    RM.lastTrailPoint = { lat: RM.me.lat, lng: RM.me.lng };
+  }
+  rmTryFollowTrail(target.id);
+  if (distM <= RM.ARRIVE_M) {
+    toast(`You've arrived — ${target.name}`, 'ok', 4000);
+    RM.stopNavigation('arrived');
+  }
+}
+
+/* ---- follow-an-existing-trail: if the walk crosses close to a trail
+   you've saved for this destination before, latch onto it and guide
+   waypoint-by-waypoint along it instead of just straight-lining to the
+   destination. Once you pass its last recorded point (or wander far
+   enough off it), it lets go and guidance goes back to plain direct
+   bearing — the fresh trail keeps recording throughout either way. ---- */
+function rmTryFollowTrail(destId) {
+  if (!RM.me) return;
+  const runs = rmLoadPastRuns(destId).filter(r => !RM.hiddenTrails.has(r.id));
+
+  if (RM.followingRunId) {
+    const run = runs.find(r => r.id === RM.followingRunId);
+    if (!run) { RM.followingRunId = null; RM.followIndex = 0; return; }
+    let bestIdx = RM.followIndex, bestDist = Infinity;
+    const searchEnd = Math.min(run.points.length - 1, RM.followIndex + 6);
+    for (let i = RM.followIndex; i <= searchEnd; i++) {
+      const d = haversineKm(RM.me.lat, RM.me.lng, run.points[i].lat, run.points[i].lng) * 1000;
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    }
+    if (bestDist > RM.FOLLOW_LOSE_M) { RM.followingRunId = null; RM.followIndex = 0; return; }
+    RM.followIndex = bestIdx;
+    if (RM.followIndex >= run.points.length - 1) {
+      toast('Known trail ends here — continuing ahead', 'inf', 2500);
+      RM.followingRunId = null; RM.followIndex = 0;
+    }
+    return;
+  }
+
+  let best = null, bestDist = RM.FOLLOW_SNAP_M, bestIdx = 0;
+  runs.forEach(run => {
+    run.points.forEach((pt, i) => {
+      const d = haversineKm(RM.me.lat, RM.me.lng, pt.lat, pt.lng) * 1000;
+      if (d < bestDist) { bestDist = d; best = run; bestIdx = i; }
+    });
+  });
+  if (best) {
+    RM.followingRunId = best.id;
+    RM.followIndex = bestIdx;
+    toast("On a trail you've walked before — following it", 'ok', 2500);
+  }
+}
+
+/* ---- turn guidance: compass diff if we have a heading, else a
+   plain absolute compass direction while we wait to detect one ---- */
+function rmCurrentHeading() {
+  if (RM.compassEnabled && RM.deviceHeading != null) return RM.deviceHeading;
+  if (RM.movementHeading != null) return RM.movementHeading;
+  return null;
+}
+function rmInstructionFor(target) {
+  if (!RM.me) return { text: 'Waiting for GPS…', angle: 0 };
+  let aim = target;
+  if (RM.followingRunId) {
+    const run = rmLoadPastRuns(RM.navTarget).find(r => r.id === RM.followingRunId);
+    if (run && run.points[RM.followIndex + 1]) aim = run.points[RM.followIndex + 1];
+  }
+  const bTo = rmBearingDeg(RM.me, aim);
+  const heading = rmCurrentHeading();
+  if (heading == null) return { text: `Head ${rmCompassLabel(bTo)} — walk a little so I can find your direction`, angle: bTo };
+  const diff = ((bTo - heading + 540) % 360) - 180; // -180..180, positive = turn right
+  let text;
+  if (Math.abs(diff) <= 18) text = 'Go straight';
+  else if (Math.abs(diff) >= 155) text = 'Turn around';
+  else text = diff > 0 ? 'Turn right' : 'Turn left';
+  return { text, angle: diff };
+}
+
+/* ---- render throttling: GPS/orientation events can fire fast;
+   cap full redraws to ~2.5/sec so it stays smooth, not spammy ---- */
+let rmRenderPending = false, rmLastFullRender = 0;
+function rmScheduleRender() {
+  const now = Date.now();
+  if (now - rmLastFullRender < 400) {
+    if (!rmRenderPending) { rmRenderPending = true; setTimeout(() => { rmRenderPending = false; rmFullRender(); }, 400 - (now - rmLastFullRender)); }
+    return;
+  }
+  rmFullRender();
+}
+function rmFullRender() { rmLastFullRender = Date.now(); rmRenderMap(); rmRenderSheet(); }
+
+/* ---- draw the map: nodes, live nav line + distance label, trails ---- */
+function rmRenderMap() {
+  const allPts = RM.me ? [...RM.points, { id:'__me__', lat: RM.me.lat, lng: RM.me.lng }] : RM.points;
+  RM.projection = rmBuildProjection(allPts);
+
+  const spokesLayer = document.getElementById('rm-spokes-layer');
+  const trailLayer  = document.getElementById('rm-trail-layer');
+  const navLayer    = document.getElementById('rm-nav-layer');
+  const nodesLayer  = document.getElementById('rm-nodes-layer');
+  spokesLayer.innerHTML = ''; trailLayer.innerHTML = ''; navLayer.innerHTML = ''; nodesLayer.innerHTML = '';
+  if (!RM.projection) return;
+
+  // Google-Maps-style "follow me": if engaged, re-lock the camera onto
+  // the live position on every redraw — including mid-navigation — until
+  // the person drags the map themselves (see bindRmPanZoom below).
+  if (RM.followMe && RM.me) {
+    const meXY0 = RM.projection.toXY(RM.me.lat, RM.me.lng);
+    RM.view.x = RM_VB_W/2 - meXY0.x * RM.view.scale;
+    RM.view.y = RM_VB_H/2 - meXY0.y * RM.view.scale;
+  }
+
+  const coordsById = {};
+  RM.points.forEach(p => coordsById[p.id] = RM.projection.toXY(p.lat, p.lng));
+  const meXY = RM.me ? RM.projection.toXY(RM.me.lat, RM.me.lng) : null;
+
+  // faint dashed spokes to every place while idle (no active route) —
+  // gives a sense of everything reachable without cluttering a live nav
+  if (meXY && !RM.navTarget) {
+    RM.points.forEach(p => spokesLayer.appendChild(rmEl('path', { class:'rm-spoke', d: rmCurvePath(meXY, coordsById[p.id]) })));
+  }
+
+  // trails (past local runs, uniform colour, exact path, no dark halo
+  // underneath, thin + non-scaling so corners never blur together at
+  // any zoom level) + the live one, for whichever place is focused —
+  // each gets tiny arrowheads along it to show direction of travel
+  const focusId = RM.navTarget || RM.selected;
+  if (focusId) {
+    rmLoadPastRuns(focusId).forEach(run => {
+      if (RM.hiddenTrails.has(run.id)) return; // hidden trails are skipped entirely
+      const pts = run.points.map(pt => RM.projection.toXY(pt.lat, pt.lng));
+      const isHighlighted = run.id === RM.focusedRunId || run.id === RM.followingRunId;
+      trailLayer.appendChild(rmEl('path', {
+        class: 'rm-trail-past' + (isHighlighted ? ' rm-trail-focused' : ''),
+        d: rmExactPath(pts),
+        'vector-effect': 'non-scaling-stroke'
+      }));
+      rmDrawDirectionArrows(pts, trailLayer, 'rm-trail-arrow');
+    });
+    if (RM.navTrail.length > 1) {
+      const pts = RM.navTrail.map(pt => RM.projection.toXY(pt.lat, pt.lng));
+      trailLayer.appendChild(rmEl('path', { class:'rm-trail', d: rmExactPath(pts), 'vector-effect': 'non-scaling-stroke' }));
+      rmDrawDirectionArrows(pts, trailLayer, 'rm-trail-arrow-live');
+    }
+  }
+
+  // active navigation guide-line + live distance label
+  if (RM.navTarget && meXY) {
+    const target = RM.points.find(p => p.id === RM.navTarget);
+    if (target) {
+      const tXY = coordsById[target.id];
+      const distKm = haversineKm(RM.me.lat, RM.me.lng, target.lat, target.lng);
+      const arrived = distKm * 1000 <= RM.ARRIVE_M;
+      navLayer.appendChild(rmEl('path', { class:'rm-nav-line-bg', d: rmCurvePath(meXY, tXY) }));
+      navLayer.appendChild(rmEl('path', { class:'rm-nav-line' + (arrived ? ' arrived' : ''), d: rmCurvePath(meXY, tXY) }));
+      const mid = rmCurveMid(meXY, tXY);
+      const label = rmFmtKm(distKm);
+      const w = 12 + label.length * 6.4;
+      navLayer.appendChild(rmEl('rect', { class:'rm-dist-bg', x: mid.x - w/2, y: mid.y - 9, width: w, height: 18, rx: 9 }));
+      const t = rmEl('text', { class:'rm-dist-txt', x: mid.x, y: mid.y + 1 }); t.textContent = label;
+      navLayer.appendChild(t);
+    }
+  }
+
+  // place nodes — tapping one opens its detail sheet
+  RM.points.forEach(p => {
+    const xy = coordsById[p.id];
+    const isFocused = p.id === RM.navTarget || p.id === RM.selected;
+    const g = rmEl('g', {});
+    g.style.cursor = 'pointer';
+    g.appendChild(rmEl('circle', { class:'rm-node place' + (isFocused ? ' active-target' : ''), cx: xy.x, cy: xy.y }));
+    const label = rmEl('text', { class:'rm-node-label', x: xy.x + 11, y: xy.y + 4 }); label.textContent = p.name;
+    g.appendChild(label);
+    g.addEventListener('click', e => { e.stopPropagation(); RM.openDetail(p.id); });
+    nodesLayer.appendChild(g);
+  });
+
+  // "you are here" — pulsing dot, a Google-Maps-style heading beam
+  // fanning out ahead of it whenever a heading is known (compass or
+  // movement-derived), and a small arrow on the dot itself
+  if (meXY) {
+    const headingNow = rmCurrentHeading();
+    if (headingNow != null) {
+      nodesLayer.appendChild(rmEl('path', { class:'rm-me-beam', d: rmBeamPath(meXY.x, meXY.y, headingNow, 50, 26) }));
+    }
+    nodesLayer.appendChild(rmEl('circle', { class:'rm-node-pulse', cx: meXY.x, cy: meXY.y, r: 9 }));
+    nodesLayer.appendChild(rmEl('circle', { class:'rm-node me', cx: meXY.x, cy: meXY.y }));
+    if (headingNow != null) {
+      nodesLayer.appendChild(rmEl('polygon', {
+        points: rmRotatedTriangle(meXY.x, meXY.y, headingNow, 10),
+        fill: '#10b981', stroke: '#0a0f1e', 'stroke-width': 1
+      }));
+    }
+    const meLabel = rmEl('text', { class:'rm-node-label me', x: meXY.x + 11, y: meXY.y + 4 }); meLabel.textContent = 'You';
+    nodesLayer.appendChild(meLabel);
+  }
+
+  rmApplyTransform();
+}
+
+/* ---- the one sheet, four modes: list / detail / nav-hud / trails ---- */
+function rmRenderSheet() {
+  const body = document.getElementById('rm-sheet-body');
+  const pillText = document.getElementById('rm-places-pill-text');
+
+  if (RM.sheetMode === 'trails') {
+    pillText.textContent = 'Saved Trails';
+    const groups = RM.points
+      .map(p => ({ p, runs: rmLoadPastRuns(p.id) }))
+      .filter(g => g.runs.length);
+    if (!groups.length) {
+      body.innerHTML = `
+        <div class="rm-sheet-title"><i class="fas fa-route"></i> Saved Trails</div>
+        <div id="rm-empty">No walked trails saved yet on this device. Start navigating to a place to record one.</div>
+        <div class="rm-detail-actions" style="margin-top:10px;">
+          <button class="rm-btn ghost" id="rm-trails-close-btn"><i class="fas fa-list"></i> All Places</button>
+        </div>
+      `;
+      document.getElementById('rm-trails-close-btn').addEventListener('click', () => { RM.sheetMode = 'list'; rmRenderSheet(); });
+      return;
+    }
+    body.innerHTML = `<div class="rm-sheet-title"><i class="fas fa-route"></i> Saved Trails</div>` +
+      groups.map(g => `
+        <div class="rm-sheet-subhead">${esc(g.p.name)}</div>
+        <div>
+          ${g.runs.map(run => {
+            const hidden = RM.hiddenTrails.has(run.id);
+            return `
+            <div class="rm-trail-row${hidden ? ' rm-trail-hidden' : ''}" data-trail-center="${esc(run.id)}" data-trail-point="${esc(g.p.id)}">
+              <i class="fas fa-route rm-trail-icon"></i>
+              <span class="rm-trail-meta">${new Date(run.date).toLocaleDateString()} · ${rmFmtKm(run.km)}${hidden ? ' · hidden' : ''}</span>
+              <button class="rm-trail-eye" data-trail-toggle="${esc(run.id)}" title="${hidden ? 'Show' : 'Hide'} this trail"><i class="fas ${hidden ? 'fa-eye-slash' : 'fa-eye'}"></i></button>
+              <button class="rm-trail-del" data-trail-del-point="${esc(g.p.id)}" data-trail-del="${esc(run.id)}" title="Delete this trail"><i class="fas fa-trash"></i></button>
+            </div>`;
+          }).join('')}
+        </div>
+      `).join('') +
+      `<div class="rm-detail-actions" style="margin-top:14px;">
+        <button class="rm-btn ghost" id="rm-trails-close-btn"><i class="fas fa-list"></i> All Places</button>
+      </div>`;
+
+    body.querySelectorAll('[data-trail-del]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        rmDeleteRun(btn.dataset.trailDelPoint, btn.dataset.trailDel);
+        rmRenderSheet();
+        rmRenderMap();
+      });
+    });
+    body.querySelectorAll('[data-trail-toggle]').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); rmToggleTrailVisibility(btn.dataset.trailToggle); });
+    });
+    body.querySelectorAll('[data-trail-center]').forEach(row => {
+      row.addEventListener('click', () => RM.centerOnRun(row.dataset.trailPoint, row.dataset.trailCenter));
+    });
+    document.getElementById('rm-trails-close-btn').addEventListener('click', () => { RM.sheetMode = 'list'; rmRenderSheet(); });
+    return;
+  }
+
+  if (RM.sheetMode === 'nav') {
+    const target = RM.points.find(p => p.id === RM.navTarget);
+    pillText.textContent = target ? `Navigating: ${target.name}` : 'Navigating';
+    if (!target) { body.innerHTML = `<div id="rm-empty">Route ended.</div>`; return; }
+    const distKm = RM.me ? haversineKm(RM.me.lat, RM.me.lng, target.lat, target.lng) : null;
+    const instr = rmInstructionFor(target);
+    const needsPerm = rmNeedsCompassPermission() && !RM.compassEnabled;
+    body.innerHTML = `
+      <div class="rm-sheet-title">${esc(target.name)}</div>
+      ${RM.followingRunId ? `<div class="rm-following-badge"><i class="fas fa-route"></i> Following a trail you've walked before</div>` : ''}
+      <div id="rm-hud-arrow-wrap"><i class="fas fa-location-arrow" id="rm-hud-arrow" style="transform:rotate(${instr.angle}deg)"></i></div>
+      <div id="rm-hud-dist">${distKm != null ? rmFmtKm(distKm) : '—'}</div>
+      <div id="rm-hud-instruction">${esc(instr.text)}</div>
+      <div id="rm-hud-meta">
+        <span><i class="fas fa-shoe-prints"></i> ${RM.navTrail.length} trail pts</span>
+        <span>${RM.me && RM.me.accuracy ? '±' + Math.round(RM.me.accuracy) + 'm GPS' : ''}</span>
+      </div>
+      ${needsPerm ? `<button class="rm-compass-perm" id="rm-enable-compass-btn"><i class="fas fa-compass"></i> Enable compass for more accurate turns</button>` : ''}
+      <div class="rm-nav-actions">
+        <button class="rm-btn danger" id="rm-stop-nav-btn"><i class="fas fa-stop"></i> Stop Navigation</button>
+      </div>
+      <div class="field-hint" style="margin-top:8px;">Straight-line guidance only — no roads/buildings data, so it points direction + distance, not a routed path. Tap <i class="fas fa-location-crosshairs"></i> in the top bar any time to snap back to your position.</div>
+    `;
+    const permBtn = document.getElementById('rm-enable-compass-btn');
+    if (permBtn) permBtn.addEventListener('click', rmEnableCompass);
+    document.getElementById('rm-stop-nav-btn').addEventListener('click', () => RM.stopNavigation('stopped'));
+    return;
+  }
+
+  if (RM.sheetMode === 'detail') {
+    const p = RM.points.find(x => x.id === RM.selected);
+    if (!p) { RM.sheetMode = 'list'; rmRenderSheet(); return; }
+    pillText.textContent = p.name;
+    const distKm = RM.me ? haversineKm(RM.me.lat, RM.me.lng, p.lat, p.lng) : null;
+    const bearingTxt = RM.me ? `${rmCompassLabel(rmBearingDeg(RM.me, p))} (${rmBearingDeg(RM.me, p).toFixed(0)}°)` : '—';
+    const pastRuns = rmLoadPastRuns(p.id);
+    const gmapsHref = p.mapLink || `https://www.google.com/maps?q=${p.lat},${p.lng}`;
+    body.innerHTML = `
+      <div class="rm-sheet-title">${esc(p.name)}</div>
+      ${p.sub ? `<div class="rm-point-sub" style="margin-bottom:8px;">${esc(p.sub)}</div>` : ''}
+      <div class="rm-point-row" style="cursor:default;">
+        <div><div style="font-size:.68rem;color:var(--steel);font-family:var(--font-mono);">DISTANCE</div><div class="rm-point-name">${distKm != null ? rmFmtKm(distKm) : 'Enable location'}</div></div>
+        <div style="text-align:right;"><div style="font-size:.68rem;color:var(--steel);font-family:var(--font-mono);">BEARING</div><div class="rm-point-name">${bearingTxt}</div></div>
+      </div>
+      ${pastRuns.length ? `<button class="rm-btn ghost" id="rm-goto-trails-btn" style="margin-bottom:8px;"><i class="fas fa-route"></i> View ${pastRuns.length} Saved Trail${pastRuns.length > 1 ? 's' : ''}</button>` : ''}
+      <div class="rm-detail-actions">
+        <button class="rm-btn gold" id="rm-start-nav-btn"><i class="fas fa-location-arrow"></i> Start Navigation</button>
+      </div>
+      <div class="rm-detail-actions">
+        <a class="rm-btn ghost" href="${esc(gmapsHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> Open in Google Maps</a>
+        <button class="rm-btn ghost" id="rm-back-to-list-btn"><i class="fas fa-list"></i> All Places</button>
+      </div>
+    `;
+    document.getElementById('rm-start-nav-btn').addEventListener('click', () => RM.startNavigation(p.id));
+    document.getElementById('rm-back-to-list-btn').addEventListener('click', () => { RM.selected = null; RM.sheetMode = 'list'; rmRenderSheet(); rmRenderMap(); });
+    const gotoTrailsBtn = document.getElementById('rm-goto-trails-btn');
+    if (gotoTrailsBtn) gotoTrailsBtn.addEventListener('click', () => { RM.sheetMode = 'trails'; rmRenderSheet(); rmRenderMap(); });
+    return;
+  }
+
+  // 'list' — every mapped point, closest first once location is known
+  pillText.textContent = `Places (${RM.points.length})`;
+  if (!RM.points.length) {
+    body.innerHTML = `<div class="rm-sheet-title">Places</div><div id="rm-empty">No mapped points yet — add latitude/longitude to an event to see it here.</div>`;
+    return;
+  }
+  const sorted = RM.me
+    ? [...RM.points].sort((a,b) => haversineKm(RM.me.lat, RM.me.lng, a.lat, a.lng) - haversineKm(RM.me.lat, RM.me.lng, b.lat, b.lng))
+    : RM.points;
+  body.innerHTML = `<div class="rm-sheet-title">Places</div>` + sorted.map(p => {
+    const distTxt = RM.me ? rmFmtKm(haversineKm(RM.me.lat, RM.me.lng, p.lat, p.lng)) : null;
+    return `
+      <div class="rm-point-row" data-point="${esc(p.id)}">
+        <div>
+          <div class="rm-point-name">${esc(p.name)}</div>
+          ${p.sub ? `<div class="rm-point-sub">${esc(p.sub)}</div>` : ''}
+        </div>
+        <span class="rm-point-dist ${distTxt ? '' : 'unknown'}">${distTxt || 'N/A'}</span>
+      </div>`;
+  }).join('');
+  body.querySelectorAll('[data-point]').forEach(row => row.addEventListener('click', () => RM.openDetail(row.dataset.point)));
+}
+
+/* ---- scale bar: always a real, current km value at whatever zoom ---- */
+function rmUpdateScaleBar() {
+  if (!RM.projection) return;
+  const targets = [0.005,0.01,0.025,0.05,0.1,0.25,0.5,1,2,5,10,20,50,100,200];
+  const effectiveKmPerPx = RM.projection.kmPerPx / RM.view.scale;
+  let best = targets[0], bestPx = 60;
+  for (const km of targets) {
+    const px = km / effectiveKmPerPx;
+    if (px >= 40 && px <= 140) { best = km; bestPx = px; break; }
+    if (px > 140) { best = km; bestPx = px; break; }
+  }
+  document.getElementById('rm-scale-px').style.width = Math.min(bestPx, 160) + 'px';
+  document.getElementById('rm-scale-label').textContent = best < 1 ? Math.round(best*1000) + ' m' : best + ' km';
+}
+function rmApplyTransform() {
+  document.getElementById('rm-pan-zoom').setAttribute('transform', `translate(${RM.view.x} ${RM.view.y}) scale(${RM.view.scale})`);
+  rmUpdateScaleBar();
+}
+
+/* ---- sheet expand/collapse (handle drag, pill tap, or the explicit
+   hide button — the sheet is always dismissable) ---- */
+function rmExpandSheet() { document.getElementById('rm-sheet').classList.remove('collapsed'); document.getElementById('rm-places-pill').classList.remove('show'); }
+function rmCollapseSheet() { document.getElementById('rm-sheet').classList.add('collapsed'); document.getElementById('rm-places-pill').classList.add('show'); }
+
+/* ---- fit the current pan/zoom to a set of already-projected XY points,
+   centered in the viewBox with generous padding ---- */
+function rmFitViewToXYBounds(ptsXY, paddingFrac = 0.28) {
+  if (!ptsXY.length) return;
+  const minX = Math.min(...ptsXY.map(p => p.x)), maxX = Math.max(...ptsXY.map(p => p.x));
+  const minY = Math.min(...ptsXY.map(p => p.y)), maxY = Math.max(...ptsXY.map(p => p.y));
+  const w = Math.max(maxX - minX, 24), h = Math.max(maxY - minY, 24);
+  const usableW = RM_VB_W * (1 - paddingFrac * 2), usableH = RM_VB_H * (1 - paddingFrac * 2);
+  let scale = Math.min(usableW / w, usableH / h);
+  scale = Math.max(RM_MIN_SCALE, Math.min(RM_MAX_SCALE, scale));
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  RM.view.scale = scale;
+  RM.view.x = RM_VB_W / 2 - cx * scale;
+  RM.view.y = RM_VB_H / 2 - cy * scale;
+  rmApplyTransform();
+}
+
+/* ---- Google-Maps-style recenter / follow-me ---- */
+function rmSetFollowMe(on) {
+  RM.followMe = on;
+  document.getElementById('rm-recenter-btn').classList.toggle('on', on);
+}
+function rmCenterOnMe(engageFollow) {
+  if (!RM.me || !RM.projection) return;
+  const meXY = RM.projection.toXY(RM.me.lat, RM.me.lng);
+  RM.view.x = RM_VB_W/2 - meXY.x * RM.view.scale;
+  RM.view.y = RM_VB_H/2 - meXY.y * RM.view.scale;
+  rmApplyTransform();
+  if (engageFollow) rmSetFollowMe(true);
+}
+
+/* ---- public actions ---- */
+RM.centerOnRun = function (pointId, runId) {
+  const run = rmLoadPastRuns(pointId).find(r => r.id === runId);
+  if (!run || !RM.projection) return;
+  RM.focusedRunId = runId;
+  if (!RM.navTarget) RM.selected = pointId; // so the map layer draws this place's trails
+  rmSetFollowMe(false); // hand-picking a trail to look at releases follow-me
+  rmFitViewToXYBounds(run.points.map(pt => RM.projection.toXY(pt.lat, pt.lng)));
+  rmRenderMap();
+  clearTimeout(RM._focusTimer);
+  RM._focusTimer = setTimeout(() => { RM.focusedRunId = null; rmRenderMap(); }, 4000);
+};
+RM.centerOnRoute = function () {
+  if (!RM.projection) { toast('Still finding your location…', 'inf'); return; }
+  const target = RM.points.find(p => p.id === (RM.navTarget || RM.selected));
+  const pts = [];
+  if (RM.me) pts.push(RM.projection.toXY(RM.me.lat, RM.me.lng));
+  if (target) pts.push(RM.projection.toXY(target.lat, target.lng));
+  if (!pts.length) { toast('Pick a place first', 'inf'); return; }
+  rmSetFollowMe(false);
+  rmFitViewToXYBounds(pts, 0.32);
+};
+RM.openView = function () {
+  rmSyncPoints();
+  document.getElementById('rm-view').classList.add('show');
+  RM.open = true;
+  RM.view = { x: 0, y: 0, scale: 1 };
+  rmSetFollowMe(false);
+  RM.sheetMode = RM.selected ? 'detail' : 'list';
+  rmExpandSheet();
+  rmRenderSheet();
+  rmRenderMap();
+  rmStartWatch();
+};
+RM.closeView = function () {
+  document.getElementById('rm-view').classList.remove('show');
+  RM.open = false;
+  if (RM.navTarget) RM.stopNavigation('stopped');
+  rmStopWatch();
+};
+RM.openDetail = function (id) {
+  rmSyncPoints();
+  const p = RM.points.find(x => x.id === id);
+  if (!p) { toast('That place has no coordinates yet', 'err'); return; }
+  RM.selected = id;
+  RM.sheetMode = 'detail';
+  rmExpandSheet();
+  rmRenderSheet();
+  rmRenderMap();
+};
+RM.startNavigation = function (id) {
+  const p = RM.points.find(x => x.id === id);
+  if (!p) return;
+  RM.navTarget = id;
+  RM.navTrail = [];
+  RM.lastTrailPoint = null;
+  RM.followingRunId = null;
+  RM.followIndex = 0;
+  RM.sheetMode = 'nav';
+  rmStatusDot.className = 'tracking';
+  // navigation auto-follows, just like turn-by-turn in Google/Uber —
+  // the crosshair button stays live the whole time to re-snap to it
+  rmSetFollowMe(true);
+  rmExpandSheet();
+  rmRenderSheet();
+  rmRenderMap();
+  toast(`Navigating to ${p.name}`, 'inf', 2500);
+};
+RM.stopNavigation = function (reason) {
+  const id = RM.navTarget;
+  if (id && RM.navTrail.length > 1) rmSaveRun(id, RM.navTrail);
+  RM.followingRunId = null;
+  RM.followIndex = 0;
+  RM.navTarget = null;
+  RM.sheetMode = RM.selected ? 'detail' : 'list';
+  rmRenderSheet();
+  rmRenderMap();
+  if (reason === 'stopped') toast('Navigation stopped — trail saved', 'inf');
+};
+
+/* ---- wire up buttons ---- */
+document.getElementById('rm-open-btn').addEventListener('click', () => RM.openView());
+document.getElementById('rm-back-btn').addEventListener('click', () => RM.closeView());
+document.getElementById('rm-sheet-handle').addEventListener('click', () => {
+  document.getElementById('rm-sheet').classList.contains('collapsed') ? rmExpandSheet() : rmCollapseSheet();
+});
+document.getElementById('rm-sheet-collapse-btn').addEventListener('click', rmCollapseSheet);
+document.getElementById('rm-places-pill').addEventListener('click', rmExpandSheet);
+document.getElementById('rm-fit-btn').addEventListener('click', () => { rmSetFollowMe(false); RM.view = { x:0, y:0, scale:1 }; rmApplyTransform(); });
+document.getElementById('rm-center-route-btn').addEventListener('click', () => RM.centerOnRoute());
+document.getElementById('rm-trails-btn').addEventListener('click', () => {
+  RM.sheetMode = 'trails';
+  rmExpandSheet();
+  rmRenderSheet();
+  rmRenderMap();
+});
+
+/* Recenter — works at any stage, including mid-navigation. If a live
+   fix isn't in yet, it asks for a fresh one-off fix right away instead
+   of silently failing, then snaps to it the moment it arrives. Either
+   way it engages follow-me, so the camera keeps tracking you afterwards
+   until you drag the map. */
+document.getElementById('rm-recenter-btn').addEventListener('click', () => {
+  if (!RM.me) {
+    if (!('geolocation' in navigator)) { toast('Location not supported on this device', 'err'); return; }
+    toast('Finding your location…', 'inf', 1500);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        RM.me = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, heading: pos.coords.heading, speed: pos.coords.speed };
+        rmStatusDot.className = RM.navTarget ? 'tracking live' : 'live';
+        rmRenderMap();
+        rmCenterOnMe(true);
+      },
+      () => toast('Could not get your location — check location permission', 'err'),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+    return;
+  }
+  rmCenterOnMe(true);
+});
+
+/* ---- client(px) -> svg viewBox-space coords, accounting for the
+   letterboxing that preserveAspectRatio="xMidYMid meet" introduces
+   whenever the container's aspect ratio isn't exactly 1000:620.
+   This is what previously made zoom drift/"glitch" away from the
+   actual finger/cursor position on non-matching screen sizes. ---- */
+function rmClientToViewBox(clientX, clientY) {
+  const wrap = document.getElementById('rm-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const fitScale = Math.min(rect.width / RM_VB_W, rect.height / RM_VB_H);
+  const offsetX = (rect.width - RM_VB_W * fitScale) / 2;
+  const offsetY = (rect.height - RM_VB_H * fitScale) / 2;
+  return {
+    x: (clientX - rect.left - offsetX) / fitScale,
+    y: (clientY - rect.top - offsetY) / fitScale
+  };
+}
+
+function rmZoomAt(factor, clientX, clientY) {
+  let cx, cy;
+  if (clientX != null && clientY != null) {
+    const p = rmClientToViewBox(clientX, clientY);
+    cx = p.x; cy = p.y;
+  } else {
+    cx = RM_VB_W / 2; cy = RM_VB_H / 2;
+  }
+  const newScale = Math.max(RM_MIN_SCALE, Math.min(RM_MAX_SCALE, RM.view.scale * factor));
+  const realFactor = newScale / RM.view.scale;
+  RM.view.x = cx - (cx - RM.view.x) * realFactor;
+  RM.view.y = cy - (cy - RM.view.y) * realFactor;
+  RM.view.scale = newScale;
+  rmApplyTransform();
+}
+document.getElementById('rm-zoom-in').addEventListener('click', () => rmZoomAt(1.35));
+document.getElementById('rm-zoom-out').addEventListener('click', () => rmZoomAt(0.74));
+
+/* ---- pan (drag) + zoom (wheel) + pinch, on the map canvas ---- */
+(function bindRmPanZoom() {
+  const wrap = document.getElementById('rm-wrap');
+  let dragging = false, lastPt = null;
+  wrap.addEventListener('pointerdown', e => {
+    // Don't start a map-drag (and don't grab pointer capture) for taps
+    // that land on the sheet, the collapsed pill, or the on-map controls —
+    // capturing the pointer on `wrap` here was swallowing the click that
+    // should reach those buttons (Start Navigation, hide sheet, trail
+    // delete, zoom, etc.), especially on iOS Safari.
+    if (e.target.closest('#rm-sheet, #rm-places-pill, #rm-controls, #rm-compass')) return;
+    dragging = true; lastPt = { x:e.clientX, y:e.clientY }; wrap.classList.add('grabbing'); wrap.setPointerCapture(e.pointerId);
+    // Taking manual control of the map — like Google Maps, dragging
+    // releases follow-me so the camera stops fighting your pan.
+    rmSetFollowMe(false);
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - lastPt.x, dy = e.clientY - lastPt.y;
+    lastPt = { x:e.clientX, y:e.clientY };
+    const rect = wrap.getBoundingClientRect();
+    const fitScale = Math.min(rect.width / RM_VB_W, rect.height / RM_VB_H) || 1;
+    RM.view.x += dx / fitScale; RM.view.y += dy / fitScale;
+    rmApplyTransform();
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(evt => wrap.addEventListener(evt, () => { dragging = false; wrap.classList.remove('grabbing'); }));
+  wrap.addEventListener('wheel', e => { e.preventDefault(); rmZoomAt(e.deltaY > 0 ? 0.9 : 1.1, e.clientX, e.clientY); }, { passive:false });
+
+  // Pinch-zoom: re-anchor on the pinch midpoint every move (not just the
+  // gesture's start), using the same rmZoomAt used for wheel/buttons, so
+  // the point between your fingers stays put instead of the map drifting.
+  let pinchLastDist = null;
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      pinchLastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    }
+  }, { passive:true });
+  wrap.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && pinchLastDist) {
+      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      if (pinchLastDist > 0) rmZoomAt(d / pinchLastDist, midX, midY);
+      pinchLastDist = d;
+    }
+  }, { passive:true });
+  wrap.addEventListener('touchend', e => { if (e.touches.length < 2) pinchLastDist = null; });
+  wrap.addEventListener('touchcancel', () => { pinchLastDist = null; });
+})();
+
+/* ---- default view: open straight to the live map. The events list
+   (search, add/edit, etc.) now lives behind the menu (☰) button in
+   the map's top bar — RM.closeView() reveals it underneath. ---- */
+RM.openView();
 </script>
 </body>
 </html>
