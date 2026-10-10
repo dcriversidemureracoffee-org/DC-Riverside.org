@@ -1,963 +1,1993 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Riverside Connect</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Riverside Connect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#0a0f1e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Riverside Connect" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="maskable_icon_x192.png"
+    />
+    <meta property="og:title" content="Riverside Connect" />
+    <meta
+      property="og:description"
+      content="Join the conversation – real-time Christian community"
+    />
+    <meta
+      property="og:image"
+      content="https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/maskable_icon_x192.png"
+    />
+    <meta
+      property="og:url"
+      content="https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/The-Riverside-Connect/"
+    />
+    <style>
+      :root {
+        --ink: #e2e8f0;
+        --paper: #0a0f1e;
+        --surface: #0f172a;
+        --lift: #1a2540;
+        --wire: rgba(96, 165, 250, 0.18);
+        --steel: #64748b;
+        --lead: #94a3b8;
+        --accent: #3b82f6;
+        --accent2: #60a5fa;
+        --gold: #facc15;
+        --danger: #ef4444;
+        --green: #10b981;
+        --head: "Bebas Neue", Impact, sans-serif;
+        --body:
+          "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --bar: 54px;
+        --top: env(safe-area-inset-top, 0px);
+        --bot: env(safe-area-inset-bottom, 0px);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body);
+        -webkit-font-smoothing: antialiased;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent2);
+        outline-offset: 2px;
+      }
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        width: 60vmax;
+        height: 60vmax;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.18;
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::before {
+        background: var(--accent);
+        top: -25vmax;
+        left: -20vmax;
+        animation: drift 18s ease-in-out infinite alternate;
+      }
+      body::after {
+        background: #6366f1;
+        bottom: -30vmax;
+        right: -20vmax;
+        animation: drift 22s ease-in-out infinite alternate-reverse;
+      }
+      @keyframes drift {
+        to {
+          transform: translate(8vmax, 6vmax) scale(1.15);
+        }
+      }
+      @keyframes up {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: scale(0.88) translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+        }
+        50% {
+          box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+      }
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        40% {
+          transform: translateY(-5px);
+          opacity: 1;
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes flt {
+        to {
+          transform: translateY(-120px) scale(1.4);
+          opacity: 0;
+        }
+      }
+      @keyframes glow {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(250, 204, 21, 0);
+        }
+        50% {
+          box-shadow: 0 0 18px 2px rgba(250, 204, 21, 0.25);
+        }
+      }
+      .in {
+        animation: up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        animation-delay: calc(var(--i, 0) * 70ms);
+      }
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <link rel="manifest" href="./manifest.json">
+      #topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(var(--bar) + var(--top));
+        padding: var(--top) max(10px, env(safe-area-inset-right)) 0
+          max(10px, env(safe-area-inset-left));
+        background: rgba(10, 15, 30, 0.85);
+        border-bottom: 1px solid var(--wire);
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        backdrop-filter: blur(16px);
+      }
+      .logo {
+        font-family: var(--head);
+        font-size: 1.3rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        white-space: nowrap;
+      }
+      .sp {
+        flex: 1;
+      }
+      #net {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 99px;
+        background: rgba(16, 185, 129, 0.14);
+        color: #34d399;
+        transition: 0.3s;
+      }
+      #net i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: pulse 2s infinite;
+      }
+      body.offline #net {
+        background: rgba(250, 204, 21, 0.14);
+        color: var(--gold);
+      }
+      body.offline #net i {
+        background: var(--gold);
+        animation: none;
+      }
+      .ib {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        background: none;
+        border: 0;
+        border-radius: 10px;
+        color: var(--lead);
+        cursor: pointer;
+        transition: 0.2s;
+        flex-shrink: 0;
+        text-decoration: none;
+      }
+      .ib:hover {
+        color: var(--accent2);
+        background: var(--lift);
+      }
+      .ib:active {
+        transform: scale(0.88);
+      }
+      .ib svg {
+        width: 19px;
+        height: 19px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ib.spinning svg {
+        animation: spin 0.8s linear infinite;
+      }
+      .tb-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 16px;
+        height: 16px;
+        background: var(--danger);
+        color: #fff;
+        font-size: 0.58rem;
+        font-weight: 800;
+        border-radius: 99px;
+        display: none;
+        place-items: center;
+        padding: 0 4px;
+        border: 1.5px solid var(--paper);
+      }
+      .tb-badge.visible {
+        display: grid;
+        animation: pop 0.4s;
+      }
+      .av img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(96, 165, 250, 0.4);
+      }
 
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Riverside Connect">
-  <link rel="apple-touch-icon" sizes="180x180" href="maskable_icon_x192.png">
+      #chat-list {
+        position: fixed;
+        top: calc(var(--bar) + var(--top));
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        z-index: 1;
+        padding-bottom: calc(24px + var(--bot));
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 14px max(14px, env(safe-area-inset-left)) 10px
+          max(14px, env(safe-area-inset-right));
+      }
+      .cols {
+        display: grid;
+        gap: 14px;
+      }
+      @media (min-width: 900px) {
+        .cols {
+          grid-template-columns: 1.05fr 1fr;
+          align-items: start;
+        }
+        .col-l {
+          position: sticky;
+          top: 14px;
+        }
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 0;
+      }
+      .card {
+        background: linear-gradient(
+          160deg,
+          rgba(26, 37, 64, 0.7),
+          rgba(15, 23, 42, 0.8)
+        );
+        border: 1px solid var(--wire);
+        border-radius: 18px;
+        padding: 14px;
+        backdrop-filter: blur(8px);
+      }
+      .lbl {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--steel);
+        margin: 6px 4px;
+      }
 
-  <meta property="og:title" content="Riverside Connect">
-  <meta property="og:description" content="Join the conversation – real-time Christian community">
-  <meta property="og:image" content="https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/maskable_icon_x192.png">
-  <meta property="og:url" content="https://dcriversidemureracoffee-org.github.io/DC-Riverside.org/The-Riverside-Connect/">
+      /* guide */
+      .g-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .g-head {
+        cursor: pointer;
+        user-select: none;
+      }
+      .g-head .chev {
+        color: var(--lead);
+        transition: transform 0.25s;
+        flex-shrink: 0;
+      }
+      #grace.collapsed .chev {
+        transform: rotate(-90deg);
+      }
+      #grace.collapsed #g-body {
+        display: none;
+      }
+      #grace.collapsed .g-head {
+        margin-bottom: 0;
+      }
+      .g-av {
+        position: relative;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #6366f1);
+        display: grid;
+        place-items: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+      }
+      .g-av i {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--green);
+        border: 2px solid var(--surface);
+        animation: pulse 2s infinite;
+      }
+      .g-name {
+        font-weight: 700;
+      }
+      #g-sub {
+        font-size: 0.76rem;
+        color: #34d399;
+        transition: 0.2s;
+      }
+      .streak {
+        margin-left: auto;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--gold);
+        background: rgba(250, 204, 21, 0.1);
+        padding: 4px 10px;
+        border-radius: 99px;
+        white-space: nowrap;
+      }
+      #log {
+        height: min(300px, 38vh);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        padding: 4px 2px;
+        scroll-behavior: smooth;
+      }
+      .b {
+        max-width: 86%;
+        padding: 9px 13px;
+        border-radius: 16px;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        animation: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+      }
+      .b.bot {
+        align-self: flex-start;
+        background: var(--lift);
+        border-bottom-left-radius: 5px;
+      }
+      .b.me {
+        align-self: flex-end;
+        background: var(--accent);
+        color: #fff;
+        border-bottom-right-radius: 5px;
+      }
+      .b .ref {
+        display: block;
+        font-weight: 700;
+        color: var(--gold);
+        font-size: 0.78rem;
+        margin-bottom: 2px;
+      }
+      .b.pr {
+        font-style: italic;
+        color: var(--lead);
+      }
+      .dots {
+        display: flex;
+        gap: 4px;
+        padding: 12px 14px;
+      }
+      .dots span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent2);
+        animation: bounce 1.1s infinite;
+      }
+      .dots span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .dots span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .chips {
+        display: flex;
+        gap: 7px;
+        overflow-x: auto;
+        padding: 10px 0 4px;
+        scrollbar-width: none;
+      }
+      .chips::-webkit-scrollbar {
+        display: none;
+      }
+      .chip {
+        flex-shrink: 0;
+        padding: 7px 13px;
+        border-radius: 99px;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(96, 165, 250, 0.28);
+        color: var(--accent2);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .chip:hover {
+        background: rgba(59, 130, 246, 0.22);
+        transform: translateY(-2px);
+      }
+      .chip:active {
+        transform: scale(0.94);
+      }
+      .chip.hl {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: rgba(250, 204, 21, 0.08);
+      }
+      .send {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .send input {
+        flex: 1;
+        min-width: 0;
+        background: var(--paper);
+        border: 1px solid var(--wire);
+        border-radius: 99px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+        transition: 0.2s;
+      }
+      .send input:focus {
+        border-color: var(--accent2);
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+      }
+      .btn {
+        background: var(--accent);
+        color: #fff;
+        border: 0;
+        border-radius: 99px;
+        padding: 9px 16px;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+      }
+      .btn:active {
+        transform: scale(0.94);
+      }
+      .btn.ghost {
+        background: rgba(96, 165, 250, 0.1);
+        color: var(--accent2);
+        border: 1px solid var(--wire);
+      }
 
-  <style>
-    :root {
-      --ink:       #e2e8f0;
-      --paper:     #0a0f1e;
-      --surface:   #0f172a;
-      --lift:      #1a2540;
-      --wire:      rgba(96,165,250,0.18);
-      --steel:     #64748b;
-      --lead:      #94a3b8;
-      --accent:    #3b82f6;
-      --accent2:   #60a5fa;
-      --gold:      #facc15;
-      --danger:    #ef4444;
-      --green:     #10b981;
+      .v-act {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
 
-      --font-head: 'Bebas Neue', sans-serif;
-      --font-body: 'DM Sans', sans-serif;
-      --font-mono: 'DM Mono', monospace;
+      .mut {
+        color: var(--lead);
+        font-size: 0.82rem;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 9px;
+        margin-top: 10px;
+      }
+      .tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        padding: 13px 6px;
+        border-radius: 14px;
+        background: var(--lift);
+        border: 1px solid var(--wire);
+        cursor: pointer;
+        transition: 0.25s;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+      .tile span {
+        font-size: 1.5rem;
+        transition: 0.25s;
+      }
+      .tile:hover {
+        transform: translateY(-3px);
+        border-color: var(--accent2);
+      }
+      .tile:hover span {
+        transform: scale(1.2) rotate(-6deg);
+      }
+      .tile:active {
+        transform: scale(0.94);
+      }
 
-      --bar-h: 50px;
-    }
+      /* rows */
+      .list-section-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: var(--steel);
+        padding: 12px 6px 6px;
+      }
+      .chat-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        text-decoration: none;
+        color: inherit;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--wire);
+        border-radius: 14px;
+        margin-bottom: 8px;
+        transition: 0.22s;
+        animation: up 0.5s both;
+        animation-delay: calc(var(--i, 0) * 55ms);
+      }
+      .chat-row:hover {
+        background: var(--lift);
+        transform: translateX(4px);
+        border-color: rgba(96, 165, 250, 0.4);
+      }
+      .chat-row:active {
+        transform: scale(0.98);
+      }
+      .row-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--lift);
+        border: 2px solid rgba(96, 165, 250, 0.18);
+        flex-shrink: 0;
+      }
+      .row-map-thumb {
+        width: 64px;
+        aspect-ratio: 16/9;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid var(--wire);
+        background: var(--lift);
+      }
+      .row-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .row-title-line,
+      .row-sub-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .row-title {
+        font-weight: 700;
+        font-size: 0.94rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .row-time {
+        font-size: 0.65rem;
+        color: var(--steel);
+        flex-shrink: 0;
+      }
+      .row-sub-line {
+        margin-top: 2px;
+      }
+      .row-subtitle {
+        font-size: 0.8rem;
+        color: var(--lead);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .row-badge {
+        min-width: 20px;
+        height: 20px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 800;
+        border-radius: 99px;
+        display: none;
+        place-items: center;
+        padding: 0 6px;
+        flex-shrink: 0;
+      }
+      .row-badge.visible {
+        display: grid;
+        animation: pop 0.4s;
+      }
+      .row-badge.on {
+        background: rgba(16, 185, 129, 0.18);
+        color: #34d399;
+      }
+      .row-badge.off {
+        background: rgba(100, 116, 139, 0.18);
+        color: var(--steel);
+      }
+      .list-empty {
+        padding: 8px 8px 14px;
+        color: var(--steel);
+        font-size: 0.78rem;
+      }
 
-    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+      /* sheet */
+      #scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+        z-index: 1000;
+      }
+      #scrim.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #sheet {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        width: min(640px, 100%);
+        max-height: 86dvh;
+        background: var(--surface);
+        border: 1px solid var(--wire);
+        border-radius: 22px 22px 0 0;
+        z-index: 1001;
+        transform: translate(-50%, 105%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      #sheet.show {
+        transform: translate(-50%, 0);
+      }
+      .grab {
+        width: 42px;
+        height: 4px;
+        border-radius: 9px;
+        background: var(--steel);
+        margin: 9px auto 4px;
+        opacity: 0.5;
+      }
+      .sh-h {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 18px;
+      }
+      .sh-h h3 {
+        font-family: var(--head);
+        font-size: 1.5rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        font-weight: 400;
+      }
+      #sh-b {
+        overflow-y: auto;
+        padding: 4px 16px calc(20px + var(--bot));
+      }
+      .vc {
+        background: var(--lift);
+        border-radius: 14px;
+        padding: 13px;
+        margin-bottom: 10px;
+        animation: up 0.45s both;
+        animation-delay: calc(var(--i, 0) * 90ms);
+      }
+      .vc p {
+        line-height: 1.6;
+        font-size: 0.94rem;
+        font-weight: 300;
+      }
+      .vc .ref {
+        color: var(--gold);
+        font-weight: 700;
+        font-size: 0.82rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+      }
+      .vc button {
+        background: none;
+        border: 0;
+        color: var(--accent2);
+        cursor: pointer;
+        font-size: 0.78rem;
+      }
+      .pray {
+        border-left: 3px solid var(--gold);
+        padding: 8px 12px;
+        font-style: italic;
+        color: var(--lead);
+        margin: 10px 0;
+        line-height: 1.55;
+        font-size: 0.9rem;
+      }
 
-    html, body {
-      height: 100dvh;
-      overflow: hidden;
-      background: var(--paper);
-      color: var(--ink);
-      font-family: var(--font-body);
-      -webkit-font-smoothing: antialiased;
-    }
+      /* toast, install, pending */
+      #toast-area {
+        position: fixed;
+        top: calc(var(--bar) + var(--top) + 10px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        pointer-events: none;
+        align-items: center;
+      }
+      .toast-msg {
+        padding: 9px 16px;
+        border-radius: 99px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+        animation: pop 0.3s;
+        max-width: 92vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .toast-msg.ok {
+        background: rgba(16, 185, 129, 0.94);
+      }
+      .toast-msg.err {
+        background: rgba(239, 68, 68, 0.94);
+      }
+      .toast-msg.inf {
+        background: rgba(59, 130, 246, 0.94);
+      }
+      #install-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px 16px calc(10px + var(--bot));
+        background: rgba(10, 15, 30, 0.96);
+        border-top: 1px solid var(--wire);
+        z-index: 700;
+        display: none;
+      }
+      #install-bar.show {
+        display: block;
+        animation: up 0.4s;
+      }
+      .install-btn {
+        display: block;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 11px;
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--accent2);
+        border: 1px solid rgba(96, 165, 250, 0.3);
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      #pending-screen {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: var(--paper);
+        z-index: 1500;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 32px;
+        text-align: center;
+      }
+      #pending-screen.show {
+        display: flex;
+      }
+      .pending-icon {
+        font-size: 3rem;
+        animation: bounce 2s infinite;
+      }
+      .pending-title {
+        font-family: var(--head);
+        font-size: 2rem;
+        letter-spacing: 0.08em;
+        color: var(--lead);
+      }
+      .pending-sub {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--steel);
+        max-width: 320px;
+      }
+      .pending-badge {
+        padding: 4px 14px;
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        border-radius: 99px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="topbar">
+      <div class="logo">RIVERSIDE CONNECT</div>
+      <div class="sp"></div>
+      <div id="net"><i></i><span id="net-t">Live</span></div>
+      <button class="ib" id="refresh-btn" title="Refresh" aria-label="Refresh">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
+          <path d="M21 3v5h-5" />
+        </svg>
+      </button>
+      <a
+        href="announce.html"
+        class="ib"
+        title="Notifications"
+        aria-label="Announcements"
+        ><svg viewBox="0 0 24 24">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" /></svg
+        ><span class="tb-badge" id="ann-badge-tb">0</span></a
+      >
+      <a href="profile.html" class="ib av" title="Profile"
+        ><img id="user-avatar" src="" alt="Profile"
+      /></a>
+    </header>
 
-    /* ══ TOP BAR ══════════════════════════════════════════════ */
-    #topbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: var(--bar-h);
-      background: rgba(10,15,30,0.92);
-      border-bottom: 1px solid var(--wire);
-      z-index: 900;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0 8px;
-      backdrop-filter: blur(16px);
-    }
+    <main id="chat-list">
+      <div class="wrap">
+        <div class="cols">
+          <div class="col col-l">
+            <section class="card in collapsed" id="grace" style="--i: 0">
+              <div
+                class="g-head"
+                id="g-toggle"
+                role="button"
+                tabindex="0"
+                aria-expanded="false"
+                aria-controls="g-body"
+              >
+                <div class="g-av">🕊️<i></i></div>
+                <div>
+                  <div class="g-name">Grace · Riverside Guide</div>
+                  <div id="g-sub">online · here for you</div>
+                </div>
+                <div class="streak" id="streak"></div>
+                <svg
+                  class="chev"
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </div>
+              <div id="g-body">
+                <div id="log" aria-live="polite"></div>
+                <div class="chips" id="chips"></div>
+                <div class="send">
+                  <input
+                    id="msg"
+                    placeholder="Tell Grace how you feel…"
+                    autocomplete="off"
+                    maxlength="200"
+                    aria-label="Message"
+                  /><button class="btn" id="send">Send</button>
+                </div>
+              </div>
+            </section>
 
-    .tb-logo {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      flex-shrink: 0;
-      padding-right: 6px;
-    }
-    .tb-logo-text {
-      font-family: var(--font-head);
-      font-size: 1.1rem;
-      letter-spacing: 0.08em;
-      color: var(--accent2);
-      line-height: 1;
-    }
+            <section class="in" style="--i: 3">
+              <div class="lbl">GUIDES FOR YOUR HEART</div>
+              <div class="tiles" id="tiles"></div>
+            </section>
+          </div>
 
-    .tb-spacer { flex: 1; }
+          <div class="col col-r">
+            <a href="geo.html" class="chat-row" style="--i: 1">
+              <img
+                class="row-map-thumb"
+                src="RM.png"
+                alt="Mapping"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              />
+              <div class="row-content">
+                <div class="row-title-line">
+                  <span class="row-title">Riverside Mapping</span
+                  ><span class="row-time"></span>
+                </div>
+                <div class="row-sub-line">
+                  <span class="row-subtitle"
+                    >Find fellowships &amp; locations near you</span
+                  ><span class="row-badge"></span>
+                </div>
+              </div>
+            </a>
+            <a href="home.html" class="chat-row" style="--i: 2">
+              <img
+                class="row-avatar"
+                src="maskable_icon_x192.png"
+                alt="Chat"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              />
+              <div class="row-content">
+                <div class="row-title-line">
+                  <span class="row-title">Chat</span
+                  ><span class="row-time"></span>
+                </div>
+                <div class="row-sub-line">
+                  <span class="row-subtitle">Direct chats</span
+                  ><span class="row-badge"></span>
+                </div>
+              </div>
+            </a>
+            <a
+              href="announce.html"
+              class="chat-row"
+              id="ann-row"
+              style="--i: 3"
+            >
+              <img
+                class="row-avatar"
+                src="announce.png"
+                alt="Announcements"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              />
+              <div class="row-content">
+                <div class="row-title-line">
+                  <span class="row-title">Announcements</span
+                  ><span class="row-time"></span>
+                </div>
+                <div class="row-sub-line">
+                  <span class="row-subtitle" id="ann-row-sub">Loading…</span
+                  ><span class="row-badge" id="ann-row-badge"></span>
+                </div>
+              </div>
+            </a>
 
-    .tb-live-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 26px;
-      padding: 0 14px 0 10px;
-      background: #000000;
-      color: #ffffff;
-      border: none;
-      border-radius: 6px;
-      font-family: var(--font-body);
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-decoration: none;
-      cursor: pointer;
-      flex-shrink: 0;
-      position: relative;
-      transition: all 0.15s;
-    }
-    .tb-live-btn:hover { background: #1a1a1a; }
+            <div class="list-section-label">CHANNELS</div>
+            <div id="channels-slot">
+              <div class="list-empty">Loading channels…</div>
+            </div>
 
-    .tb-live-btn.is-live {
-      background: #ef4444;
-      animation: liveGlow 1.4s ease-in-out infinite;
-    }
-    .tb-live-btn.is-live:hover { background: #dc2626; }
+            <div class="list-section-label">Q&amp;A</div>
+            <div id="qna-slot">
+              <div class="list-empty">Loading Q&amp;A…</div>
+            </div>
 
-    @keyframes liveGlow {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
-      50%      { box-shadow: 0 0 10px 3px rgba(239,68,68,0.6); }
-    }
-
-    #live-badge-tb {
-      background: #000000;
-      color: #ffffff;
-      top: -6px;
-      right: -6px;
-    }
-
-    .tb-icon-btn {
-      position: relative;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: none;
-      border-radius: 9px;
-      color: var(--lead);
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: all 0.15s;
-      flex-shrink: 0;
-      text-decoration: none;
-    }
-    .tb-icon-btn:hover { color: var(--accent2); background: var(--lift); }
-    .tb-icon-btn:disabled { opacity: 0.5; cursor: default; }
-
-    .tb-icon-btn.spinning i { animation: tbspin 0.8s linear infinite; }
-    @keyframes tbspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-    .tb-badge {
-      position: absolute;
-      top: 1px; right: 1px;
-      min-width: 15px; height: 15px;
-      background: #ef4444;
-      color: #fff;
-      font-size: 0.55rem;
-      font-weight: 800;
-      border-radius: 100px;
-      display: none;
-      align-items: center; justify-content: center;
-      padding: 0 3px;
-      border: 1.5px solid var(--paper);
-      font-family: var(--font-body);
-    }
-    .tb-badge.visible { display: flex; }
-
-    .tb-avatar-btn { padding: 0; }
-    .tb-avatar-btn img {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid rgba(96,165,250,0.4);
-      transition: border-color 0.15s;
-    }
-    .tb-avatar-btn:hover img { border-color: var(--accent2); }
-
-    /* ══ CHAT LIST ═══════════════════════════════════════════ */
-    #chat-list {
-      position: fixed;
-      top: var(--bar-h);
-      left: 0; right: 0;
-      bottom: 0;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .list-section-label {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      color: var(--steel);
-      padding: 14px 16px 6px;
-      background: var(--paper);
-    }
-
-    .chat-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 16px;
-      cursor: pointer;
-      border-bottom: 1px solid var(--wire);
-      transition: background 0.15s;
-      background: none;
-      border-left: none; border-right: none; border-top: none;
-      width: 100%;
-      text-align: left;
-      text-decoration: none;
-      color: inherit;
-      font-family: var(--font-body);
-    }
-    .chat-row:hover { background: var(--lift); }
-    .chat-row:active { background: var(--lift); }
-
-    .row-avatar {
-      width: 50px; height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: var(--lift);
-      border: 2px solid rgba(96,165,250,0.18);
-      flex-shrink: 0;
-    }
-
-    .row-content { flex: 1; min-width: 0; }
-
-    .row-title-line {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .row-title {
-      font-weight: 700;
-      font-size: 0.94rem;
-      color: var(--ink);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .row-time {
-      font-family: var(--font-mono);
-      font-size: 0.63rem;
-      color: var(--steel);
-      flex-shrink: 0;
-    }
-
-    .row-sub-line {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-top: 2px;
-    }
-    .row-subtitle {
-      font-size: 0.8rem;
-      color: var(--lead);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .row-badge {
-      min-width: 20px; height: 20px;
-      background: var(--accent);
-      color: #fff;
-      font-size: 0.65rem;
-      font-weight: 800;
-      border-radius: 100px;
-      display: none;
-      align-items: center; justify-content: center;
-      padding: 0 6px;
-      flex-shrink: 0;
-      font-family: var(--font-body);
-    }
-    .row-badge.visible { display: flex; }
-    .row-badge.live { background: #ef4444; }
-    .row-badge.on { background: rgba(16,185,129,0.18); color: #34d399; font-size: 0.6rem; }
-    .row-badge.off { background: rgba(100,116,139,0.18); color: var(--steel); font-size: 0.6rem; }
-
-    .list-empty {
-      padding: 10px 16px 16px;
-      color: var(--steel);
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.06em;
-    }
-
-    .list-error {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 60px 20px;
-      text-align: center;
-    }
-    .list-error i {
-      font-size: 2rem;
-      color: var(--accent2);
-      opacity: 0.4;
-    }
-    .list-error-title {
-      font-family: var(--font-head);
-      font-size: 1.4rem;
-      letter-spacing: 0.1em;
-      color: var(--lead);
-      opacity: 0.5;
-    }
-    .list-error-sub {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      color: var(--steel);
-    }
-
-    /* ══ TOAST ════════════════════════════════════════════════ */
-    #toast-area {
-      position: fixed;
-      top: calc(var(--bar-h) + 10px);
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      pointer-events: none;
-      align-items: center;
-    }
-    .toast-msg {
-      padding: 9px 16px;
-      border-radius: 100px;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      color: white;
-      white-space: nowrap;
-      animation: toastIn 0.25s ease;
-      pointer-events: auto;
-      max-width: 90vw;
-    }
-    .toast-msg.ok  { background: rgba(16,185,129,0.92); }
-    .toast-msg.err { background: rgba(239,68,68,0.92); }
-    .toast-msg.inf { background: rgba(59,130,246,0.92); }
-    @keyframes toastIn {
-      from { opacity:0; transform: translateY(-8px) scale(0.95); }
-      to   { opacity:1; transform: translateY(0) scale(1); }
-    }
-
-    /* ══ INSTALL BAR ═════════════════════════════════════════ */
-    #install-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      padding: 10px 16px;
-      background: rgba(10,15,30,0.96);
-      border-top: 1px solid var(--wire);
-      z-index: 700;
-      display: none;
-    }
-    #install-bar.show { display: block; }
-    .install-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 11px 20px;
-      background: rgba(59,130,246,0.12);
-      color: var(--accent2);
-      border: 1px solid rgba(96,165,250,0.3);
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-      font-family: var(--font-body);
-    }
-    .install-btn:hover { background: rgba(59,130,246,0.2); }
-
-    /* ══ PENDING STATE ═══════════════════════════════════════ */
-    #pending-screen {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: var(--paper);
-      z-index: 500;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      padding: 32px;
-      text-align: center;
-    }
-    #pending-screen.show { display: flex; }
-    .pending-icon { font-size: 2.8rem; color: var(--accent2); opacity: 0.5; }
-    .pending-title { font-family: var(--font-head); font-size: 1.8rem; letter-spacing: 0.08em; color: var(--lead); }
-    .pending-sub { font-size: 0.88rem; line-height: 1.6; color: var(--steel); max-width: 320px; }
-    .pending-badge {
-      padding: 4px 14px;
-      background: rgba(245,158,11,0.15);
-      color: #fbbf24;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      border-radius: 100px;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .list-error i { opacity: 0.4; }
-    }
-
-     .row-map-thumb {
-  width: 64px;
-  aspect-ratio: 16 / 9;
-  border-radius: 8px;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid var(--wire);
-  background: var(--lift);
-}
-  </style>
-</head>
-<body>
-
-<!-- ══ TOP BAR ══════════════════════════════════════════════════════ -->
-<header id="topbar">
-  <div class="tb-logo">
-    <div class="tb-logo-text">RIVERSIDE CONNECT</div>
-  </div>
-
-  <div class="tb-spacer"></div>
-
-  <button class="tb-icon-btn" id="refresh-btn" title="Refresh">
-    <i class="fas fa-rotate"></i>
-  </button>
-
-  <a href="announce.html" class="tb-icon-btn" id="tb-ann" title="Notifications">
-    <i class="fas fa-bell"></i>
-    <span class="tb-badge" id="ann-badge-tb">0</span>
-  </a>
-
-  <a href="profile.html" class="tb-icon-btn tb-avatar-btn" title="Profile">
-    <img id="user-avatar" src="" alt="Profile"
-         onerror="this.src='https://ui-avatars.com/api/?background=3b82f6&color=fff&name=RC'">
-  </a>
-</header>
-
-<!-- ══ CHAT LIST ═══════════════════════════════════════════════════
-     Static rows are written directly in the markup so they exist the
-     instant the page parses — no fetch required to see them. Only the
-     Channels and Q&A sections depend on network data, and each has its
-     own small "slot" that loads independently of everything else. ══ -->
-<div id="chat-list">
-
-   <a href="geo.html" class="chat-row">
-   <img class="row-map-thumb" src="RM.png" onerror="this.src='https://ui-avatars.com/api/?name=Mapping&background=1e293b&color=60a5fa&size=88'" alt="">
-    <div class="row-content">
-      <div class="row-title-line">
-        <span class="row-title">Riverside Mapping</span>
-        <span class="row-time"></span>
+            <div class="list-section-label">MORE</div>
+            <a href="split.html" class="chat-row" style="--i: 1">
+              <img
+                class="row-avatar"
+                src="maskable_icon_x192.png"
+                alt="Split"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              />
+              <div class="row-content">
+                <div class="row-title-line">
+                  <span class="row-title">Split</span
+                  ><span class="row-time"></span>
+                </div>
+                <div class="row-sub-line">
+                  <span class="row-subtitle">Track &amp; split cash</span
+                  ><span class="row-badge"></span>
+                </div>
+              </div>
+            </a>
+            <a href="user.html" class="chat-row" style="--i: 2">
+              <img
+                class="row-avatar"
+                src="maskable_icon_x192.png"
+                alt="Profile"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              />
+              <div class="row-content">
+                <div class="row-title-line">
+                  <span class="row-title">Profile</span
+                  ><span class="row-time"></span>
+                </div>
+                <div class="row-sub-line">
+                  <span class="row-subtitle">Your account &amp; settings</span
+                  ><span class="row-badge"></span>
+                </div>
+              </div>
+            </a>
+            <button class="chat-row" id="notif-row" style="--i: 3">
+              <img
+                class="row-avatar"
+                src="maskable_icon_x192.png"
+                alt="Notifs"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              />
+              <div class="row-content">
+                <div class="row-title-line">
+                  <span class="row-title">Notifications</span
+                  ><span class="row-time"></span>
+                </div>
+                <div class="row-sub-line">
+                  <span class="row-subtitle">Push alerts for this device</span
+                  ><span class="row-badge" id="notif-row-badge"></span>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="row-sub-line">
-        <span class="row-subtitle">Find fellowships &amp; locations near you</span>
-        <span class="row-badge"></span>
+    </main>
+
+    <div id="scrim"></div>
+    <div id="sheet" role="dialog" aria-modal="true">
+      <div class="grab"></div>
+      <div class="sh-h">
+        <h3 id="sh-t"></h3>
+        <button class="ib" id="sh-x" aria-label="Close">
+          <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
       </div>
+      <div id="sh-b"></div>
     </div>
-  </a>
 
-
-
-  <a href="home.html" class="chat-row">
-    <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Chat&background=1e293b&color=60a5fa&size=88'" alt="">
-    <div class="row-content">
-      <div class="row-title-line">
-        <span class="row-title">Chat</span>
-        <span class="row-time"></span>
-      </div>
-      <div class="row-sub-line">
-        <span class="row-subtitle">Direct chats</span>
-        <span class="row-badge"></span>
-      </div>
+    <div id="pending-screen">
+      <div class="pending-badge" id="pending-badge">PENDING APPROVAL</div>
+      <div class="pending-icon">⛪</div>
+      <div class="pending-title">WELCOME</div>
+      <p class="pending-sub">
+        Your account is under review. Full access to the feed, channels, and
+        more will be unlocked once approved.
+      </p>
     </div>
-  </a>
-
-  <a href="announce.html" class="chat-row" id="ann-row">
-    <img class="row-avatar" src="announce.png" onerror="this.src='https://ui-avatars.com/api/?name=Announcements&background=1e293b&color=60a5fa&size=88'" alt="">
-    <div class="row-content">
-      <div class="row-title-line">
-        <span class="row-title">Announcements</span>
-        <span class="row-time"></span>
-      </div>
-      <div class="row-sub-line">
-        <span class="row-subtitle" id="ann-row-sub">Loading…</span>
-        <span class="row-badge" id="ann-row-badge"></span>
-      </div>
+    <div id="install-bar">
+      <button class="install-btn" id="install-btn">⬇ Add to Home Screen</button>
     </div>
-  </a>
+    <div id="toast-area"></div>
 
-  <div class="list-section-label">CHANNELS</div>
-  <div id="channels-slot">
-    <div class="list-empty">Loading channels…</div>
-  </div>
+    <script>
+      "use strict";
+      const SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbxDrnPyHD8HwEOD4PeVcJBkxK6en22ZBWmPVkyxXozM6KUfz8Ci_L41VQVJUzV9mBGr/exec";
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
+        authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
+        projectId: "dc-riverside-murera-coffee",
+        storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
+        messagingSenderId: "373863707096",
+        appId: "1:373863707096:web:5e3c703655687b96e442ad",
+      };
+      const VAPID_KEY =
+        "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
 
-  <div class="list-section-label">Q&amp;A</div>
-  <div id="qna-slot">
-    <div class="list-empty">Loading Q&amp;A…</div>
-  </div>
+      const userName = localStorage.getItem("userName") || "";
+      if (!userName) location.href = "login.html";
+      let isNotificationEnabled =
+        localStorage.getItem("notificationsEnabled") !== "false";
+      const first = userName.split(" ")[0] || "friend";
 
-  <div class="list-section-label">MORE</div>
+      const $ = (s) => document.querySelector(s);
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const rnd = (a) => a[Math.floor(Math.random() * a.length)];
+      const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+      const LS = {
+        get(k, d) {
+          try {
+            const v = JSON.parse(localStorage.getItem(k));
+            return v == null ? d : v;
+          } catch {
+            return d;
+          }
+        },
+        set(k, v) {
+          try {
+            localStorage.setItem(k, JSON.stringify(v));
+          } catch {}
+        },
+      };
 
-  <a href="split.html" class="chat-row">
-    <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Split&background=1e293b&color=60a5fa&size=88'" alt="">
-    <div class="row-content">
-      <div class="row-title-line">
-        <span class="row-title">Split</span>
-        <span class="row-time"></span>
-      </div>
-      <div class="row-sub-line">
-        <span class="row-subtitle">Track & split cash</span>
-        <span class="row-badge"></span>
-      </div>
-    </div>
-  </a>
+      /* ── helpers (offline-safe: avatars are generated locally) ── */
+      function fb(n) {
+        const c = ((n || "R").trim()[0] || "R").toUpperCase();
+        return (
+          "data:image/svg+xml," +
+          encodeURIComponent(
+            `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 88 88'><rect width='88' height='88' fill='#1e293b'/><text x='44' y='58' font-size='40' text-anchor='middle' fill='#60a5fa' font-family='sans-serif'>${c}</text></svg>`,
+          )
+        );
+      }
+      const lh3 = (u) => {
+        if (!u) return "";
+        const m = u.match(/[-\w]{25,}/);
+        return m ? `https://lh3.googleusercontent.com/d/${m[0]}` : u;
+      };
+      const esc = (s) =>
+        (s || "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      function fmtTime(ts) {
+        if (!ts) return "";
+        const d = new Date(ts),
+          n = new Date();
+        return d.toDateString() === n.toDateString()
+          ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          : d.toLocaleDateString([], { day: "numeric", month: "short" });
+      }
+      function toast(m, t = "inf", d = 3000) {
+        const e = document.createElement("div");
+        e.className = "toast-msg " + t;
+        e.textContent = m;
+        $("#toast-area").appendChild(e);
+        setTimeout(() => e.remove(), d);
+      }
+      async function copy(t) {
+        try {
+          await navigator.clipboard.writeText(t);
+          toast("Copied", "ok", 1400);
+        } catch {
+          const a = document.createElement("textarea");
+          a.value = t;
+          document.body.appendChild(a);
+          a.select();
+          try {
+            document.execCommand("copy");
+            toast("Copied", "ok", 1400);
+          } catch {
+            toast("Could not copy", "err");
+          }
+          a.remove();
+        }
+      }
 
-  <a href="user.html" class="chat-row">
-    <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Profile&background=1e293b&color=60a5fa&size=88'" alt="">
-    <div class="row-content">
-      <div class="row-title-line">
-        <span class="row-title">Profile</span>
-        <span class="row-time"></span>
-      </div>
-      <div class="row-sub-line">
-        <span class="row-subtitle">Your account & settings</span>
-        <span class="row-badge"></span>
-      </div>
-    </div>
-  </a>
+      /* ── backend: only SCRIPT_URL, with timeout ── */
+      async function api(params, post) {
+        if (!navigator.onLine) throw new Error("offline");
+        const c = new AbortController(),
+          t = setTimeout(() => c.abort(), 9000);
+        try {
+          const r = await fetch(
+            post ? SCRIPT_URL : SCRIPT_URL + "?" + new URLSearchParams(params),
+            post
+              ? { method: "POST", body: JSON.stringify(post), signal: c.signal }
+              : { signal: c.signal },
+          );
+          return await r.json();
+        } finally {
+          clearTimeout(t);
+        }
+      }
 
-  <button class="chat-row" id="notif-row">
-    <img class="row-avatar" src="maskable_icon_x192.png" onerror="this.src='https://ui-avatars.com/api/?name=Notifs&background=1e293b&color=60a5fa&size=88'" alt="">
-    <div class="row-content">
-      <div class="row-title-line">
-        <span class="row-title">Notifications</span>
-        <span class="row-time"></span>
-      </div>
-      <div class="row-sub-line">
-        <span class="row-subtitle">Push alerts for this device</span>
-        <span class="row-badge" id="notif-row-badge"></span>
-      </div>
-    </div>
-  </button>
+      /* ── avatar ── */
+      (() => {
+        const av = $("#user-avatar"),
+          pic = localStorage.getItem("userPicLink");
+        av.alt = userName;
+        av.onerror = () => {
+          av.onerror = null;
+          av.src = fb("RC");
+        };
+        av.src = pic ? lh3(pic) : fb(userName);
+      })();
 
-</div>
+      /* ── service worker ── */
+      if ("serviceWorker" in navigator)
+        addEventListener("load", () =>
+          navigator.serviceWorker
+            .register("./sw.js", { scope: "./" })
+            .catch((e) => console.error("[SW]", e)),
+        );
 
-<!-- ══ PENDING SCREEN ════════════════════════════════════════════════ -->
-<div id="pending-screen">
-  <div class="pending-badge" id="pending-badge">PENDING APPROVAL</div>
-  <div class="pending-icon"><i class="fas fa-church"></i></div>
-  <div class="pending-title">WELCOME</div>
-  <p class="pending-sub">Your account is under review. Full access to the feed, channels, and more will be unlocked once approved.</p>
-</div>
+      /* ── online / offline ── */
+      function setNet() {
+        const on = navigator.onLine;
+        document.body.classList.toggle("offline", !on);
+        $("#net-t").textContent = on ? "Live" : "Offline";
+      }
+      setNet();
+      addEventListener("offline", () => {
+        setNet();
+        toast("Offline — Bible guides still work", "inf", 3500);
+      });
+      addEventListener("online", () => {
+        setNet();
+        toast("Back online", "ok", 1800);
+        refreshAll(true);
+        registerFcmToken(false).catch(() => {});
+      });
 
-<!-- ══ INSTALL BAR ════════════════════════════════════════════════════ -->
-<div id="install-bar">
-  <button class="install-btn" id="install-btn">
-    <i class="fas fa-download"></i> Add to Home Screen
-  </button>
-</div>
+      /* ══════════ BIBLE DATA (KJV, built in) ══════════ */
+      const T = {
+        anxiety: {
+          e: "😟",
+          n: "Anxious",
+          k: "anx|worr|stress|overwhelm|nervous|panic",
+          i: "I hear you, {n}. Anxious thoughts are heavy — let's set them down together.",
+          p: "Father, I give You every worry I'm carrying. Quiet my mind and fill me with Your peace. Amen.",
+          v: [
+            [
+              "Philippians 4:6-7",
+              "Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God. And the peace of God, which passeth all understanding, shall keep your hearts and minds through Christ Jesus.",
+            ],
+            [
+              "1 Peter 5:7",
+              "Casting all your care upon him; for he careth for you.",
+            ],
+            [
+              "Matthew 11:28",
+              "Come unto me, all ye that labour and are heavy laden, and I will give you rest.",
+            ],
+          ],
+        },
+        fear: {
+          e: "🛡️",
+          n: "Afraid",
+          k: "afraid|scare|fear|terrif|alone|lonely",
+          i: "Fear is real, {n}, but you are not facing it alone. Hold on to this:",
+          p: "Lord, be near me. Replace my fear with courage and remind me that You are with me always. Amen.",
+          v: [
+            [
+              "Isaiah 41:10",
+              "Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee; yea, I will uphold thee with the right hand of my righteousness.",
+            ],
+            [
+              "Joshua 1:9",
+              "Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.",
+            ],
+            ["Psalm 56:3", "What time I am afraid, I will trust in thee."],
+          ],
+        },
+        strength: {
+          e: "💪",
+          n: "Weak",
+          k: "tired|weak|strength|weary|exhaust|burn|give up",
+          i: "You've carried a lot, {n}. It's okay to rest in God's strength today.",
+          p: "Lord, I am tired. Renew my strength and carry me where I cannot walk alone. Amen.",
+          v: [
+            [
+              "Isaiah 40:31",
+              "But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.",
+            ],
+            [
+              "Philippians 4:13",
+              "I can do all things through Christ which strengtheneth me.",
+            ],
+            [
+              "Psalm 46:1",
+              "God is our refuge and strength, a very present help in trouble.",
+            ],
+          ],
+        },
+        forgive: {
+          e: "🤍",
+          n: "Guilty",
+          k: "guilt|sorry|forgiv|sin|shame|mistake|regret",
+          i: "Grace is bigger than any mistake, {n}. Listen to this:",
+          p: "Father, I confess my failures. Thank You for washing me clean and giving me a fresh start. Amen.",
+          v: [
+            [
+              "1 John 1:9",
+              "If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness.",
+            ],
+            [
+              "Psalm 103:12",
+              "As far as the east is from the west, so far hath he removed our transgressions from us.",
+            ],
+            [
+              "Ephesians 4:32",
+              "And be ye kind one to another, tenderhearted, forgiving one another, even as God for Christ's sake hath forgiven you.",
+            ],
+          ],
+        },
+        grief: {
+          e: "🌧️",
+          n: "Sad",
+          k: "sad|grie|cry|hurt|lost|death|died|broken|depress|down",
+          i: "I'm so sorry you're hurting, {n}. I'm right here with you.",
+          p: "Lord, hold my broken heart. Be close to me in this pain and bring comfort that only You can give. Amen.",
+          v: [
+            [
+              "Psalm 34:18",
+              "The LORD is nigh unto them that are of a broken heart; and saveth such as be of a contrite spirit.",
+            ],
+            [
+              "Matthew 5:4",
+              "Blessed are they that mourn: for they shall be comforted.",
+            ],
+            [
+              "Revelation 21:4",
+              "And God shall wipe away all tears from their eyes; and there shall be no more death, neither sorrow, nor crying.",
+            ],
+          ],
+        },
+        guidance: {
+          e: "🧭",
+          n: "Unsure",
+          k: "confus|decision|direction|guid|unsure|future|plan|choose|job",
+          i: "Big decisions are hard, {n}. God promises to light the next step:",
+          p: "Lord, show me the way. Close the doors I should not walk through and lead me in Your timing. Amen.",
+          v: [
+            [
+              "Proverbs 3:5-6",
+              "Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.",
+            ],
+            [
+              "Psalm 119:105",
+              "Thy word is a lamp unto my feet, and a light unto my path.",
+            ],
+            [
+              "Jeremiah 29:11",
+              "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.",
+            ],
+          ],
+        },
+        thanks: {
+          e: "🙌",
+          n: "Grateful",
+          k: "thank|grate|happy|bless|joy|good|great|well",
+          i: "That makes me smile, {n}! Let's celebrate with God:",
+          p: "Thank You, Lord, for every blessing, seen and unseen. Keep my heart thankful. Amen.",
+          v: [
+            [
+              "1 Thessalonians 5:18",
+              "In every thing give thanks: for this is the will of God concerning you.",
+            ],
+            [
+              "Psalm 107:1",
+              "O give thanks unto the LORD, for he is good: for his mercy endureth for ever.",
+            ],
+            [
+              "Psalm 118:24",
+              "This is the day which the LORD hath made; we will rejoice and be glad in it.",
+            ],
+          ],
+        },
+        peace: {
+          e: "🌿",
+          n: "Restless",
+          k: "peace|rest|angry|anger|mad|upset|calm|sleep|frustrat",
+          i: "Let's slow down together, {n}. Breathe in… and read this:",
+          p: "Prince of Peace, calm my heart. Still every storm inside me and let Your peace rule. Amen.",
+          v: [
+            [
+              "John 14:27",
+              "Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you. Let not your heart be troubled, neither let it be afraid.",
+            ],
+            [
+              "Isaiah 26:3",
+              "Thou wilt keep him in perfect peace, whose mind is stayed on thee: because he trusteth in thee.",
+            ],
+            [
+              "Psalm 4:8",
+              "I will both lay me down in peace, and sleep: for thou, LORD, only makest me dwell in safety.",
+            ],
+          ],
+        },
+      };
 
-<div id="toast-area"></div>
+      /* ══════════ SHEET ══════════ */
+      function openSheet(t, h) {
+        $("#sh-t").textContent = t;
+        $("#sh-b").innerHTML = h;
+        $("#scrim").classList.add("show");
+        $("#sheet").classList.add("show");
+        $("#sh-b").scrollTop = 0;
+      }
+      function closeSheet() {
+        $("#scrim").classList.remove("show");
+        $("#sheet").classList.remove("show");
+      }
+      $("#scrim").onclick = $("#sh-x").onclick = closeSheet;
+      addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeSheet();
+      });
 
-<!-- ══════════════════════════════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════════════════════════════ -->
-<script>
-'use strict';
+      /* ══════════ GUIDE (Grace) ══════════ */
+      const log = $("#log");
+      let lastTopic = null,
+        queue = Promise.resolve();
+      const enqueue = (f) => (queue = queue.then(f).catch(() => {}));
+      const scroll = () => {
+        log.scrollTop = log.scrollHeight;
+      };
+      const grace = $("#grace"),
+        gt = $("#g-toggle");
+      function setGrace(open) {
+        grace.classList.toggle("collapsed", !open);
+        gt.setAttribute("aria-expanded", open);
+        LS.set("rc_grace_open", open);
+        if (open) setTimeout(scroll, 50);
+      }
+      gt.onclick = () => setGrace(grace.classList.contains("collapsed"));
+      gt.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          gt.click();
+        }
+      };
+      setGrace(LS.get("rc_grace_open", false));
+      function greet() {
+        const h = new Date().getHours();
+        return h < 12
+          ? "Good morning"
+          : h < 17
+            ? "Good afternoon"
+            : "Good evening";
+      }
+      async function say(text, o = {}) {
+        const sub = $("#g-sub");
+        sub.textContent = "typing…";
+        const d = document.createElement("div");
+        d.className = "b bot";
+        d.innerHTML =
+          '<div class="dots"><span></span><span></span><span></span></div>';
+        d.style.padding = "0";
+        log.appendChild(d);
+        scroll();
+        await sleep(reduce ? 50 : 500 + Math.min(text.length * 10, 1000));
+        d.style.padding = "";
+        d.innerHTML = "";
+        if (o.pr) d.classList.add("pr");
+        if (o.ref) {
+          const r = document.createElement("span");
+          r.className = "ref";
+          r.textContent = o.ref;
+          d.appendChild(r);
+        }
+        const s = document.createElement("span");
+        d.appendChild(s);
+        if (reduce) s.textContent = text;
+        else
+          for (let i = 0; i < text.length; i += 2) {
+            s.textContent = text.slice(0, i + 2);
+            scroll();
+            await sleep(14);
+          }
+        scroll();
+        sub.textContent = "online · here for you";
+        while (log.children.length > 14) log.firstChild.remove();
+      }
+      function me(t) {
+        const d = document.createElement("div");
+        d.className = "b me";
+        d.textContent = t;
+        log.appendChild(d);
+        scroll();
+      }
+      function chips() {
+        const c = $("#chips");
+        c.innerHTML = "";
+        const add = (l, f, hl) => {
+          const b = document.createElement("button");
+          b.className = "chip" + (hl ? " hl" : "");
+          b.textContent = l;
+          b.onclick = f;
+          c.appendChild(b);
+        };
+        if (lastTopic) {
+          add(
+            "📖 Another verse",
+            () => {
+              me("Another verse");
+              respond(lastTopic);
+            },
+            1,
+          );
+          add("📚 Full guide", () => topicSheet(lastTopic), 1);
+        }
+        Object.entries(T).forEach(([k, t]) =>
+          add(t.e + " " + t.n, () => {
+            me("I feel " + t.n.toLowerCase());
+            respond(k);
+          }),
+        );
+      }
+      function respond(k) {
+        const t = T[k],
+          v = rnd(t.v);
+        lastTopic = k;
+        enqueue(async () => {
+          await say(t.i.replace("{n}", first));
+          await say(v[1], { ref: v[0] });
+          await say("🙏 " + t.p, { pr: 1 });
+          chips();
+        });
+      }
+      function reply(txt) {
+        const x = txt.toLowerCase();
+        const k = Object.keys(T).find((k) => new RegExp(T[k].k, "i").test(x));
+        if (k) return respond(k);
+        if (/^(hi|hello|hey|hola|jambo)\b/.test(x))
+          return enqueue(async () =>
+            say(`${greet()}, ${first}! 😊 How is your heart today?`),
+          );
+        if (/pray/.test(x)) {
+          const t = rnd(Object.values(T));
+          return enqueue(async () => say("Let's pray together:")).then(() =>
+            enqueue(async () => say(t.p, { pr: 1 })),
+          );
+        }
+        if (/verse|word|scripture|bible/.test(x)) {
+          const v = rnd(Object.values(T).flatMap((t) => t.v));
+          return enqueue(async () => say(v[1], { ref: v[0] }));
+        }
+        enqueue(async () => {
+          await say(`Thank you for sharing, ${first}. I'm listening. 💙`);
+          await say(
+            "Tap what feels closest below, and I'll find a word for you.",
+          );
+        });
+      }
+      function send() {
+        const i = $("#msg"),
+          t = i.value.trim();
+        if (!t) return;
+        i.value = "";
+        me(t);
+        reply(t);
+      }
+      $("#send").onclick = send;
+      $("#msg").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") send();
+      });
+      function topicSheet(k) {
+        const t = T[k];
+        openSheet(
+          t.e + " " + t.n,
+          t.v
+            .map(
+              (v, i) =>
+                `<div class="vc" style="--i:${i}"><p>${esc(v[1])}</p><div class="ref"><span>${esc(v[0])} · KJV</span><button data-c="${esc(v[0] + " — " + v[1])}">Copy</button></div></div>`,
+            )
+            .join("") +
+            `<div class="pray">${esc(t.p)}</div><button class="btn" id="ask-g">Talk to Grace</button>`,
+        );
+        $("#sh-b")
+          .querySelectorAll("[data-c]")
+          .forEach((b) => (b.onclick = () => copy(b.dataset.c)));
+        $("#ask-g").onclick = () => {
+          closeSheet();
+          setGrace(true);
+          me("I feel " + t.n.toLowerCase());
+          respond(k);
+        };
+      }
+      $("#tiles").innerHTML = Object.entries(T)
+        .map(
+          ([k, t], i) =>
+            `<button class="tile in" style="--i:${i + 3}" data-k="${k}"><span>${t.e}</span>${t.n}</button>`,
+        )
+        .join("");
+      $("#tiles").onclick = (e) => {
+        const b = e.target.closest("[data-k]");
+        if (b) topicSheet(b.dataset.k);
+      };
 
-/* ── BACKEND (Riverside Murera Coffee) ───────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxDrnPyHD8HwEOD4PeVcJBkxK6en22ZBWmPVkyxXozM6KUfz8Ci_L41VQVJUzV9mBGr/exec';
-const DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbxDrnPyHD8HwEOD4PeVcJBkxK6en22ZBWmPVkyxXozM6KUfz8Ci_L41VQVJUzV9mBGr/exec';
+      /* ══════════ STREAK ══════════ */
+      (() => {
+        const s = LS.get("rc_streak", { d: "", n: 0 }),
+          today = new Date().toDateString(),
+          y = new Date(Date.now() - 864e5).toDateString();
+        if (s.d !== today) {
+          s.n = s.d === y ? s.n + 1 : 1;
+          s.d = today;
+          LS.set("rc_streak", s);
+        }
+        $("#streak").textContent = "🔥 " + s.n + (s.n > 1 ? " days" : " day");
+      })();
 
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
-  authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
-  projectId: "dc-riverside-murera-coffee",
-  storageBucket: "dc-riverside-murera-coffee.firebasestorage.app",
-  messagingSenderId: "373863707096",
-  appId: "1:373863707096:web:5e3c703655687b96e442ad"
-};
-const VAPID_KEY = "BK5POZAyygNGKbt1HrQOGgg5M8iwhKBVMTirp8LcPb7jt_fIkz-8YOT6pxljlAJXA3CB3NrMKdwujUGlseNVPD0";
-
-const userName = localStorage.getItem('userName') || '';
-if (!userName) { window.location.href = 'login.html'; }
-
-let isNotificationEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
-
-/* Per-section caches so a returning visit can paint instantly while the
-   fresh fetch quietly re-validates underneath — same idea as before, just
-   scoped to the piece of the page that actually needs it. */
-const CHANNELS_CACHE_KEY = 'rc_channels_html_v1';
-const QNA_CACHE_KEY = 'rc_qna_html_v1';
-
-/* ── SERVICE WORKER REGISTRATION (independent of notifications/FCM) ──── */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(reg => console.log('[SW] registered', reg.scope))
-      .catch(err => console.error('[SW] registration failed', err));
-  });
-}
-
-/* ── HELPERS ──────────────────────────────────────────────────── */
-function lh3(url) {
-  if (!url) return '';
-  const m = url.match(/[-\w]{25,}/);
-  return m ? `https://lh3.googleusercontent.com/d/${m[0]}` : url;
-}
-function fallback(name) {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=60a5fa&size=88`;
-}
-function fmtTime(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  const now = new Date();
-  const sameDay = d.toDateString() === now.toDateString();
-  return sameDay
-    ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : d.toLocaleDateString([], { day: 'numeric', month: 'short' });
-}
-function esc(s) {
-  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-/* ── TOAST ─────────────────────────────────────────────────────── */
-function toast(msg, type = 'inf', dur = 3200) {
-  const area = document.getElementById('toast-area');
-  const el = document.createElement('div');
-  el.className = `toast-msg ${type}`;
-  el.textContent = msg;
-  area.appendChild(el);
-  setTimeout(() => el.remove(), dur);
-}
-
-/* ── AVATAR ─────────────────────────────────────────────────────── */
-(function() {
-  const av = document.getElementById('user-avatar');
-  const pic = localStorage.getItem('userPicLink');
-  if (pic) {
-    const id = pic.match(/[-\w]{25,}/)?.[0];
-    av.src = id ? `https://lh3.googleusercontent.com/d/${id}` : pic;
-  } else {
-    av.src = fallback(userName.charAt(0) || 'R');
-  }
-})();
-
-/* ── NOTIFICATION TOGGLE (row-driven) ────────────────────────────── */
-function updateNotifRowUI() {
-  const badge = document.getElementById('notif-row-badge');
-  if (!badge) return;
-  if (isNotificationEnabled) {
-    badge.textContent = 'ON';
-    badge.className = 'row-badge visible on';
-  } else {
-    badge.textContent = 'OFF';
-    badge.className = 'row-badge visible off';
-  }
-}
-updateNotifRowUI();
-document.getElementById('notif-row').addEventListener('click', toggleNotifications);
-
-async function toggleNotifications() {
-  if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-    toast('Notifications not supported', 'err'); return;
-  }
-  isNotificationEnabled = !isNotificationEnabled;
-  localStorage.setItem('notificationsEnabled', isNotificationEnabled.toString());
-  updateNotifRowUI();
-
-  if (isNotificationEnabled) {
-    try {
-      await registerFcmToken(true);
-      toast('Notifications enabled', 'ok');
-    } catch (err) {
-      console.error(err);
-      toast('Failed to enable notifications', 'err');
-      isNotificationEnabled = false;
-      localStorage.setItem('notificationsEnabled', 'false');
+      /* ══════════ NOTIFICATIONS ══════════ */
+      function updateNotifRowUI() {
+        const b = $("#notif-row-badge");
+        b.textContent = isNotificationEnabled ? "ON" : "OFF";
+        b.className =
+          "row-badge visible " + (isNotificationEnabled ? "on" : "off");
+      }
       updateNotifRowUI();
-    }
-  } else {
-    toast('Notifications turned off', 'inf');
-  }
-}
-
-/* ── FCM TOKEN: registers a fresh token with the backend on every open ── */
-async function registerFcmToken(forcePermissionPrompt) {
-  if (!('serviceWorker' in navigator) || !('Notification' in window)) return;
-  if (Notification.permission === 'denied' && !forcePermissionPrompt) return;
-
-  const { initializeApp }  = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js');
-  const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js');
-  const app = initializeApp(FIREBASE_CONFIG);
-  const msg   = getMessaging(app);
-  const swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-
-  let perm = Notification.permission;
-  if (perm === 'default') perm = await Notification.requestPermission();
-  if (perm !== 'granted') return;
-
-  const token = await getToken(msg, {
-    vapidKey: VAPID_KEY,
-    serviceWorkerRegistration: swReg
-  });
-  if (!token) return;
-
-  await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ operation: 'saveFcmToken', username: userName, fcmToken: token })
-  });
-}
-
-/* ── INSTALL ─────────────────────────────────────────────────────── */
-let deferredPrompt = null;
-const installBar = document.getElementById('install-bar');
-const installBtn = document.getElementById('install-btn');
-
-if (!window.matchMedia('(display-mode: standalone)').matches && !navigator.standalone) {
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBar.classList.add('show');
-  });
-}
-installBtn.addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') installBar.classList.remove('show');
-    deferredPrompt = null;
-  }
-});
-window.addEventListener('appinstalled', () => installBar.classList.remove('show'));
-
-/* ── ROW BUILDER ──────────────────────────────────────────────────── */
-function buildRow({ id, href, onClick, avatarSrc, fallbackName, title, subtitle, subtitleId, time, badgeId, badgeClass }) {
-  const tag = href ? 'a' : 'button';
-  const el = document.createElement(tag);
-  el.className = 'chat-row';
-  if (href) el.href = href;
-  if (id) el.id = id;
-
-  el.innerHTML = `
-    <img class="row-avatar" src="${avatarSrc}" onerror="this.src='${fallback(fallbackName)}'" alt="">
-    <div class="row-content">
-      <div class="row-title-line">
-        <span class="row-title">${esc(title)}</span>
-        <span class="row-time">${time ? esc(time) : ''}</span>
-      </div>
-      <div class="row-sub-line">
-        <span class="row-subtitle" ${subtitleId ? `id="${subtitleId}"` : ''}>${esc(subtitle || '')}</span>
-        <span class="row-badge ${badgeClass || ''}" ${badgeId ? `id="${badgeId}"` : ''}></span>
-      </div>
-    </div>
-  `;
-
-  if (onClick) el.addEventListener('click', onClick);
-  return el;
-}
-
-/* ── STATUS (pending/approved gate) — own slot, own failure mode ───── */
-async function loadStatus() {
-  try {
-    const res = await fetch(`${DASHBOARD_URL}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
-    const data = await res.json();
-    if ((data.userStatus || '').toLowerCase() !== 'approved') {
-      document.getElementById('pending-badge').textContent = (data.userStatus || 'pending').toUpperCase();
-      document.getElementById('pending-screen').classList.add('show');
-    }
-  } catch {
-    /* fail silently — don't block the shell just because the status check hiccuped */
-  }
-}
-
-/* ── ANNOUNCEMENTS BADGE ──────────────────────────────────────────── */
-async function loadAnnBadge() {
-  try {
-    const res  = await fetch(`${DASHBOARD_URL}?operation=getUnseenAnnCount&name=${encodeURIComponent(userName)}`);
-    const data = await res.json();
-    const n    = data.unseenCount || 0;
-
-    const tb = document.getElementById('ann-badge-tb');
-    if (n > 0) { tb.textContent = n > 99 ? '99+' : n; tb.classList.add('visible'); }
-    else       { tb.classList.remove('visible'); }
-
-    const rowBadge = document.getElementById('ann-row-badge');
-    const rowSub   = document.getElementById('ann-row-sub');
-    if (rowBadge && rowSub) {
-      if (n > 0) {
-        rowBadge.textContent = n > 99 ? '99+' : n;
-        rowBadge.classList.add('visible');
-        rowSub.textContent = `${n} new update${n > 1 ? 's' : ''}`;
-      } else {
-        rowBadge.classList.remove('visible');
-        rowSub.textContent = 'No new updates';
+      $("#notif-row").addEventListener("click", toggleNotifications);
+      async function toggleNotifications() {
+        if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+          toast("Notifications not supported", "err");
+          return;
+        }
+        isNotificationEnabled = !isNotificationEnabled;
+        localStorage.setItem("notificationsEnabled", isNotificationEnabled);
+        updateNotifRowUI();
+        if (!isNotificationEnabled)
+          return toast("Notifications turned off", "inf");
+        if (!navigator.onLine)
+          return toast("Saved — will turn on when you're online", "inf");
+        try {
+          await registerFcmToken(true);
+          toast("Notifications enabled", "ok");
+        } catch (err) {
+          console.error(err);
+          toast("Failed to enable notifications", "err");
+          isNotificationEnabled = false;
+          localStorage.setItem("notificationsEnabled", "false");
+          updateNotifRowUI();
+        }
       }
-    }
-  } catch {}
-}
-
-/* ── CHANNELS — own slot, own failure mode, previews load after rows ── */
-function channelPreviewText(post) {
-  if (!post) return 'No posts yet';
-  const cleanText = (post.content || '')
-    .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, '')
-    .replace(/\/view\b\S*/gi, '')
-    .replace(/usp=\S+/gi, '')
-    .replace(/\s{2,}/g, ' ').trim();
-  return cleanText || (post.media?.link ? '📎 Attachment' : 'New post');
-}
-
-function updateChannelRowPreview(channelId, post) {
-  const row = document.getElementById(`ch-row-${channelId}`);
-  if (!row) return;
-  const sub = row.querySelector('.row-subtitle');
-  const time = row.querySelector('.row-time');
-  if (sub) sub.textContent = channelPreviewText(post);
-  if (time && post) time.textContent = fmtTime(post.created);
-}
-
-async function loadChannels() {
-  const slot = document.getElementById('channels-slot');
-
-  // Paint from cache first, if we have it, so a returning visit isn't blank either.
-  let cached;
-  try { cached = sessionStorage.getItem(CHANNELS_CACHE_KEY); } catch { cached = null; }
-  if (cached) slot.innerHTML = cached;
-
-  try {
-    const chRes = await fetch(`${DASHBOARD_URL}?operation=getAllChannels`);
-    const { channels = [] } = await chRes.json();
-
-    if (!channels.length) {
-      slot.innerHTML = `<div class="list-empty">No channels available yet</div>`;
-      try { sessionStorage.removeItem(CHANNELS_CACHE_KEY); } catch {}
-      return;
-    }
-
-    slot.innerHTML = '';
-    channels.forEach(ch => {
-      const avatarSrc = ch.picLink ? lh3(ch.picLink) : fallback(ch.name);
-      slot.appendChild(buildRow({
-        id: `ch-row-${ch.id}`,
-        href: `channel.html?channelId=${encodeURIComponent(ch.id)}`,
-        avatarSrc,
-        fallbackName: ch.name,
-        title: ch.name,
-        subtitle: 'Loading…'
-      }));
-    });
-
-    try { sessionStorage.setItem(CHANNELS_CACHE_KEY, slot.innerHTML); } catch {}
-
-    // Previews load AFTER the rows are already visible — enhancement, not a blocker.
-    channels.forEach(async ch => {
-      try {
-        const d = await fetch(`${SCRIPT_URL}?operation=getChannelPosts&channelId=${encodeURIComponent(ch.id)}&username=${encodeURIComponent(userName)}`).then(r => r.json());
-        const post = (d.posts || []).slice().sort((a, b) => new Date(b.created) - new Date(a.created))[0] || null;
-        updateChannelRowPreview(ch.id, post);
-        try { sessionStorage.setItem(CHANNELS_CACHE_KEY, slot.innerHTML); } catch {}
-      } catch {
-        updateChannelRowPreview(ch.id, null);
+      async function registerFcmToken(force) {
+        if (
+          !("serviceWorker" in navigator) ||
+          !("Notification" in window) ||
+          !navigator.onLine
+        )
+          return;
+        if (Notification.permission === "denied" && !force) return;
+        const { initializeApp } =
+          await import("https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js");
+        const { getMessaging, getToken } =
+          await import("https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging.js");
+        const app = initializeApp(FIREBASE_CONFIG),
+          msg = getMessaging(app);
+        const swReg = await navigator.serviceWorker.register("./sw.js", {
+          scope: "./",
+        });
+        let perm = Notification.permission;
+        if (perm === "default") perm = await Notification.requestPermission();
+        if (perm !== "granted") return;
+        const token = await getToken(msg, {
+          vapidKey: VAPID_KEY,
+          serviceWorkerRegistration: swReg,
+        });
+        if (!token) return;
+        await api(null, {
+          operation: "saveFcmToken",
+          username: userName,
+          fcmToken: token,
+        });
       }
-    });
-  } catch {
-    if (!cached) {
-      slot.innerHTML = `<div class="list-empty">Couldn't load channels — tap refresh</div>`;
-    } else {
-      toast('Could not refresh channels', 'err');
-    }
-  }
-}
 
-/* ── Q&A — own slot, own failure mode ─────────────────────────────── */
-async function loadQnA() {
-  const slot = document.getElementById('qna-slot');
+      /* ══════════ INSTALL ══════════ */
+      let deferred = null;
+      const bar = $("#install-bar");
+      if (
+        !matchMedia("(display-mode: standalone)").matches &&
+        !navigator.standalone
+      )
+        addEventListener("beforeinstallprompt", (e) => {
+          e.preventDefault();
+          deferred = e;
+          bar.classList.add("show");
+        });
+      $("#install-btn").onclick = async () => {
+        if (deferred) {
+          deferred.prompt();
+          const { outcome } = await deferred.userChoice;
+          if (outcome === "accepted") bar.classList.remove("show");
+          deferred = null;
+        }
+      };
+      addEventListener("appinstalled", () => bar.classList.remove("show"));
 
-  let cached;
-  try { cached = sessionStorage.getItem(QNA_CACHE_KEY); } catch { cached = null; }
-  if (cached) slot.innerHTML = cached;
+      /* ══════════ DATA (cached for offline) ══════════ */
+      function buildRow({ id, href, avatarSrc, name, subtitle, i }) {
+        const el = document.createElement("a");
+        el.className = "chat-row";
+        el.href = href;
+        if (id) el.id = id;
+        el.style.setProperty("--i", Math.min(i, 8));
+        el.innerHTML = `<img class="row-avatar" src="${esc(avatarSrc)}" alt="${esc(name)}" onerror="this.onerror=null;this.src=fb(this.alt)"><div class="row-content"><div class="row-title-line"><span class="row-title">${esc(name)}</span><span class="row-time"></span></div><div class="row-sub-line"><span class="row-subtitle">${esc(subtitle)}</span><span class="row-badge"></span></div></div>`;
+        return el;
+      }
+      async function loadStatus() {
+        try {
+          const d = await api({ operation: "getUserStatus", name: userName });
+          const s = (d.userStatus || "").toLowerCase();
+          LS.set("rc_status", s);
+          applyStatus(s);
+        } catch {
+          applyStatus(LS.get("rc_status", "approved"));
+        }
+      }
+      function applyStatus(s) {
+        if (s && s !== "approved") {
+          $("#pending-badge").textContent = s.toUpperCase();
+          $("#pending-screen").classList.add("show");
+        }
+      }
+      async function loadAnnBadge() {
+        let n = LS.get("rc_ann", 0);
+        try {
+          n =
+            (await api({ operation: "getUnseenAnnCount", name: userName }))
+              .unseenCount || 0;
+          LS.set("rc_ann", n);
+        } catch {}
+        const tb = $("#ann-badge-tb"),
+          rb = $("#ann-row-badge"),
+          rs = $("#ann-row-sub");
+        tb.textContent = n > 99 ? "99+" : n;
+        tb.classList.toggle("visible", n > 0);
+        rb.textContent = n > 99 ? "99+" : n;
+        rb.classList.toggle("visible", n > 0);
+        rs.textContent =
+          n > 0 ? `${n} new update${n > 1 ? "s" : ""}` : "No new updates";
+      }
+      function previewText(p) {
+        if (!p) return "No posts yet";
+        const t = (p.content || "")
+          .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, "")
+          .replace(/\/view\b\S*/gi, "")
+          .replace(/usp=\S+/gi, "")
+          .replace(/\s{2,}/g, " ")
+          .trim();
+        return t || (p.media?.link ? "📎 Attachment" : "New post");
+      }
+      function setPreview(id, p) {
+        const r = document.getElementById("ch-row-" + id);
+        if (!r) return;
+        r.querySelector(".row-subtitle").textContent = previewText(p);
+        if (p) r.querySelector(".row-time").textContent = fmtTime(p.created);
+      }
+      async function loadList(
+        slot,
+        key,
+        op,
+        hrefFn,
+        subtitle,
+        emptyMsg,
+        withPreview,
+      ) {
+        const el = $(slot),
+          cached = LS.get(key, null);
+        if (cached) el.innerHTML = cached;
+        try {
+          const { channels = [] } = await api({ operation: op });
+          if (!channels.length) {
+            el.innerHTML = `<div class="list-empty">${emptyMsg}</div>`;
+            LS.set(key, null);
+            return;
+          }
+          el.innerHTML = "";
+          channels.forEach((c, i) =>
+            el.appendChild(
+              buildRow({
+                id: withPreview ? "ch-row-" + c.id : "",
+                href: hrefFn(c.id),
+                avatarSrc: c.picLink ? lh3(c.picLink) : fb(c.name),
+                name: c.name,
+                subtitle: withPreview ? "Loading…" : subtitle,
+                i,
+              }),
+            ),
+          );
+          LS.set(key, el.innerHTML);
+          if (withPreview)
+            channels.forEach(async (c) => {
+              try {
+                const d = await api({
+                  operation: "getChannelPosts",
+                  channelId: c.id,
+                  username: userName,
+                });
+                setPreview(
+                  c.id,
+                  (d.posts || [])
+                    .slice()
+                    .sort(
+                      (a, b) => new Date(b.created) - new Date(a.created),
+                    )[0] || null,
+                );
+              } catch {
+                setPreview(c.id, null);
+              }
+              LS.set(key, el.innerHTML);
+            });
+        } catch {
+          if (!cached)
+            el.innerHTML = `<div class="list-empty">${navigator.onLine ? "Couldn't load — tap refresh" : "You're offline — this will load when you reconnect"}</div>`;
+        }
+      }
+      const loadChannels = () =>
+        loadList(
+          "#channels-slot",
+          "rc_channels",
+          "getAllChannels",
+          (id) => `channel.html?channelId=${encodeURIComponent(id)}`,
+          "",
+          "No channels available yet",
+          true,
+        );
+      const loadQnA = () =>
+        loadList(
+          "#qna-slot",
+          "rc_qna",
+          "getAllQnAChannels",
+          (id) => `Q&A.html?channelId=${encodeURIComponent(id)}`,
+          "Tap to interact with the questions",
+          "No Q&A spaces yet",
+          false,
+        );
 
-  try {
-    const qnaRes = await fetch(`${DASHBOARD_URL}?operation=getAllQnAChannels`);
-    const { channels: qnaChannels = [] } = await qnaRes.json();
+      let refreshing = false;
+      async function refreshAll(quiet) {
+        if (refreshing) return;
+        refreshing = true;
+        const b = $("#refresh-btn");
+        b.classList.add("spinning");
+        if (!navigator.onLine) {
+          await sleep(600);
+          b.classList.remove("spinning");
+          refreshing = false;
+          if (!quiet) toast("Offline — showing saved content", "inf");
+          return;
+        }
+        await Promise.all([
+          loadStatus(),
+          loadChannels(),
+          loadQnA(),
+          loadAnnBadge(),
+        ]);
+        b.classList.remove("spinning");
+        refreshing = false;
+        if (!quiet) toast("Refreshed", "ok", 1400);
+      }
+      $("#refresh-btn").addEventListener("click", () => refreshAll());
 
-    if (!qnaChannels.length) {
-      slot.innerHTML = `<div class="list-empty">No Q&A spaces yet</div>`;
-      try { sessionStorage.removeItem(QNA_CACHE_KEY); } catch {}
-      return;
-    }
-
-    slot.innerHTML = '';
-    qnaChannels.forEach(ch => {
-      const avatarSrc = ch.picLink ? lh3(ch.picLink) : fallback(ch.name);
-      slot.appendChild(buildRow({
-        href: `Q&A.html?channelId=${encodeURIComponent(ch.id)}`,
-        avatarSrc,
-        fallbackName: ch.name,
-        title: ch.name,
-        subtitle: 'Tap to interact with the questions'
-      }));
-    });
-
-    try { sessionStorage.setItem(QNA_CACHE_KEY, slot.innerHTML); } catch {}
-  } catch {
-    if (!cached) {
-      slot.innerHTML = `<div class="list-empty">Couldn't load Q&A — tap refresh</div>`;
-    } else {
-      toast('Could not refresh Q&A', 'err');
-    }
-  }
-}
-
-/* ── REFRESH ─────────────────────────────────────────────────────── */
-let isRefreshing = false;
-async function refreshAll() {
-  if (isRefreshing) return;
-  isRefreshing = true;
-  const btn = document.getElementById('refresh-btn');
-  btn.classList.add('spinning');
-  btn.disabled = true;
-  try {
-    await Promise.all([loadStatus(), loadChannels(), loadQnA(), loadAnnBadge()]);
-    toast('Refreshed', 'ok', 1500);
-  } catch {
-    toast('Refresh failed', 'err');
-  } finally {
-    btn.classList.remove('spinning');
-    btn.disabled = false;
-    isRefreshing = false;
-  }
-}
-
-/* ── INIT ─────────────────────────────────────────────────────────── */
-// Every section kicks off independently and in parallel — none of them
-// await each other, and none of them touch rows outside their own slot.
-// A slow or failed fetch only ever affects its own small piece of the page.
-window.addEventListener('DOMContentLoaded', () => {
-  loadStatus();
-  loadChannels();
-  loadQnA();
-  loadAnnBadge();
-  registerFcmToken(false).catch(err => console.error('FCM registration failed:', err));
-
-  setInterval(loadAnnBadge, 30000);
-  document.getElementById('refresh-btn').addEventListener('click', refreshAll);
-});
-</script>
-</body>
+      /* ══════════ INIT ══════════ */
+      addEventListener("DOMContentLoaded", () => {
+        chips();
+        const fresh = !LS.get("rc_seen", 0);
+        LS.set("rc_seen", 1);
+        enqueue(async () => {
+          await say(`${greet()}, ${first}! 👋`);
+          await say(
+            fresh
+              ? "I'm Grace, your guide here. I work even without internet — tell me how you feel, or tap a topic."
+              : "Good to see you again. How is your heart today?",
+          );
+        });
+        loadStatus();
+        loadChannels();
+        loadQnA();
+        loadAnnBadge();
+        registerFcmToken(false).catch((e) => console.error("FCM:", e));
+        setInterval(() => {
+          if (!document.hidden) loadAnnBadge();
+        }, 30000);
+      });
+    </script>
+  </body>
 </html>
