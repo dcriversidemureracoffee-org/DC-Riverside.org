@@ -1,1449 +1,2386 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Riverside Connect</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link rel="manifest" href="./manifest.json">
-
-
-    <!-- iOS Safari home screen support -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Riverside Connect">
-
-<!-- Reuse your existing 192×192 icon for Apple devices -->
-<link rel="apple-touch-icon" sizes="180x180" href="maskable_icon_x192.png">
-<link rel="apple-touch-icon" sizes="152x152" href="maskable_icon_x192.png">
-<link rel="apple-touch-icon" sizes="167x167" href="maskable_icon_x192.png">
-<!-- Fallback (also uses the same file) -->
-<link rel="apple-touch-icon" href="maskable_icon_x192.png">
-  
-<!-- Open Graph / Social sharing preview -->
-<meta property="og:title" content="Riverside Connect ">
-<meta property="og:description" content="Join the conversation in Riverside Connect – a simple, real-time chat experience. Share thoughts, media & more.">
-<meta property="og:image" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/maskable_icon_x192.png">
-<meta property="og:url" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/">
-<meta property="og:type" content="website">
-
-<!-- Recommended extras (helps Twitter/X, WhatsApp, Discord, etc.) -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Riverside Connect ">
-<meta name="twitter:description" content="Join the conversation in Riverside Connect – a simple, real-time chat experience.">
-<meta name="twitter:image" content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/maskable_icon_x192.png">
-
-<!-- Optional but useful -->
-<meta property="og:site_name" content="Riverside Connect">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Riverside Connect chat preview">
-
- <style>
-    :root {
-      --bg-deep:       #07090f;
-      --bg-surface:    #0d1117;
-      --bg-card:       #111827;
-      --bg-card-hover: #161f2e;
-      --border:        rgba(255,255,255,0.07);
-      --border-accent: rgba(212,175,55,0.35);
-      --gold:          #d4af37;
-      --gold-light:    #f0d060;
-      --gold-dim:      rgba(212,175,55,0.18);
-      --text-primary:  #f0ece4;
-      --text-secondary:#94a3b8;
-      --text-muted:    #4a5568;
-      --blue:          #3b82f6;
-      --red:           #ef4444;
-      --radius-card:   16px;
-      --radius-sm:     8px;
-      --font-display:  'Playfair Display', Georgia, serif;
-      --font-body:     'DM Sans', system-ui, sans-serif;
-      --header-h:      68px;
-    }
-
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-    html, body {
-      height: 100%;
-      background: var(--bg-deep);
-      color: var(--text-primary);
-      font-family: var(--font-body);
-      overflow: hidden;
-    }
-
-    /* ── Noise texture overlay ─────────────────────────────────────── */
-    body::before {
-      content:'';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── Header ────────────────────────────────────────────────────── */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      height: var(--header-h);
-      background: rgba(7,9,15,0.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      gap: 20px;
-    }
-
-    .header-back {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 500;
-      letter-spacing: 0.02em;
-      transition: color 0.2s;
-    }
-    .header-back:hover { color: var(--text-primary); }
-    .header-back i { font-size: 0.85rem; }
-
-    .header-divider {
-      width: 1px;
-      height: 24px;
-      background: var(--border);
-    }
-
-    .header-brand {
-      flex: 1;
-    }
-    .header-brand h1 {
-      font-family: var(--font-display);
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      color: var(--text-primary);
-    }
-    .header-brand .brand-sub {
-      font-size: 0.7rem;
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gold);
-      opacity: 0.85;
-      margin-top: 1px;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: 999px;
-      background: rgba(239,68,68,0.12);
-      border: 1px solid rgba(239,68,68,0.25);
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #f87171;
-    }
-    .live-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #ef4444;
-      animation: pulse-dot 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%,100% { opacity:1; transform:scale(1); }
-      50%      { opacity:0.4; transform:scale(0.7); }
-    }
-
-    .btn-new-ann {
-      display: none; /* hidden until admin check */
-      align-items: center;
-      gap: 8px;
-      padding: 9px 18px;
-      border-radius: 999px;
-      background: var(--gold);
-      color: #07090f;
-      border: none;
-      font-family: var(--font-body);
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.22s;
-    }
-    .btn-new-ann:hover {
-      background: var(--gold-light);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(212,175,55,0.35);
-    }
-
-    /* ── Layout ─────────────────────────────────────────────────────── */
-    .page-layout {
-      display: flex;
-      height: calc(100vh - var(--header-h));
-      overflow: hidden;
-    }
-
-    /* ── Sidebar ─────────────────────────────────────────────────────── */
-    .sidebar {
-      width: 280px;
-      flex-shrink: 0;
-      border-right: 1px solid var(--border);
-      background: var(--bg-surface);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .sidebar-label {
-      padding: 20px 20px 12px;
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .sidebar-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 12px 16px;
-    }
-
-    .sidebar-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: background 0.15s;
-      border-left: 2px solid transparent;
-      margin-bottom: 2px;
-    }
-    .sidebar-item:hover { background: rgba(255,255,255,0.04); }
-    .sidebar-item.active {
-      background: var(--gold-dim);
-      border-left-color: var(--gold);
-    }
-
-    .si-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-      border: 1.5px solid var(--border);
-    }
-
-    .si-info { flex: 1; min-width: 0; }
-    .si-name {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .si-preview {
-      font-size: 0.77rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .si-time {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .sidebar-empty {
-      padding: 40px 20px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.875rem;
-    }
-
-    /* ── Main feed ──────────────────────────────────────────────────── */
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 32px 24px 60px;
-      scroll-behavior: smooth;
-    }
-
-    .main-content::-webkit-scrollbar { width: 5px; }
-    .main-content::-webkit-scrollbar-track { background: transparent; }
-    .main-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius:3px; }
-
-    .feed-header {
-      max-width: 740px;
-      margin: 0 auto 28px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    .feed-header-left h2 {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      line-height: 1.15;
-    }
-    .feed-header-left p {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-      letter-spacing: 0.03em;
-    }
-    .feed-count {
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--gold);
-      text-transform: uppercase;
-    }
-
-    /* ── Announcement card ──────────────────────────────────────────── */
-    .ann-card {
-      max-width: 740px;
-      margin: 0 auto 24px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-card);
-      overflow: hidden;
-      transition: border-color 0.2s, background 0.2s;
-      animation: card-in 0.4s ease-out both;
-      position: relative;
-    }
-    .ann-card:hover {
-      border-color: rgba(212,175,55,0.2);
-      background: var(--bg-card-hover);
-    }
-
-    @keyframes card-in {
-      from { opacity:0; transform: translateY(16px); }
-      to   { opacity:1; transform: translateY(0); }
-    }
-
-    .ann-card-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 18px 20px 14px;
-    }
-
-    .ann-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--border-accent);
-      flex-shrink: 0;
-    }
-
-    .ann-author-block { flex: 1; }
-    .ann-author-name {
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: var(--gold);
-      letter-spacing: 0.01em;
-    }
-    .ann-time {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-      letter-spacing: 0.02em;
-    }
-
-    .ann-badge {
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: var(--gold-dim);
-      color: var(--gold);
-      border: 1px solid var(--border-accent);
-    }
-
-    /* Gold left accent on card */
-    .ann-card::before {
-      content:'';
-      position: absolute;
-      left: 0;
-      top: 20px;
-      bottom: 20px;
-      width: 3px;
-      background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
-      border-radius: 0 2px 2px 0;
-      opacity: 0.6;
-    }
-
-    /* Media */
-    .ann-media {
-      display: flex;
-      overflow-x: auto;
-      gap: 10px;
-      padding: 0 20px 14px;
-      scroll-snap-type: x mandatory;
-    }
-    .ann-media::-webkit-scrollbar { height: 4px; }
-    .ann-media::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.3); border-radius:2px; }
-
-    .ann-media-item {
-      flex: 0 0 auto;
-      width: 82%;
-      max-height: 380px;
-      scroll-snap-align: start;
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    .ann-media-item img,
-    .ann-media-item video,
-    .ann-media-item iframe {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .ann-body {
-      padding: 0 20px 16px;
-      font-size: 0.96rem;
-      line-height: 1.72;
-      color: var(--text-primary);
-      white-space: pre-line;
-      word-break: break-word;
-    }
-
-    .ann-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 20px;
-      border-top: 1px solid var(--border);
-    }
-
-    .ann-views {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-    .ann-views-count {
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .ann-actions {
-      display: flex;
-      gap: 6px;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    .ann-card:hover .ann-actions { opacity: 1; }
-
-    .ann-btn {
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 0.74rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid;
-      font-family: var(--font-body);
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .ann-btn-edit {
-      color: var(--gold);
-      border-color: rgba(212,175,55,0.3);
-      background: transparent;
-    }
-    .ann-btn-edit:hover { background: var(--gold-dim); }
-    .ann-btn-delete {
-      color: #f87171;
-      border-color: rgba(239,68,68,0.25);
-      background: transparent;
-    }
-    .ann-btn-delete:hover { background: rgba(239,68,68,0.12); }
-
-    /* Edit textarea */
-    .edit-textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border-accent);
-      color: var(--text-primary);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      font-family: var(--font-body);
-      font-size: 0.95rem;
-      line-height: 1.65;
-      resize: vertical;
-      min-height: 100px;
-      outline: none;
-      margin-bottom: 8px;
-    }
-    .edit-row {
-      display: flex;
-      gap: 8px;
-      padding: 0 20px 16px;
-    }
-    .btn-save {
-      padding: 7px 16px;
-      border-radius: 6px;
-      border: none;
-      background: var(--gold);
-      color: #07090f;
-      font-weight: 700;
-      font-size: 0.8rem;
-      cursor: pointer;
-      font-family: var(--font-body);
-      transition: all 0.15s;
-    }
-    .btn-save:hover { background: var(--gold-light); }
-    .btn-cancel {
-      padding: 7px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-secondary);
-      font-weight: 600;
-      font-size: 0.8rem;
-      cursor: pointer;
-      font-family: var(--font-body);
-    }
-
-    /* ── Empty / loading states ─────────────────────────────────────── */
-    .state-empty {
-      max-width: 740px;
-      margin: 60px auto;
-      text-align: center;
-      padding: 60px 20px;
-    }
-    .state-empty-icon {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: var(--gold-dim);
-      border: 1px solid var(--border-accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 1.8rem;
-      color: var(--gold);
-    }
-    .state-empty h3 {
-      font-family: var(--font-display);
-      font-size: 1.4rem;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-    .state-empty p { font-size: 0.875rem; color: var(--text-muted); }
-
-    .skeleton-card {
-      max-width: 740px;
-      margin: 0 auto 24px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-card);
-      padding: 20px;
-      animation: shimmer 1.6s ease-in-out infinite;
-    }
-    @keyframes shimmer { 0%,100%{opacity:0.7} 50%{opacity:0.3} }
-    .skel-row {
-      height: 12px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.06);
-      margin-bottom: 10px;
-    }
-
-    /* ── Modal ──────────────────────────────────────────────────────── */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
-      z-index: 200;
-      align-items: flex-end;
-      justify-content: center;
-      padding-bottom: 0;
-    }
-    @media (min-width: 600px) {
-      .modal-overlay { align-items: center; padding: 0; }
-    }
-
-    .modal-sheet {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px 20px 0 0;
-      width: 100%;
-      max-width: 640px;
-      max-height: 92vh;
-      overflow-y: auto;
-      padding: 28px 24px 32px;
-      animation: sheet-up 0.3s cubic-bezier(0.32,0.72,0,1);
-    }
-    @media (min-width: 600px) {
-      .modal-sheet { border-radius: 20px; animation: fade-scale 0.25s ease; }
-    }
-    @keyframes sheet-up { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
-    @keyframes fade-scale { from{transform:scale(0.96);opacity:0} to{transform:scale(1);opacity:1} }
-
-    .modal-drag {
-      width: 40px;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--border);
-      margin: 0 auto 24px;
-    }
-    @media (min-width: 600px) { .modal-drag { display: none; } }
-
-    .modal-title {
-      font-family: var(--font-display);
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-      color: var(--text-primary);
-    }
-    .modal-subtitle {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin-bottom: 22px;
-    }
-
-    .modal-textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text-primary);
-      font-family: var(--font-body);
-      font-size: 0.97rem;
-      line-height: 1.7;
-      padding: 16px;
-      resize: vertical;
-      min-height: 140px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .modal-textarea:focus { border-color: var(--border-accent); }
-    .modal-textarea::placeholder { color: var(--text-muted); }
-
-    /* Schedule section */
-    .schedule-section {
-      margin-top: 16px;
-      padding: 16px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--border);
-    }
-    .schedule-toggle-label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      user-select: none;
-    }
-    .schedule-toggle-label input[type=checkbox] {
-      width: 16px;
-      height: 16px;
-      accent-color: var(--gold);
-      cursor: pointer;
-    }
-    .schedule-datetime {
-      display: none;
-      margin-top: 12px;
-      width: 100%;
-      padding: 11px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border-accent);
-      background: rgba(255,255,255,0.05);
-      color: var(--text-primary);
-      font-family: var(--font-body);
-      font-size: 0.9rem;
-      outline: none;
-      color-scheme: dark;
-    }
-    .schedule-preview {
-      font-size: 0.8rem;
-      color: var(--gold);
-      margin-top: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Media add */
-    .media-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 14px;
-    }
-    .btn-add-media {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: 1px dashed var(--border);
-      background: transparent;
-      color: var(--text-muted);
-      font-family: var(--font-body);
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-add-media:hover {
-      border-color: var(--border-accent);
-      color: var(--gold);
-    }
-
-    /* Preview strip */
-    .preview-strip {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      margin-top: 14px;
-      padding-bottom: 6px;
-      min-height: 0;
-    }
-    .preview-thumb {
-      position: relative;
-      flex: 0 0 100px;
-      width: 100px;
-      height: 100px;
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      border: 1px solid var(--border);
-      background: var(--bg-deep);
-    }
-    .preview-thumb img,
-    .preview-thumb video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .preview-remove {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      border: none;
-      font-size: 0.65rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Modal footer */
-    .modal-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 22px;
-      padding-top: 18px;
-      border-top: 1px solid var(--border);
-    }
-    .modal-hint {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .btn-post {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 11px 26px;
-      border-radius: 999px;
-      background: var(--gold);
-      color: #07090f;
-      border: none;
-      font-family: var(--font-body);
-      font-weight: 700;
-      font-size: 0.875rem;
-      letter-spacing: 0.04em;
-      cursor: pointer;
-      transition: all 0.22s;
-    }
-    .btn-post:hover {
-      background: var(--gold-light);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(212,175,55,0.35);
-    }
-    .btn-post:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(0,0,0,0.25);
-      border-top-color: #07090f;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: inline-block;
-    }
-    @keyframes spin { to{transform:rotate(360deg)} }
-
-    /* ── Delete/confirm overlay ────────────────────────────────────── */
-    .confirm-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(10px);
-      z-index: 300;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: card-in 0.2s ease;
-    }
-    .confirm-card {
-      background: var(--bg-card);
-      border: 1px solid rgba(239,68,68,0.25);
-      border-radius: 16px;
-      padding: 28px;
-      max-width: 320px;
-      width: 90%;
-      text-align: center;
-    }
-    .confirm-icon {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      background: rgba(239,68,68,0.1);
-      border: 1px solid rgba(239,68,68,0.25);
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 1.3rem;
-      color: #f87171;
-    }
-    .confirm-title {
-      font-family: var(--font-display);
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    .confirm-msg { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 22px; }
-    .confirm-btns { display: flex; gap: 10px; }
-    .btn-confirm-cancel {
-      flex: 1; padding: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-secondary);
-      font-family: var(--font-body);
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-confirm-delete {
-      flex: 1; padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #ef4444;
-      color: white;
-      font-family: var(--font-body);
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* ── Toast ──────────────────────────────────────────────────────── */
-    #toast-container {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 400;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: center;
-      pointer-events: none;
-    }
-    .toast {
-      background: var(--bg-card);
-      color: var(--text-primary);
-      padding: 11px 20px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      font-size: 0.83rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      animation: toast-in 0.3s ease both;
-      white-space: nowrap;
-    }
-    .toast.success { border-color: rgba(34,197,94,0.3); }
-    .toast.success i { color: #4ade80; }
-    .toast.error { border-color: rgba(239,68,68,0.3); }
-    .toast.error i { color: #f87171; }
-    @keyframes toast-in { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
-
-    /* ── Sidebar scrollbar ─────────────────────────────────── */
-    .sidebar-list::-webkit-scrollbar { width: 4px; }
-    .sidebar-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius:2px; }
-
-    /* ── Responsive ─────────────────────────────────────────────────── */
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { padding: 20px 16px 60px; }
-      .feed-header { margin-bottom: 20px; }
-      .feed-header-left h2 { font-size: 1.5rem; }
-      .ann-card::before { display: none; }
-      .header-brand .brand-sub { display: none; }
-    }
-    @media (max-width: 480px) {
-      .site-header { padding: 0 16px; }
-      .btn-new-ann span { display: none; }
-      .btn-new-ann { padding: 9px 13px; }
-      .live-badge span { display: none; }
-    }
-  </style>
-</head>
-<body>
-
-<div id="toast-container"></div>
-
-<!-- ── Header ──────────────────────────────────────────────────────────── -->
-<header class="site-header">
-  <a href="index.html" class="header-back">
-    <i class="fas fa-arrow-left"></i>
-    <span>Home</span>
-  </a>
-  <div class="header-divider"></div>
-  <div class="header-brand">
-    <h1>Announcements</h1>
-    <div class="brand-sub">Riverside Connect</div>
-  </div>
-  <div class="header-right">
-    <div class="live-badge">
-      <div class="live-dot"></div>
-      <span>Live</span>
-    </div>
-    <button class="btn-new-ann" id="btnNewAnn">
-      <i class="fas fa-plus"></i>
-      <span>Post</span>
-    </button>
-  </div>
-</header>
-
-<!-- ── Layout ──────────────────────────────────────────────────────────── -->
-<div class="page-layout">
-
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-label">Recent Posts</div>
-    <div class="sidebar-list" id="sidebarList">
-      <div class="skeleton-card" style="padding:14px;">
-        <div class="skel-row" style="width:40%;height:10px;"></div>
-        <div class="skel-row" style="width:80%;margin-top:8px;"></div>
-      </div>
-      <div class="skeleton-card" style="padding:14px;animation-delay:0.2s;">
-        <div class="skel-row" style="width:35%;height:10px;"></div>
-        <div class="skel-row" style="width:70%;margin-top:8px;"></div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Main feed -->
-  <main class="main-content" id="mainContent">
-    <div class="feed-header">
-      <div class="feed-header-left">
-        <h2>Board</h2>
-        <p>Official updates from the Riverside team</p>
-      </div>
-      <div class="feed-count" id="feedCount"></div>
-    </div>
-
-    <div id="announcementsFeed">
-      <!-- Skeleton loaders -->
-      <div class="skeleton-card"><div class="skel-row" style="width:30%"></div><div class="skel-row" style="width:90%"></div><div class="skel-row" style="width:65%"></div></div>
-      <div class="skeleton-card" style="animation-delay:0.15s"><div class="skel-row" style="width:25%"></div><div class="skel-row" style="width:85%"></div><div class="skel-row" style="width:50%"></div></div>
-      <div class="skeleton-card" style="animation-delay:0.3s"><div class="skel-row" style="width:35%"></div><div class="skel-row" style="width:75%"></div></div>
-    </div>
-  </main>
-</div>
-
-<!-- ── New Announcement Modal ─────────────────────────────────────────── -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal-sheet" id="modalSheet">
-    <div class="modal-drag"></div>
-    <div class="modal-title">New Announcement</div>
-    <div class="modal-subtitle">This will be visible to all members immediately.</div>
-
-    <textarea class="modal-textarea" id="annText" placeholder="Write your announcement here…&#10;&#10;Use paragraphs for clarity. Keep it concise and informative."></textarea>
-
-    <!-- Media -->
-    <div class="media-row">
-      <button class="btn-add-media" id="btnAddMedia">
-        <i class="fas fa-image"></i>
-        Attach media
-      </button>
-      <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none;">
-    </div>
-    <div class="preview-strip" id="previewStrip"></div>
-
-    <!-- Schedule -->
-    <div class="schedule-section">
-      <label class="schedule-toggle-label">
-        <input type="checkbox" id="scheduleToggle">
-        Schedule for later
-      </label>
-      <input type="datetime-local" id="scheduleInput" class="schedule-datetime">
-      <div class="schedule-preview" id="schedulePreview" style="display:none;">
-        <i class="fas fa-calendar-check"></i>
-        <span id="scheduleText"></span>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <span class="modal-hint"><kbd>Ctrl + Enter</kbd> to post</span>
-      <button class="btn-post" id="btnPost">
-        <i class="fas fa-paper-plane"></i>
-        Post Announcement
-      </button>
-    </div>
-  </div>
-</div>
-
-<script>
-  /* ── Config ─────────────────────────────────────────────────────── */
-  const scriptUrl = 'https://script.google.com/macros/s/AKfycbxDrnPyHD8HwEOD4PeVcJBkxK6en22ZBWmPVkyxXozM6KUfz8Ci_L41VQVJUzV9mBGr/exec';
-  const userName = localStorage.getItem('userName');
-  if (!userName) window.location.href = 'login.html';
-
-  /* ── State ───────────────────────────────────────────────────────── */
-  let selectedFiles = [];
-  let lastCount = 0;
-  let pollingTimer = null;
-  let isAdmin = false;
-  const announcementTexts = {};
-
-  /* ── DOM refs ────────────────────────────────────────────────────── */
-  const btnNewAnn     = document.getElementById('btnNewAnn');
-  const modalOverlay  = document.getElementById('modalOverlay');
-  const annText       = document.getElementById('annText');
-  const fileInput     = document.getElementById('fileInput');
-  const btnAddMedia   = document.getElementById('btnAddMedia');
-  const previewStrip  = document.getElementById('previewStrip');
-  const btnPost       = document.getElementById('btnPost');
-  const scheduleToggle= document.getElementById('scheduleToggle');
-  const scheduleInput = document.getElementById('scheduleInput');
-  const schedulePreview=document.getElementById('schedulePreview');
-  const scheduleText  = document.getElementById('scheduleText');
-  const feed          = document.getElementById('announcementsFeed');
-  const sidebarList   = document.getElementById('sidebarList');
-  const feedCount     = document.getElementById('feedCount');
-
-  /* ── Admin check ─────────────────────────────────────────────────── */
-  async function checkAdmin() {
-    try {
-      const r = await fetch(`${scriptUrl}?operation=getUserStatus&name=${encodeURIComponent(userName)}`);
-      const d = await r.json();
-      if (d.status === 'success' && d.userStatus === 'approved' && d.isAdmin === true) {
-        isAdmin = true;
-        btnNewAnn.style.display = 'flex';
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Announcements · Riverside Connect</title>
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Riverside Connect" />
+    <link rel="apple-touch-icon" href="maskable_icon_x192.png" />
+    <meta property="og:title" content="Riverside Connect" />
+    <meta
+      property="og:description"
+      content="Official announcements from the Riverside team."
+    />
+    <meta
+      property="og:image"
+      content="https://vibe-ultrafiles04.github.io/The-Riverside-Connect/maskable_icon_x192.png"
+    />
+    <meta property="og:type" content="website" />
+    <style>
+      :root {
+        --bg: #07090f;
+        --sf: #0d1117;
+        --cd: #111827;
+        --bd: rgba(255, 255, 255, 0.08);
+        --ba: rgba(212, 175, 55, 0.35);
+        --gold: #d4af37;
+        --gl: #f0d060;
+        --gd: rgba(212, 175, 55, 0.16);
+        --tx: #f0ece4;
+        --t2: #94a3b8;
+        --tm: #5b6678;
+        --red: #ef4444;
+        --fd: "Playfair Display", Georgia, serif;
+        --fb: "DM Sans", system-ui, sans-serif;
+        --h: 56px;
       }
-    } catch(e) { /* silent */ }
-  }
-
-  /* ── Helpers ─────────────────────────────────────────────────────── */
-  function extractFileId(url) {
-    if (!url) return '';
-    const m = url.match(/[-\w]{25,}/);
-    return m ? m[0] : '';
-  }
-  function getLh3(url) {
-    const id = extractFileId(url);
-    return id ? `https://lh3.googleusercontent.com/d/${id}` : '';
-  }
-  function formatTime(ts) {
-    const d = new Date(ts), now = new Date();
-    const isToday = d.toDateString() === now.toDateString();
-    const isYest  = d.toDateString() === new Date(now.setDate(now.getDate()-1)).toDateString();
-    const day = isToday ? 'Today' : isYest ? 'Yesterday' : d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
-    return `${day} · ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
-  }
-  function showToast(msg, type='success') {
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> <span>${msg}</span>`;
-    document.getElementById('toast-container').appendChild(el);
-    setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity 0.4s'; setTimeout(()=>el.remove(),400); }, 3200);
-  }
-
-  /* ── Modal ───────────────────────────────────────────────────────── */
-  btnNewAnn.addEventListener('click', () => {
-    modalOverlay.style.display = 'flex';
-    annText.focus();
-  });
-
-  modalOverlay.addEventListener('click', e => {
-    if (e.target === modalOverlay) closeModal();
-  });
-
-  function closeModal() {
-    modalOverlay.style.display = 'none';
-    annText.value = '';
-    previewStrip.innerHTML = '';
-    selectedFiles = [];
-    scheduleToggle.checked = false;
-    scheduleInput.style.display = 'none';
-    scheduleInput.value = '';
-    schedulePreview.style.display = 'none';
-    scheduleText.textContent = '';
-  }
-
-  /* ── Media ───────────────────────────────────────────────────────── */
-  btnAddMedia.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', function() {
-    Array.from(this.files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const b64 = e.target.result.split(',')[1];
-        selectedFiles.push({ base64: b64, type: file.type, name: file.name });
-        addThumb(e.target.result, file.type, selectedFiles.length - 1);
-      };
-      reader.readAsDataURL(file);
-    });
-    this.value = '';
-  });
-
-  function addThumb(dataUrl, type, idx) {
-    const thumb = document.createElement('div');
-    thumb.className = 'preview-thumb';
-    thumb.innerHTML = (type.startsWith('video')
-      ? `<video src="${dataUrl}" muted></video>`
-      : `<img src="${dataUrl}">`)
-      + `<button class="preview-remove" data-idx="${idx}"><i class="fas fa-times"></i></button>`;
-    thumb.querySelector('.preview-remove').addEventListener('click', e => {
-      const i = parseInt(e.currentTarget.dataset.idx);
-      selectedFiles.splice(i,1);
-      previewStrip.removeChild(thumb);
-      previewStrip.querySelectorAll('.preview-remove').forEach((b,j) => b.dataset.idx = j);
-    });
-    previewStrip.appendChild(thumb);
-  }
-
-  /* ── Schedule ────────────────────────────────────────────────────── */
-  scheduleToggle.addEventListener('change', () => {
-    if (scheduleToggle.checked) {
-      const now = new Date(Date.now() + 5*60*1000);
-      const pad = n => String(n).padStart(2,'0');
-      scheduleInput.min = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-      scheduleInput.style.display = 'block';
-      scheduleInput.focus();
-    } else {
-      scheduleInput.style.display = 'none';
-      scheduleInput.value = '';
-      schedulePreview.style.display = 'none';
-    }
-  });
-  scheduleInput.addEventListener('change', () => {
-    if (!scheduleInput.value) { schedulePreview.style.display='none'; return; }
-    const d = new Date(scheduleInput.value);
-    scheduleText.textContent = `Will post: ${d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})} at ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
-    schedulePreview.style.display = 'flex';
-  });
-
-  /* ── Ctrl+Enter to post ──────────────────────────────────────────── */
-  annText.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); postAnnouncement(); }
-  });
-
-  /* ── Post ────────────────────────────────────────────────────────── */
-  btnPost.addEventListener('click', postAnnouncement);
-
-  async function postAnnouncement() {
-    const text = annText.value.trim();
-    if (!text && selectedFiles.length === 0) return;
-
-    let scheduledTime = null;
-    if (scheduleToggle.checked) {
-      if (!scheduleInput.value) { showToast('Please pick a date and time','error'); return; }
-      const [dp,tp] = scheduleInput.value.split('T');
-      const [y,mo,d] = dp.split('-').map(Number);
-      const [h,mi] = tp.split(':').map(Number);
-      const picked = new Date(y,mo-1,d,h,mi);
-      if (isNaN(picked.getTime())) { showToast('Invalid date/time','error'); return; }
-      if (picked <= new Date()) { showToast('Scheduled time must be in the future','error'); return; }
-      scheduledTime = picked.toISOString();
-    }
-
-    btnPost.disabled = true;
-    btnPost.innerHTML = `<span class="spinner"></span> ${scheduledTime ? 'Scheduling…' : 'Posting…'}`;
-
-    try {
-      const res = await fetch(scriptUrl, {
-        method: 'POST',
-        body: JSON.stringify({ operation:'postAnnouncement', name:userName, comment:text, files:selectedFiles, scheduledTime })
-      });
-      const data = await res.json();
-      if (data.status === 'success') {
-        closeModal();
-        if (data.scheduled) {
-          showToast('✓ Scheduled successfully', 'success');
-        } else {
-          showToast('Announcement posted', 'success');
-          await loadAnnouncements(false);
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--tx);
+        font-family: var(--fb);
+        overflow: hidden;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+      }
+      /* top bar */
+      .top {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--h);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 16px;
+        background: rgba(7, 9, 15, 0.9);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--bd);
+      }
+      .bk {
+        color: var(--t2);
+        text-decoration: none;
+        font-size: 0.85rem;
+        white-space: nowrap;
+      }
+      .bk:hover {
+        color: var(--tx);
+      }
+      .ttl {
+        flex: 1;
+        min-width: 0;
+      }
+      .ttl h1 {
+        font: 700 1.15rem var(--fd);
+      }
+      .ttl small {
+        display: block;
+        font-size: 0.58rem;
+        letter-spacing: 0.14em;
+        color: var(--gold);
+        text-transform: uppercase;
+      }
+      .live {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: #f87171;
+        text-transform: uppercase;
+      }
+      .live i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--red);
+        animation: pd 1.5s infinite;
+      }
+      @keyframes pd {
+        50% {
+          opacity: 0.35;
+          transform: scale(0.7);
         }
-      } else {
-        showToast(data.message || 'Failed to post', 'error');
       }
-    } catch(e) {
-      showToast('Network error', 'error');
-    } finally {
-      btnPost.disabled = false;
-      btnPost.innerHTML = '<i class="fas fa-paper-plane"></i> Post Announcement';
-    }
-  }
+      .ic {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid var(--bd);
+        background: var(--cd);
+        font-size: 1rem;
+      }
+      .ic span {
+        display: inline-block;
+        animation: fl 3.6s ease-in-out infinite;
+      }
+      @keyframes fl {
+        50% {
+          transform: translateY(-2px) rotate(-8deg);
+        }
+      }
+      .post {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: 0;
+        background: var(--gold);
+        color: #07090f;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        transition: 0.2s;
+      }
+      .post:hover {
+        background: var(--gl);
+      }
+      /* one announcement per screen */
+      #feed {
+        position: fixed;
+        inset: 0;
+        overflow-y: auto;
+        scroll-snap-type: y mandatory;
+        overscroll-behavior-y: contain;
+        scrollbar-width: none;
+      }
+      #feed::-webkit-scrollbar {
+        display: none;
+      }
+      .s {
+        height: 100dvh;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        display: flex;
+        flex-direction: column;
+        padding: calc(var(--h) + 18px) 22px 14px;
+        position: relative;
+        animation: in 0.5s ease both;
+      }
+      @keyframes in {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+      }
+      .s::before {
+        content: "";
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        top: var(--h);
+        height: 1px;
+        background: linear-gradient(90deg, var(--gold), transparent 60%);
+        opacity: 0.5;
+      }
+      .sh {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 720px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .av {
+        position: relative;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        background: hsl(var(--h) 40% 30%);
+        border: 2px solid var(--ba);
+        overflow: hidden;
+      }
+      .av img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .sa {
+        flex: 1;
+        min-width: 0;
+      }
+      .sa b {
+        display: block;
+        color: var(--gold);
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .sa small {
+        font-size: 0.72rem;
+        color: var(--tm);
+      }
+      .bd {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: var(--gd);
+        color: var(--gold);
+        border: 1px solid var(--ba);
+      }
+      .no {
+        font: 700 1rem var(--fd);
+        color: var(--tx);
+        min-width: 46px;
+        text-align: right;
+      }
+      .no em {
+        font: 400 0.72rem var(--fb);
+        color: var(--tm);
+        font-style: normal;
+      }
+      .sb {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        margin: 10px 0;
+        scrollbar-width: none;
+      }
+      .sb::-webkit-scrollbar {
+        display: none;
+      }
+      .in {
+        max-width: 720px;
+        width: 100%;
+        margin: auto;
+      }
+      .m {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        margin-bottom: 16px;
+        scrollbar-width: none;
+      }
+      .m::-webkit-scrollbar {
+        display: none;
+      }
+      .mi {
+        flex: 0 0 100%;
+        scroll-snap-align: start;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+        border: 1px solid var(--bd);
+      }
+      .mi img {
+        display: block;
+        width: 100%;
+        max-height: 46dvh;
+        object-fit: contain;
+      }
+      .mi iframe {
+        display: block;
+        width: 100%;
+        height: 42dvh;
+        border: 0;
+      }
+      .tx {
+        font-size: 1.02rem;
+        line-height: 1.75;
+        white-space: pre-line;
+        word-break: break-word;
+      }
+      .tx a {
+        color: var(--gold);
+      }
+      .tx.big {
+        font: 400 clamp(1.25rem, 4.6vw, 1.9rem)/1.5 var(--fd);
+        text-align: center;
+        padding: 0 4px;
+      }
+      .sf {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        max-width: 720px;
+        width: 100%;
+        margin: 0 auto;
+        padding-top: 12px;
+        border-top: 1px solid var(--bd);
+        font-size: 0.78rem;
+        color: var(--tm);
+      }
+      .sf b {
+        color: var(--t2);
+      }
+      .ac {
+        display: flex;
+        gap: 6px;
+      }
+      .ac button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        background: transparent;
+        color: var(--gold);
+        border: 1px solid var(--ba);
+      }
+      .ac .d {
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.3);
+      }
+      .ed {
+        width: 100%;
+        min-height: 140px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--ba);
+        border-radius: 8px;
+        color: var(--tx);
+        font: inherit;
+        line-height: 1.65;
+        padding: 12px;
+        outline: 0;
+        resize: vertical;
+      }
+      .er {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .er button {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        border: 1px solid var(--bd);
+        background: transparent;
+        color: var(--t2);
+      }
+      .er .sv {
+        background: var(--gold);
+        color: #07090f;
+        border: 0;
+      }
+      .emp {
+        text-align: center;
+      }
+      .emp .eb {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: var(--gd);
+        border: 1px solid var(--ba);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 18px;
+        font-size: 1.8rem;
+      }
+      .emp h3 {
+        font: 700 1.4rem var(--fd);
+        margin-bottom: 6px;
+      }
+      .emp p {
+        font-size: 0.88rem;
+        color: var(--tm);
+      }
+      #rail {
+        position: fixed;
+        right: 5px;
+        top: calc(var(--h) + 12px);
+        bottom: 12px;
+        width: 3px;
+        border-radius: 2px;
+        background: var(--bd);
+        z-index: 90;
+        display: none;
+      }
+      #rail b {
+        display: block;
+        width: 100%;
+        background: var(--gold);
+        border-radius: 2px;
+        transition: height 0.3s;
+      }
+      /* modal + confirm + toast */
+      .ov {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(8px);
+        z-index: 200;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      @media (min-width: 600px) {
+        .ov {
+          align-items: center;
+        }
+      }
+      .sheet {
+        background: var(--cd);
+        border: 1px solid var(--bd);
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 640px;
+        max-height: 92dvh;
+        overflow-y: auto;
+        padding: 26px 22px 28px;
+        animation: up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+      @media (min-width: 600px) {
+        .sheet {
+          border-radius: 20px;
+        }
+      }
+      @keyframes up {
+        from {
+          transform: translateY(50px);
+          opacity: 0;
+        }
+      }
+      .sheet h2 {
+        font: 700 1.4rem var(--fd);
+      }
+      .sheet > p {
+        font-size: 0.8rem;
+        color: var(--tm);
+        margin: 4px 0 18px;
+      }
+      .mt {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--bd);
+        border-radius: 12px;
+        color: var(--tx);
+        font: inherit;
+        line-height: 1.7;
+        padding: 14px;
+        resize: vertical;
+        min-height: 130px;
+        outline: 0;
+      }
+      .mt:focus {
+        border-color: var(--ba);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .am {
+        padding: 9px 15px;
+        border-radius: 10px;
+        border: 1px dashed var(--bd);
+        background: transparent;
+        color: var(--tm);
+        font-size: 0.84rem;
+      }
+      .am:hover {
+        border-color: var(--ba);
+        color: var(--gold);
+      }
+      .ps {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        margin-top: 12px;
+      }
+      .pt {
+        position: relative;
+        flex: 0 0 90px;
+        height: 90px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--bd);
+      }
+      .pt img,
+      .pt video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .pt button {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        border: 0;
+        font-size: 0.65rem;
+      }
+      .sc {
+        margin-top: 14px;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid var(--bd);
+        font-size: 0.86rem;
+        color: var(--t2);
+      }
+      .sc label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+      }
+      .sc input[type="checkbox"] {
+        accent-color: var(--gold);
+        width: 16px;
+        height: 16px;
+      }
+      #sI {
+        display: none;
+        margin-top: 12px;
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--ba);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--tx);
+        font: inherit;
+        color-scheme: dark;
+      }
+      #sP {
+        display: none;
+        margin-top: 8px;
+        font-size: 0.78rem;
+        color: var(--gold);
+      }
+      .mf {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--bd);
+        font-size: 0.74rem;
+        color: var(--tm);
+      }
+      .go {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        border-radius: 999px;
+        background: var(--gold);
+        color: #07090f;
+        border: 0;
+        font-weight: 700;
+        font-size: 0.86rem;
+        transition: 0.2s;
+      }
+      .go:hover {
+        background: var(--gl);
+      }
+      .go:disabled {
+        opacity: 0.6;
+      }
+      .cf {
+        align-items: center;
+      }
+      .cc {
+        background: var(--cd);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        border-radius: 16px;
+        padding: 26px;
+        max-width: 320px;
+        width: 90%;
+        text-align: center;
+      }
+      .cc h3 {
+        font: 700 1.1rem var(--fd);
+        margin-bottom: 6px;
+      }
+      .cc p {
+        font-size: 0.82rem;
+        color: var(--tm);
+        margin-bottom: 20px;
+      }
+      .cc div {
+        display: flex;
+        gap: 10px;
+      }
+      .cc button {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 700;
+        border: 1px solid var(--bd);
+        background: transparent;
+        color: var(--t2);
+      }
+      .cc .rd {
+        background: var(--red);
+        color: #fff;
+        border: 0;
+      }
+      #toasts {
+        position: fixed;
+        top: calc(var(--h) + 10px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 400;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        pointer-events: none;
+      }
+      .toast {
+        background: var(--cd);
+        padding: 10px 18px;
+        border-radius: 999px;
+        border: 1px solid var(--bd);
+        font-size: 0.82rem;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+        animation: in 0.3s both;
+        white-space: nowrap;
+      }
+      .toast.error {
+        border-color: rgba(239, 68, 68, 0.35);
+      }
+      .toast.success {
+        border-color: rgba(34, 197, 94, 0.3);
+      }
+      /* Grace */
+      #gp {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0 auto;
+        width: min(100%, 560px);
+        z-index: 150;
+        background: rgba(13, 17, 23, 0.98);
+        border: 1px solid var(--bd);
+        border-bottom: 0;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+        transform: translateY(105%);
+        transition: transform 0.38s cubic-bezier(0.22, 0.68, 0, 1.15);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      #gp.open {
+        transform: none;
+      }
+      .gh {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 12px 10px 16px;
+        border-bottom: 1px solid var(--bd);
+      }
+      .gh div {
+        flex: 1;
+        line-height: 1.2;
+      }
+      .gh b {
+        font: 700 1rem var(--fd);
+        color: var(--gold);
+      }
+      .gh small {
+        display: block;
+        font-size: 0.66rem;
+        color: var(--tm);
+      }
+      .gav {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--gd);
+        border: 1px solid var(--ba);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .gh button {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: 0;
+        background: var(--cd);
+        color: var(--t2);
+        font-size: 0.8rem;
+      }
+      .lg {
+        overflow-y: auto;
+        max-height: 36dvh;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overscroll-behavior: contain;
+      }
+      #gp.mini .lg {
+        max-height: 72px;
+      }
+      .b {
+        max-width: 88%;
+        padding: 9px 13px;
+        border-radius: 14px;
+        font-size: 0.88rem;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+        animation: in 0.25s both;
+      }
+      .b.g {
+        align-self: flex-start;
+        background: var(--cd);
+        border: 1px solid var(--bd);
+        border-top-left-radius: 4px;
+      }
+      .b.u {
+        align-self: flex-end;
+        background: var(--gold);
+        color: #07090f;
+        border-top-right-radius: 4px;
+      }
+      .dt {
+        display: inline-flex;
+        gap: 4px;
+        padding: 4px 0;
+      }
+      .dt i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--gold);
+        animation: bn 1s infinite;
+      }
+      .dt i:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .dt i:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes bn {
+        0%,
+        60%,
+        100% {
+          transform: none;
+          opacity: 0.4;
+        }
+        30% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+      }
+      .cs {
+        display: flex;
+        gap: 7px;
+        overflow-x: auto;
+        padding: 0 14px 8px;
+        scrollbar-width: none;
+      }
+      .cs::-webkit-scrollbar {
+        display: none;
+      }
+      .cs:empty {
+        display: none;
+      }
+      .cs button {
+        flex-shrink: 0;
+        border: 1px solid var(--ba);
+        background: var(--gd);
+        color: var(--gold);
+        padding: 6px 13px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+        animation: pp 0.35s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+        animation-delay: calc(var(--i) * 55ms);
+      }
+      @keyframes pp {
+        from {
+          opacity: 0;
+          transform: scale(0.7);
+        }
+      }
+      .gr {
+        display: flex;
+        gap: 8px;
+        padding: 8px 12px 12px;
+        border-top: 1px solid var(--bd);
+      }
+      .gr input {
+        flex: 1;
+        min-width: 0;
+        background: var(--sf);
+        border: 1px solid var(--bd);
+        border-radius: 10px;
+        padding: 10px 12px;
+        color: var(--tx);
+        font: inherit;
+        font-size: 0.9rem;
+        outline: 0;
+      }
+      .gr input:focus {
+        border-color: var(--ba);
+      }
+      .gr button {
+        width: 42px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--gold);
+        color: #07090f;
+        font-size: 0.95rem;
+      }
+      #gw {
+        position: fixed;
+        top: calc(var(--h) + 8px);
+        right: 10px;
+        z-index: 120;
+        max-width: min(270px, calc(100vw - 20px));
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        background: var(--cd);
+        border: 1px solid var(--ba);
+        border-radius: 14px 4px 14px 14px;
+        padding: 10px 10px 10px 14px;
+        font-size: 0.8rem;
+        line-height: 1.45;
+        box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transform: translateY(-8px);
+        pointer-events: none;
+        transition: 0.3s cubic-bezier(0.22, 0.68, 0, 1.2);
+      }
+      #gw.show {
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+      }
+      #gwt {
+        cursor: pointer;
+        flex: 1;
+      }
+      #gw button {
+        background: none;
+        border: 0;
+        color: var(--tm);
+        font-size: 0.8rem;
+      }
+      @media (max-width: 480px) {
+        .post span {
+          display: none;
+        }
+        .post {
+          padding: 8px 12px;
+        }
+        .bd {
+          display: none;
+        }
+        .bk span {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="toasts"></div>
+    <header class="top">
+      <a href="index.html" class="bk">←&nbsp;<span>Home</span></a>
+      <div class="ttl">
+        <h1>Announcements</h1>
+        <small>Riverside Connect</small>
+      </div>
+      <div class="live"><i></i><span>Live</span></div>
+      <button class="ic" id="gbtn" title="Ask Grace"><span>🕊️</span></button>
+      <button class="post" id="newBtn">＋ <span>Post</span></button>
+    </header>
+    <main id="feed"></main>
+    <div id="rail"><b id="fill"></b></div>
 
-  /* ── Delete ──────────────────────────────────────────────────────── */
-  async function deleteAnn(timestamp) {
-    const overlay = document.createElement('div');
-    overlay.className = 'confirm-overlay';
-    overlay.innerHTML = `
-      <div class="confirm-card">
-        <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
-        <div class="confirm-title">Delete Announcement?</div>
-        <div class="confirm-msg">This action is permanent and cannot be undone.</div>
-        <div class="confirm-btns">
-          <button class="btn-confirm-cancel">Cancel</button>
-          <button class="btn-confirm-delete">Delete</button>
+    <div class="ov" id="modal">
+      <div class="sheet">
+        <h2>New Announcement</h2>
+        <p>This will be visible to all members immediately.</p>
+        <textarea
+          class="mt"
+          id="aT"
+          placeholder="Write your announcement here…"
+        ></textarea>
+        <div class="row">
+          <button class="am" id="aM">🖼 Attach media</button
+          ><input
+            type="file"
+            id="aF"
+            accept="image/*,video/*"
+            multiple
+            hidden
+          />
         </div>
-      </div>`;
-    document.body.appendChild(overlay);
-    overlay.querySelector('.btn-confirm-cancel').onclick = () => overlay.remove();
-    overlay.querySelector('.btn-confirm-delete').onclick = async () => {
-      overlay.remove();
-      try {
-        const res = await fetch(scriptUrl,{method:'POST',body:JSON.stringify({operation:'deleteAnnouncement',name:userName,timestamp})});
-        const d = await res.json();
-        if (d.status==='success') { showToast('Announcement deleted'); loadAnnouncements(false); }
-        else showToast(d.message||'Delete failed','error');
-      } catch(e) { showToast('Connection error','error'); }
-    };
-  }
+        <div class="ps" id="ps"></div>
+        <div class="sc">
+          <label><input type="checkbox" id="sT" /> Schedule for later</label
+          ><input type="datetime-local" id="sI" />
+          <div id="sP"></div>
+        </div>
+        <div class="mf">
+          <span>Ctrl + Enter to post</span
+          ><button class="go" id="aP">Post Announcement</button>
+        </div>
+      </div>
+    </div>
 
-  /* ── Edit ────────────────────────────────────────────────────────── */
-  function startEdit(timestamp) {
-    const orig = announcementTexts[timestamp] || '';
-    const bodyEl = document.getElementById(`body-${timestamp}`);
-    if (!bodyEl) return;
+    <aside id="gp" role="dialog" aria-label="Grace, announcements guide">
+      <div class="gh">
+        <span class="gav">🕊️</span>
+        <div><b>Grace</b><small>Announcements guide</small></div>
+        <button id="gm" title="Quiet mode">🔔</button
+        ><button id="gx" title="Close">✕</button>
+      </div>
+      <div class="lg" id="lg" aria-live="polite"></div>
+      <div class="cs" id="cs"></div>
+      <div class="gr">
+        <input
+          id="gi"
+          placeholder="Ask me about the announcements…"
+          autocomplete="off"
+          enterkeyhint="send"
+        /><button id="gs" aria-label="Send">➤</button>
+      </div>
+    </aside>
+    <div id="gw" role="status">
+      <span id="gwt"></span><button id="gwx" aria-label="Dismiss">✕</button>
+    </div>
 
-    const ta = document.createElement('textarea');
-    ta.className = 'edit-textarea';
-    ta.id = `edit-${timestamp}`;
-    ta.value = orig;
+    <script>
+      /* ═══════ Announcements page ═══════ */
+      const scriptUrl =
+        "https://script.google.com/macros/s/AKfycbxDrnPyHD8HwEOD4PeVcJBkxK6en22ZBWmPVkyxXozM6KUfz8Ci_L41VQVJUzV9mBGr/exec";
+      const userName = localStorage.getItem("userName");
+      if (!userName) location.href = "login.html";
+      const prevSeen = +(localStorage.getItem("lastSeenAnnCount") || 0);
+      let list = [],
+        files = [],
+        cur = 0,
+        timer = null,
+        isAdmin = false,
+        lastN = -1,
+        io;
+      const $ = (id) => document.getElementById(id),
+        feed = $("feed");
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (m) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[m],
+        );
+      const linkify = (s) =>
+        esc(s).replace(
+          /(https?:\/\/[^\s<]+)/g,
+          '<a href="$1" target="_blank" rel="noopener">$1</a>',
+        );
+      const fid = (u) => {
+        const m = (u || "").match(/[-\w]{25,}/);
+        return m ? m[0] : "";
+      };
+      const lh3 = (u) => {
+        const i = fid(u);
+        return i ? `https://lh3.googleusercontent.com/d/${i}` : "";
+      };
+      const T = (c) => +c.timestamp || Date.parse(c.timestamp) || 0;
+      const pad = (n) => String(n).padStart(2, "0");
+      const hue = (n) =>
+        [...String(n)].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+      function formatTime(ts) {
+        const d = new Date(+ts || ts),
+          n = new Date(),
+          y = new Date(Date.now() - 864e5);
+        const day =
+          d.toDateString() === n.toDateString()
+            ? "Today"
+            : d.toDateString() === y.toDateString()
+              ? "Yesterday"
+              : d.toLocaleDateString([], {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                });
+        return `${day} · ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+      }
+      function toast(m, t = "success") {
+        const e = document.createElement("div");
+        e.className = "toast " + t;
+        e.textContent = m;
+        $("toasts").appendChild(e);
+        setTimeout(() => {
+          e.style.opacity = "0";
+          e.style.transition = ".4s";
+          setTimeout(() => e.remove(), 400);
+        }, 3200);
+      }
+      const modalOpen = () =>
+        $("modal").style.display === "flex" || !!document.querySelector(".cf");
 
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <button class="btn-save" onclick="saveEdit('${timestamp}')"><i class="fas fa-check"></i> Save</button>
-      <button class="btn-cancel" onclick="loadAnnouncements(false)">Cancel</button>`;
-
-    bodyEl.parentNode.insertBefore(ta, bodyEl);
-    bodyEl.parentNode.insertBefore(row, bodyEl);
-    bodyEl.style.display = 'none';
-    ta.focus();
-    ta.setSelectionRange(ta.value.length, ta.value.length);
-  }
-
-  async function saveEdit(timestamp) {
-    const newText = document.getElementById(`edit-${timestamp}`)?.value?.trim();
-    if (!newText) return;
-    try {
-      const res = await fetch(scriptUrl,{method:'POST',body:JSON.stringify({operation:'editAnnouncement',name:userName,timestamp,newText})});
-      const d = await res.json();
-      if (d.status==='success') { showToast('Updated'); loadAnnouncements(false); }
-      else showToast(d.message||'Update failed','error');
-    } catch(e) { showToast('Connection error','error'); }
-  }
-
-  /* ── Render ──────────────────────────────────────────────────────── */
-  async function loadAnnouncements(silent=true) {
-    try {
-      const [annRes, viewsRes] = await Promise.all([
-        fetch(`${scriptUrl}?operation=getData`),
-        fetch(`${scriptUrl}?operation=getAnnouncementViewCounts`)
-      ]);
-      const [annData, viewsData] = await Promise.all([annRes.json(), viewsRes.json()]);
-
-      const list = annData.announcements || [];
-      const viewCounts = viewsData.viewCounts || [];
-
-      if (silent && list.length === lastCount) return;
-      lastCount = list.length;
-
-      feed.innerHTML = '';
-      sidebarList.innerHTML = '';
-
-      if (list.length === 0) {
-        feedCount.textContent = '';
-        feed.innerHTML = `
-          <div class="state-empty">
-            <div class="state-empty-icon"><i class="fas fa-bullhorn"></i></div>
-            <h3>Nothing here yet</h3>
-            <p>Official announcements will appear here when posted by the team.</p>
-          </div>`;
-        sidebarList.innerHTML = '<div class="sidebar-empty">No announcements yet</div>';
-        return;
+      async function checkAdmin() {
+        try {
+          const d = await (
+            await fetch(
+              `${scriptUrl}?operation=getUserStatus&name=${encodeURIComponent(userName)}`,
+            )
+          ).json();
+          if (
+            d.status === "success" &&
+            d.userStatus === "approved" &&
+            d.isAdmin === true
+          ) {
+            isAdmin = true;
+            $("newBtn").style.display = "flex";
+          }
+        } catch (e) {}
       }
 
-      feedCount.textContent = `${list.length} post${list.length!==1?'s':''}`;
-
-      list.forEach((c, i) => {
-        const isOwn = c.name === userName && isAdmin;
-        announcementTexts[c.timestamp] = c.comment;
-        const viewCount = viewCounts[i] || 0;
-
-        /* Media HTML */
-        const links = c.fileLink ? c.fileLink.split(',') : [];
-        const types = c.fileType ? c.fileType.split(',') : [];
-        let mediaHtml = '';
-        if (links.length > 0) {
-          mediaHtml = '<div class="ann-media">';
-          links.forEach((lk,fi) => {
-            const t = types[fi] || '';
-            const isVid = t.includes('video') || lk.match(/\.(mp4|mov|webm)$/i);
-            mediaHtml += `<div class="ann-media-item">${isVid
-              ? `<iframe src="${lk}" height="320" frameborder="0" allowfullscreen></iframe>`
-              : `<img src="${getLh3(lk)}" loading="lazy">`
-            }</div>`;
-          });
-          mediaHtml += '</div>';
+      /* composer */
+      $("newBtn").onclick = () => {
+        $("modal").style.display = "flex";
+        $("aT").focus();
+      };
+      $("modal").onclick = (e) => {
+        if (e.target.id === "modal") closeModal();
+      };
+      function closeModal() {
+        $("modal").style.display = "none";
+        $("aT").value = "";
+        $("ps").innerHTML = "";
+        files = [];
+        $("sT").checked = false;
+        $("sI").style.display = "none";
+        $("sI").value = "";
+        $("sP").style.display = "none";
+      }
+      $("aM").onclick = () => $("aF").click();
+      $("aF").onchange = function () {
+        [...this.files].forEach((f) => {
+          const r = new FileReader();
+          r.onload = (e) => {
+            files.push({
+              base64: e.target.result.split(",")[1],
+              type: f.type,
+              name: f.name,
+            });
+            const t = document.createElement("div");
+            t.className = "pt";
+            t.innerHTML =
+              (f.type.startsWith("video")
+                ? `<video src="${e.target.result}" muted></video>`
+                : `<img src="${e.target.result}" alt="">`) +
+              "<button>✕</button>";
+            t.querySelector("button").onclick = () => {
+              const i = [...$("ps").children].indexOf(t);
+              files.splice(i, 1);
+              t.remove();
+            };
+            $("ps").appendChild(t);
+          };
+          r.readAsDataURL(f);
+        });
+        this.value = "";
+      };
+      $("sT").onchange = () => {
+        if ($("sT").checked) {
+          const n = new Date(Date.now() + 3e5);
+          $("sI").min =
+            `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}T${pad(n.getHours())}:${pad(n.getMinutes())}`;
+          $("sI").style.display = "block";
+        } else {
+          $("sI").style.display = "none";
+          $("sI").value = "";
+          $("sP").style.display = "none";
         }
+      };
+      $("sI").onchange = () => {
+        if (!$("sI").value) {
+          $("sP").style.display = "none";
+          return;
+        }
+        const d = new Date($("sI").value);
+        $("sP").textContent =
+          `Will post: ${d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })} at ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+        $("sP").style.display = "block";
+      };
+      $("aT").addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          postAnn();
+        }
+      });
+      $("aP").onclick = postAnn;
+      async function postAnn() {
+        const text = $("aT").value.trim();
+        if (!text && !files.length) return;
+        let sched = null;
+        if ($("sT").checked) {
+          if (!$("sI").value)
+            return toast("Please pick a date and time", "error");
+          const p = new Date($("sI").value);
+          if (isNaN(p)) return toast("Invalid date/time", "error");
+          if (p <= new Date())
+            return toast("Scheduled time must be in the future", "error");
+          sched = p.toISOString();
+        }
+        const b = $("aP");
+        b.disabled = true;
+        b.textContent = sched ? "Scheduling…" : "Posting…";
+        try {
+          const d = await (
+            await fetch(scriptUrl, {
+              method: "POST",
+              body: JSON.stringify({
+                operation: "postAnnouncement",
+                name: userName,
+                comment: text,
+                files,
+                scheduledTime: sched,
+              }),
+            })
+          ).json();
+          if (d.status === "success") {
+            closeModal();
+            if (d.scheduled) toast("✓ Scheduled successfully");
+            else {
+              toast("Announcement posted");
+              await load(false);
+            }
+          } else toast(d.message || "Failed to post", "error");
+        } catch (e) {
+          toast("Network error", "error");
+        } finally {
+          b.disabled = false;
+          b.textContent = "Post Announcement";
+        }
+      }
 
-        /* Card */
-        const card = document.createElement('div');
-        card.className = 'ann-card';
-        card.style.animationDelay = `${i*0.05}s`;
-        card.innerHTML = `
-          <div class="ann-card-header">
-            <img class="ann-avatar" src="${getLh3(c.picLink) || 'https://via.placeholder.com/44'}" onerror="this.src='https://picsum.photos/id/64/44/44'" alt="">
-            <div class="ann-author-block">
-              <div class="ann-author-name">${c.name}</div>
-              <div class="ann-time">${formatTime(c.timestamp)}</div>
-            </div>
-            <div class="ann-badge">Official</div>
-          </div>
-          ${mediaHtml}
-          <div class="ann-body" id="body-${c.timestamp}">${c.comment}</div>
-          <div class="ann-footer">
-            <div class="ann-views">
-              <i class="far fa-eye"></i>
-              <span class="ann-views-count">${viewCount}</span>
-              <span>views</span>
-            </div>
-            ${isOwn ? `
-            <div class="ann-actions">
-              <button class="ann-btn ann-btn-edit" onclick="startEdit('${c.timestamp}')">
-                <i class="fas fa-pen"></i> Edit
-              </button>
-              <button class="ann-btn ann-btn-delete" onclick="deleteAnn('${c.timestamp}')">
-                <i class="fas fa-trash-alt"></i> Delete
-              </button>
-            </div>` : ''}
-          </div>`;
-        feed.appendChild(card);
-
-        /* Sidebar item */
-        const si = document.createElement('div');
-        si.className = 'sidebar-item';
-        si.innerHTML = `
-          <img class="si-avatar" src="${getLh3(c.picLink)||'https://via.placeholder.com/36'}" onerror="this.src='https://picsum.photos/id/64/36/36'" alt="">
-          <div class="si-info">
-            <div class="si-name">${c.name}</div>
-            <div class="si-preview">${(c.comment||'').replace(/\n/g,' ').substring(0,42)}${c.comment?.length>42?'…':''}</div>
-          </div>
-          <div class="si-time">${new Date(c.timestamp).toLocaleDateString([],{month:'short',day:'numeric'})}</div>`;
-        si.onclick = () => {
-          document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
-          si.classList.add('active');
-          card.scrollIntoView({behavior:'smooth',block:'start'});
+      /* delete / edit (admin, own posts) */
+      function deleteAnn(i) {
+        const ts = String(list[i].timestamp),
+          o = document.createElement("div");
+        o.className = "ov cf";
+        o.style.display = "flex";
+        o.innerHTML =
+          '<div class="cc"><h3>Delete Announcement?</h3><p>This action is permanent and cannot be undone.</p><div><button>Cancel</button><button class="rd">Delete</button></div></div>';
+        document.body.appendChild(o);
+        const [c, d] = o.querySelectorAll("button");
+        c.onclick = () => o.remove();
+        d.onclick = async () => {
+          o.remove();
+          try {
+            const r = await (
+              await fetch(scriptUrl, {
+                method: "POST",
+                body: JSON.stringify({
+                  operation: "deleteAnnouncement",
+                  name: userName,
+                  timestamp: ts,
+                }),
+              })
+            ).json();
+            if (r.status === "success") {
+              toast("Announcement deleted");
+              load(false);
+            } else toast(r.message || "Delete failed", "error");
+          } catch (e) {
+            toast("Connection error", "error");
+          }
         };
-        sidebarList.appendChild(si);
+      }
+      function startEdit(i) {
+        const el = $("b-" + i);
+        if (!el) return;
+        el.innerHTML = `<textarea class="ed" id="e-${i}">${esc(list[i].comment)}</textarea><div class="er"><button class="sv" data-a="save" data-i="${i}">Save</button><button data-a="cancel">Cancel</button></div>`;
+        el.classList.remove("big");
+        const t = $("e-" + i);
+        t.focus();
+        t.setSelectionRange(t.value.length, t.value.length);
+      }
+      async function saveEdit(i) {
+        const v = $("e-" + i)?.value.trim();
+        if (!v) return;
+        try {
+          const r = await (
+            await fetch(scriptUrl, {
+              method: "POST",
+              body: JSON.stringify({
+                operation: "editAnnouncement",
+                name: userName,
+                timestamp: String(list[i].timestamp),
+                newText: v,
+              }),
+            })
+          ).json();
+          if (r.status === "success") {
+            toast("Updated");
+            load(false);
+          } else toast(r.message || "Update failed", "error");
+        } catch (e) {
+          toast("Connection error", "error");
+        }
+      }
+      feed.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-a]");
+        if (!b) return;
+        const i = +b.dataset.i,
+          a = b.dataset.a;
+        if (a === "edit") startEdit(i);
+        else if (a === "del") deleteAnn(i);
+        else if (a === "save") saveEdit(i);
+        else if (a === "cancel") render();
       });
 
-      if (!silent) document.getElementById('mainContent').scrollTop = 0;
-    } catch(e) {
-      console.error('Load error',e);
-    }
-  }
+      /* render: every announcement is its own full screen */
+      function slide(c, i, n) {
+        const L = c.fileLink ? c.fileLink.split(",") : [],
+          Ty = c.fileType ? c.fileType.split(",") : [],
+          t = c.comment || "";
+        const m = L.length
+          ? `<div class="m">${L.map((l, k) => {
+              const v =
+                (Ty[k] || "").includes("video") || /\.(mp4|mov|webm)$/i.test(l);
+              return `<div class="mi">${v ? `<iframe src="${esc(l)}" allowfullscreen></iframe>` : `<img src="${lh3(l)}" alt="" loading="lazy">`}</div>`;
+            }).join("")}</div>`
+          : "";
+        const pic = lh3(c.picLink),
+          own = c.name === userName && isAdmin;
+        return `<section class="s" data-i="${i}"><div class="sh"><span class="av" style="--h:${hue(c.name)}">${esc((c.name || "?")[0].toUpperCase())}${pic ? `<img src="${pic}" alt="" onerror="this.remove()">` : ""}</span><div class="sa"><b>${esc(c.name)}</b><small>${formatTime(c.timestamp)}</small></div><span class="bd">Official</span><span class="no">${pad(i + 1)}<em>/${pad(n)}</em></span></div>
+  <div class="sb"><div class="in">${m}<div class="tx${!L.length && t.length < 260 ? " big" : ""}" id="b-${i}">${linkify(t)}</div></div></div>
+  <div class="sf"><span>👁 <b>${c.v}</b> views</span>${own ? `<span class="ac"><button data-a="edit" data-i="${i}">✎ Edit</button><button class="d" data-a="del" data-i="${i}">🗑 Delete</button></span>` : ""}</div></section>`;
+      }
+      function render() {
+        const y = feed.scrollTop;
+        feed.innerHTML = list.length
+          ? list.map((c, i) => slide(c, i, list.length)).join("")
+          : '<section class="s"><div class="sb"><div class="in emp"><div class="eb">📣</div><h3>Nothing here yet</h3><p>Official announcements will appear here when the team posts them.</p></div></div></section>';
+        feed.scrollTop = y;
+        $("rail").style.display = list.length > 1 ? "block" : "none";
+        io && io.disconnect();
+        io = new IntersectionObserver(
+          (es) =>
+            es.forEach((e) => {
+              if (e.isIntersecting) {
+                cur = +e.target.dataset.i || 0;
+                upd();
+              }
+            }),
+          { root: feed, threshold: 0.6 },
+        );
+        feed.querySelectorAll(".s[data-i]").forEach((s) => io.observe(s));
+        upd();
+      }
+      const upd = () => {
+        $("fill").style.height =
+          list.length > 1 ? (cur / (list.length - 1)) * 100 + "%" : "100%";
+      };
+      async function load(silent = true) {
+        try {
+          const [a, v] = await Promise.all([
+            fetch(`${scriptUrl}?operation=getData`).then((r) => r.json()),
+            fetch(`${scriptUrl}?operation=getAnnouncementViewCounts`).then(
+              (r) => r.json(),
+            ),
+          ]);
+          const raw = a.announcements || [],
+            vc = v.viewCounts || [];
+          const next = raw
+            .map((c, i) => ({ ...c, v: vc[i] || 0 }))
+            .sort((x, y) => T(y) - T(x));
+          if (silent && next.length === list.length) return;
+          const added = lastN < 0 ? 0 : next.length - lastN;
+          lastN = next.length;
+          list = next;
+          render();
+          if (!silent) feed.scrollTop = 0;
+          document.dispatchEvent(
+            new CustomEvent("ann:update", {
+              detail: { n: list.length, added },
+            }),
+          );
+        } catch (e) {
+          console.error("Load error", e);
+        }
+      }
+      async function markSeen() {
+        try {
+          const d = await (
+            await fetch(`${scriptUrl}?operation=getData`)
+          ).json();
+          const n = d.announcements?.length || 0;
+          await fetch(scriptUrl, {
+            method: "POST",
+            body: JSON.stringify({
+              operation: "markAnnouncementsSeen",
+              name: userName,
+              seenUpTo: n,
+            }),
+          });
+          localStorage.setItem("lastSeenAnnCount", n);
+        } catch (e) {}
+      }
+      const poll = () => {
+        clearInterval(timer);
+        timer = setInterval(() => load(true), 9000);
+      };
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) clearInterval(timer);
+        else {
+          load(true);
+          poll();
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (
+          modalOpen() ||
+          /INPUT|TEXTAREA/.test(document.activeElement.tagName)
+        )
+          return;
+        if (e.key === "ArrowDown" || e.key === "PageDown") {
+          e.preventDefault();
+          feed.scrollBy({ top: innerHeight, behavior: "smooth" });
+        }
+        if (e.key === "ArrowUp" || e.key === "PageUp") {
+          e.preventDefault();
+          feed.scrollBy({ top: -innerHeight, behavior: "smooth" });
+        }
+      });
+      (async () => {
+        await checkAdmin();
+        await load(false);
+        markSeen();
+        poll();
+      })();
+    </script>
 
-  /* ── Mark seen ───────────────────────────────────────────────────── */
-  async function markSeen() {
-    try {
-      const r = await fetch(`${scriptUrl}?operation=getData`);
-      const d = await r.json();
-      const n = d.announcements?.length || 0;
-      await fetch(scriptUrl,{method:'POST',body:JSON.stringify({operation:'markAnnouncementsSeen',name:userName,seenUpTo:n})});
-      localStorage.setItem('lastSeenAnnCount',n);
-    } catch(e){}
-  }
+    <script>
+      /* ═══════════════════════════════════════════════════════════════
+   GRACE — built-in, rule-based guide. No AI, no outside API.
+   She answers from (1) the KNOWLEDGE BASE below and (2) the live
+   page (current post, latest, search…). To teach her more, add
+   entries to KB — nothing else needs touching.
+   ═══════════════════════════════════════════════════════════════ */
+      (() => {
+        const get = (k, d) => {
+          try {
+            const v = localStorage.getItem(k);
+            return v == null ? d : JSON.parse(v);
+          } catch (e) {
+            return d;
+          }
+        };
+        const put = (k, v) => {
+          try {
+            localStorage.setItem(k, JSON.stringify(v));
+          } catch (e) {}
+        };
+        const first = (userName || "friend").split(" ")[0];
+        const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+        const rnd = (a) => a[Math.floor(Math.random() * a.length)];
+        const val = (x) => (typeof x === "function" ? x() : x);
+        const cp = () => list[cur];
+        const snip = (c, n = 110) => {
+          const t = (c.comment || "").replace(/\s+/g, " ").trim();
+          return t.length > n ? t.slice(0, n - 1) + "…" : t;
+        };
 
-  /* ── Polling ─────────────────────────────────────────────────────── */
-  function startPolling() {
-    if (pollingTimer) clearInterval(pollingTimer);
-    pollingTimer = setInterval(() => loadAnnouncements(true), 9000);
-  }
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { clearInterval(pollingTimer); }
-    else { loadAnnouncements(true); startPolling(); }
-  });
+        /* ───────── KNOWLEDGE BASE ─────────
+   id  unique name · t  short title (shown on buttons)
+   k   words/phrases people might type (add lots — spelling variants help)
+   a   one or more ways to answer (text, or a function returning text). She rotates them.
+   m   optional "tell me more" text · c  ids of related topics · on:false switches an entry off */
+        const KB = [
+          {
+            id: "swipe",
+            t: "How do I read these?",
+            k: [
+              "swipe",
+              "scroll",
+              "read",
+              "navigate",
+              "move",
+              "next",
+              "previous",
+              "older",
+              "newer",
+              "how to use",
+              "use this",
+              "keyboard",
+              "arrow",
+              "shortcut",
+              "one at a time",
+            ],
+            a: [
+              "Each announcement gets the whole screen. Swipe up for the next (older) one, and down to go back. On a computer the ↑ ↓ keys or mouse wheel do the same.",
+              "One announcement at a time — just swipe up and down. On a computer the arrow keys work too.",
+            ],
+            m: "If a post is long, scroll inside it first. When you reach its end, the next swipe moves you on.",
+            c: ["order", "media"],
+          },
+          {
+            id: "order",
+            t: "What order are they in?",
+            k: [
+              "order",
+              "newest",
+              "oldest",
+              "sorted",
+              "sequence",
+              "chronological",
+              "which first",
+              "top",
+            ],
+            a: [
+              "Newest first, so the top is always the latest. Swipe up to go back in time.",
+            ],
+            c: ["swipe"],
+          },
+          {
+            id: "official",
+            t: "Who writes these?",
+            k: [
+              "official",
+              "badge",
+              "who writes",
+              "who posts",
+              "who posted",
+              "who can post",
+              "verified",
+              "trusted",
+              "admin",
+              "team",
+              "leaders",
+            ],
+            a: [
+              "The gold “Official” badge means it comes from the Riverside team. Only approved admins can post announcements — everyone else reads them.",
+              "These come from the Riverside admins, which is what the “Official” badge tells you.",
+            ],
+            c: ["post", "views"],
+          },
+          {
+            id: "post",
+            t: "How do I post one?",
+            k: [
+              "post an announcement",
+              "publish",
+              "create",
+              "write",
+              "add announcement",
+              "new announcement",
+              "make announcement",
+              "send announcement",
+              "how do i post",
+              "share something",
+              "put up",
+            ],
+            a: [
+              () =>
+                isAdmin
+                  ? "You’re an admin, so there’s a gold “Post” button at the top. Write your message, attach photos or video if you like, and post — members see it straight away."
+                  : "Posting is limited to approved admins. If you have something to share, ask one of them to put it up for you.",
+            ],
+            m: () =>
+              isAdmin
+                ? "Tip: Ctrl + Enter posts straight from the writing box."
+                : "If you’re not sure who the admins are, the gold “Official” badge shows who has posted before.",
+            c: ["schedule", "media"],
+          },
+          {
+            id: "schedule",
+            t: "Can a post be scheduled?",
+            k: [
+              "schedule",
+              "scheduled",
+              "later",
+              "future",
+              "delay",
+              "timed",
+              "automatically",
+              "set a time",
+            ],
+            a: [
+              "Yes — admins can tick “Schedule for later”, pick a time in the future, and the announcement goes live at that moment.",
+            ],
+            m: "The time must be in the future; the page will tell you if it isn’t.",
+            c: ["post"],
+          },
+          {
+            id: "views",
+            t: "What do the views mean?",
+            k: [
+              "views",
+              "viewed",
+              "seen",
+              "who saw",
+              "how many saw",
+              "read count",
+              "eye",
+              "counter",
+            ],
+            a: [
+              "The eye at the bottom of each post counts how many people have viewed it. I only see the number, not who it was.",
+            ],
+            c: ["official"],
+          },
+          {
+            id: "edit",
+            t: "Can posts be edited?",
+            k: [
+              "edit",
+              "change",
+              "fix",
+              "typo",
+              "correct",
+              "rewrite",
+              "update text",
+              "mistake",
+            ],
+            a: [
+              () =>
+                isAdmin
+                  ? "Yes — your own announcements have an Edit button at the bottom. It changes the wording and saves straight away."
+                  : "Only the admin who posted an announcement can edit it. If you spot a mistake, let them know.",
+            ],
+            c: ["delete"],
+          },
+          {
+            id: "delete",
+            t: "Can posts be deleted?",
+            k: ["delete", "remove", "take down", "undo post", "get rid"],
+            a: [
+              () =>
+                isAdmin
+                  ? "Your own announcements have a Delete button at the bottom. It asks you to confirm and can’t be undone — so editing is gentler if it’s just a typo."
+                  : "Only the admin who posted it can delete an announcement, and they’re asked to confirm first.",
+            ],
+            c: ["edit"],
+          },
+          {
+            id: "media",
+            t: "Photos and videos",
+            k: [
+              "photo",
+              "image",
+              "video",
+              "picture",
+              "media",
+              "attach",
+              "upload",
+              "gallery",
+              "several",
+              "multiple",
+              "clip",
+            ],
+            a: [
+              "Posts can carry photos or videos, even several at once. If you see more than one, swipe sideways across the media to browse them.",
+            ],
+            c: ["swipe"],
+          },
+          {
+            id: "live",
+            t: "Do I need to refresh?",
+            k: [
+              "refresh",
+              "reload",
+              "live",
+              "real time",
+              "update",
+              "automatic",
+              "stale",
+              "new post appear",
+            ],
+            a: [
+              "No need — the page checks for new announcements every few seconds by itself. If something lands while you’re reading, I’ll tell you.",
+            ],
+          },
+          {
+            id: "who",
+            t: "Who are you, Grace?",
+            k: [
+              "who are you",
+              "what are you",
+              "your name",
+              "grace",
+              "bot",
+              "robot",
+              "ai",
+              "real person",
+              "human",
+              "chatgpt",
+              "are you real",
+            ],
+            a: [
+              "I’m Grace, the guide built into this page. I’m not an outside AI service — I only know what the Riverside team has taught me and what’s on this page, so if I don’t know something I’ll say so.",
+            ],
+            c: ["swipe"],
+          },
+          /* ↓ Examples — replace the text, then delete "on:false" to switch them on ↓ */
+          {
+            id: "times",
+            on: false,
+            t: "Service times",
+            k: [
+              "service",
+              "times",
+              "sunday",
+              "when do we meet",
+              "meeting time",
+              "what time",
+            ],
+            a: ["EDIT ME: write your real service times here."],
+          },
+          {
+            id: "contact",
+            on: false,
+            t: "Contact the team",
+            k: [
+              "contact",
+              "phone",
+              "email",
+              "call",
+              "reach",
+              "whatsapp",
+              "address",
+              "where are you",
+            ],
+            a: ["EDIT ME: write your real contact details here."],
+          },
+        ];
 
-  /* ── Init ────────────────────────────────────────────────────────── */
-  (async () => {
-    await checkAdmin();
-    await loadAnnouncements(false);
-    markSeen();
-    startPolling();
-  })();
-</script>
+        /* ───────── language helpers ───────── */
+        const norm = (t) =>
+          t
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+        const stem = (w) =>
+          w.length > 4 ? w.replace(/(ing|ed|es|s)$/, "") : w;
+        const lev = (a, b) => {
+          const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+          for (let j = 1; j <= b.length; j++) d[0][j] = j;
+          for (let i = 1; i <= a.length; i++)
+            for (let j = 1; j <= b.length; j++)
+              d[i][j] = Math.min(
+                d[i - 1][j] + 1,
+                d[i][j - 1] + 1,
+                d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+              );
+          return d[a.length][b.length];
+        };
+        function score(e, q) {
+          const qt = q.split(" ").map(stem);
+          let s = 0;
+          for (const k of e.k) {
+            const kn = norm(k);
+            if (kn.includes(" ")) {
+              if (q.includes(kn)) s += 3 + kn.split(" ").length;
+            } else {
+              const ks = stem(kn);
+              if (qt.includes(ks)) s += 2;
+              else if (
+                ks.length >= 5 &&
+                qt.some((w) => w.length >= 5 && lev(w, ks) <= 1)
+              )
+                s += 1;
+            }
+          }
+          return s;
+        }
+        function kbMatch(q) {
+          const sc = KB.filter((e) => e.on !== false)
+              .map((e) => ({ e, s: score(e, q) }))
+              .sort((a, b) => b.s - a.s),
+            [a, b] = sc;
+          if (!a || a.s < 2) return null;
+          if (b && b.s >= 2 && a.s === b.s && a.s <= 3)
+            return { amb: [a.e, b.e] };
+          return { e: a.e };
+        }
+        const STOP = new Set(
+          "the and for about any anything post posts announcement announcements that this mentioning mention there find search look looking for are was were with from have has you your please".split(
+            " ",
+          ),
+        );
+        function find(term) {
+          const ws = norm(term)
+            .split(" ")
+            .filter((w) => w.length > 2 && !STOP.has(w));
+          if (!ws.length) return [];
+          return list
+            .map((c, i) => {
+              const h = norm((c.comment || "") + " " + c.name);
+              return { c, i, s: ws.filter((w) => h.includes(stem(w))).length };
+            })
+            .filter((x) => x.s)
+            .sort((a, b) => b.s - a.s || a.i - b.i)
+            .slice(0, 3);
+        }
 
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(() => console.log('SW registered'))
-      .catch(e => console.error('SW error', e));
-  }
-</script>
+        /* ───────── panel + typing ───────── */
+        const gp = $("gp"),
+          lg = $("lg"),
+          cs = $("cs"),
+          gi = $("gi"),
+          gw = $("gw");
+        let quiet = get("gr_quiet", false),
+          tt,
+          pend = null,
+          ctx = { topic: null },
+          hist = {},
+          used = {},
+          moreUsed = {},
+          miss = 0,
+          helloN = 0,
+          lastOpen = "",
+          swiped = false;
+        $("gm").textContent = quiet ? "🔕" : "🔔";
+        const open = () => {
+            gp.classList.add("open");
+            hideW();
+          },
+          close = () => gp.classList.remove("open"),
+          mini = (v) => gp.classList.toggle("mini", v);
+        function add(w, t) {
+          const b = document.createElement("div");
+          b.className = "b " + w;
+          if (t) b.textContent = t;
+          lg.appendChild(b);
+          while (lg.children.length > 16) lg.firstChild.remove();
+          lg.scrollTop = lg.scrollHeight;
+          return b;
+        }
+        function chips(list) {
+          cs.innerHTML = "";
+          (list || []).slice(0, 3).forEach((c, i) => {
+            const b = document.createElement("button");
+            b.style.setProperty("--i", i);
+            b.textContent = c.l;
+            b.onclick = () => {
+              add("u", c.l);
+              c.q ? respond(c.q) : c.go && c.go();
+            };
+            cs.appendChild(b);
+          });
+        }
+        function say(t, ch) {
+          open();
+          clearTimeout(tt);
+          if (pend) pend.b.textContent = pend.t;
+          cs.innerHTML = "";
+          const b = add("g");
+          b.innerHTML = '<span class="dt"><i></i><i></i><i></i></span>';
+          pend = { b, t };
+          tt = setTimeout(
+            () => {
+              let i = 0;
+              b.textContent = "";
+              (function f() {
+                i = Math.min(t.length, i + 3);
+                b.textContent = t.slice(0, i);
+                lg.scrollTop = lg.scrollHeight;
+                if (i < t.length) tt = setTimeout(f, reduce ? 0 : 12);
+                else {
+                  pend = null;
+                  chips(ch);
+                }
+              })();
+            },
+            reduce ? 0 : Math.min(900, 300 + t.length * 5),
+          );
+        }
+        const go = (i) => {
+          const el = feed.children[Math.max(0, Math.min(list.length - 1, i))];
+          if (el) el.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+          mini(true);
+        };
 
-</body>
+        /* ───────── nudges: rare, polite, never repeated ───────── */
+        let nudges = 0,
+          lastNudge = 0,
+          whT,
+          wq = "";
+        const snoozed = () => Date.now() < get("gr_snooze", 0);
+        function hideW() {
+          gw.classList.remove("show");
+          clearTimeout(whT);
+        }
+        function nudge(id, text, q) {
+          const tips = get("gr_tips", {});
+          if (id && tips[id]) return;
+          if (
+            quiet ||
+            snoozed() ||
+            nudges >= 2 ||
+            Date.now() - lastNudge < 9e4 ||
+            gp.classList.contains("open") ||
+            modalOpen()
+          )
+            return;
+          if (id) {
+            tips[id] = 1;
+            put("gr_tips", tips);
+          }
+          nudges++;
+          lastNudge = Date.now();
+          wq = q;
+          $("gwt").textContent = text;
+          gw.classList.add("show");
+          clearTimeout(whT);
+          whT = setTimeout(hideW, 8000);
+        }
+        $("gwt").onclick = () => {
+          hideW();
+          respond(wq);
+        };
+        $("gwx").onclick = () => {
+          hideW();
+          const d = get("gr_dis", 0) + 1;
+          if (d >= 2) {
+            put("gr_snooze", Date.now() + 864e5);
+            put("gr_dis", 0);
+          } else put("gr_dis", d);
+        };
+
+        /* ───────── small talk + live page answers ───────── */
+        const unseen = () => Math.max(0, list.length - prevSeen);
+        function hello() {
+          const h = new Date().getHours(),
+            p =
+              h < 12
+                ? "Good morning"
+                : h < 18
+                  ? "Good afternoon"
+                  : "Good evening";
+          const a = rnd([`${p}, ${first}!`, `Hi ${first} 🕊️`, `Hey ${first}!`]),
+            b =
+              helloN++ === 0 && unseen() > 0
+                ? ` You’ve got ${unseen()} announcement${unseen() > 1 ? "s" : ""} since your last visit.`
+                : "";
+          return (
+            a +
+            b +
+            rnd([
+              " What would you like to know?",
+              " How can I help?",
+              " Ask me anything about the announcements.",
+            ])
+          );
+        }
+        const SMALL = [
+          [
+            /^(hi|hello|hey|hallo|habari|jambo|mambo|yo|good (morning|afternoon|evening))\b/,
+            hello,
+          ],
+          [
+            /how are you|how('| i)s it going/,
+            () =>
+              rnd([
+                "Doing well, thanks for asking! Anything I can help you find?",
+                "All good on my side 🙂 What can I do for you?",
+                "Can’t complain — I get to spend my day with announcements. You?",
+              ]),
+          ],
+          [
+            /\b(thanks|thank you|thx|asante|cheers)\b/,
+            () =>
+              rnd([
+                "Anytime!",
+                "You’re welcome 🙂",
+                "Glad to help.",
+                "My pleasure.",
+              ]),
+          ],
+          [
+            /\b(bye|goodbye|see you|cya|goodnight)\b/,
+            () =>
+              rnd([
+                "Take care! I’ll be here if you need me.",
+                "See you soon 🕊️",
+                "Bye for now!",
+              ]),
+          ],
+          [/\b(sorry|my bad|oops)\b/, () => "No worries at all."],
+          [
+            /(love|like) (you|this)|well done|great job|you.?re (great|awesome|helpful|nice)/,
+            () =>
+              rnd([
+                "That’s kind of you — thank you!",
+                "Aww, thanks. That made my day.",
+              ]),
+          ],
+          [
+            /^(ok|okay|cool|nice|great|alright|got it|i see|right)\W*$/,
+            () => rnd(["👍", "Great.", "Anything else you’re curious about?"]),
+          ],
+        ];
+        const LIVE = [
+          [
+            /how many (announcements|posts|updates)/,
+            () => ({
+              t:
+                list.length === 1
+                  ? "There’s just 1 announcement on the board."
+                  : `There are ${list.length} announcements on the board.`,
+            }),
+          ],
+          [
+            /what.?s new|what is new|anything new|any new|latest|newest|most recent|what did i miss|missed anything|unread/,
+            () => {
+              if (!list.length) return { t: "Nothing has been posted yet." };
+              const c = list[0];
+              return {
+                t:
+                  (unseen() > 0
+                    ? `You have ${unseen()} new since your last visit. `
+                    : "You’re all caught up. ") +
+                  `The latest is from ${c.name} (${formatTime(c.timestamp)}): “${snip(c, 100)}”`,
+                c: [{ l: "Take me there", go: () => go(0) }],
+              };
+            },
+          ],
+          [
+            /who (posted|wrote|made|sent|is the author)/,
+            () => {
+              const c = cp();
+              return c
+                ? { t: `This one was posted by ${c.name}.` }
+                : { t: "There’s nothing on screen yet." };
+            },
+          ],
+          [
+            /when (was|did).*(post|publish|written|put)|how old|posted when/,
+            () => {
+              const c = cp();
+              return c
+                ? { t: `This one went up ${formatTime(c.timestamp)}.` }
+                : { t: "There’s nothing on screen yet." };
+            },
+          ],
+          [
+            /(how many|number of).*(views|saw|read|viewed)|views (on|for) this/,
+            () => {
+              const c = cp();
+              return c
+                ? {
+                    t: `This announcement has ${c.v} view${c.v === 1 ? "" : "s"} so far.`,
+                  }
+                : { t: "There’s nothing on screen yet." };
+            },
+          ],
+          [
+            /(this|current|the one i.?m (on|reading)).*(about|say|mean|summar|tell)|summar|what.?s this|what does this say|read (this|it) to me/,
+            () => {
+              const c = cp();
+              if (!c) return { t: "There’s nothing on screen yet." };
+              const n = c.fileLink ? c.fileLink.split(",").length : 0;
+              return {
+                t:
+                  `This one is from ${c.name}, posted ${formatTime(c.timestamp)}. It starts: “${snip(c, 160)}”` +
+                  (n
+                    ? ` It also has ${n} photo${n > 1 ? "s/videos" : " or video"} attached.`
+                    : ""),
+              };
+            },
+          ],
+          [
+            /(first|top|newest)\b.*(post|announcement|one)|go (to )?(the )?top|back to (the )?(start|top)/,
+            () => {
+              go(0);
+              return { t: "Back at the newest one." };
+            },
+          ],
+          [
+            /(oldest|last)\b.*(post|announcement|one)|go (to )?(the )?(bottom|end)/,
+            () => {
+              go(list.length - 1);
+              return { t: "This is the oldest announcement." };
+            },
+          ],
+          [
+            /^(go |show |take me )?(to )?(the )?(next|previous|prev|older|newer|back)( post| announcement| one)?\W*$/,
+            (m) => {
+              const d = /next|older/.test(m[0]) ? 1 : -1;
+              if (cur + d < 0 || cur + d >= list.length)
+                return {
+                  t:
+                    d > 0
+                      ? "That’s the oldest one — you’ve reached the end."
+                      : "You’re already on the newest.",
+                };
+              go(cur + d);
+              return {
+                t:
+                  d > 0
+                    ? "Here’s the next, older one."
+                    : "Back to the newer one.",
+              };
+            },
+          ],
+          [
+            /(?:find|search|look(?:ing)? for|anything (?:about|on)|any (?:post|announcement)s? (?:about|on|mentioning)|(?:post|announcement)s? (?:about|on|mentioning)|mentions?|is there (?:a|an|any)) (.+)/,
+            (m) => {
+              const term = m[1].replace(/\?+$/, ""),
+                r = find(term);
+              if (!r.length)
+                return {
+                  t: `I can’t find “${term}” in the announcements loaded right now. It may be older, or it may never have been posted.`,
+                };
+              return {
+                t:
+                  `Found ${r.length}:\n` +
+                  r
+                    .map((x) => `#${x.i + 1} · ${x.c.name}: ${snip(x.c, 70)}`)
+                    .join("\n"),
+                c: r.map((x) => ({
+                  l: `Go to #${x.i + 1}`,
+                  go: () => go(x.i),
+                })),
+              };
+            },
+          ],
+          [
+            /(?:post|announcement)s? (?:by|from) (.+)/,
+            (m) => {
+              const n = norm(m[1]),
+                r = list
+                  .map((c, i) => ({ c, i }))
+                  .filter((x) => norm(x.c.name).includes(n))
+                  .slice(0, 3);
+              return r.length
+                ? {
+                    t:
+                      `${r.length >= 3 ? "A few from" : "Found"} ${r[0].c.name}:\n` +
+                      r.map((x) => `#${x.i + 1} · ${snip(x.c, 70)}`).join("\n"),
+                    c: r.map((x) => ({
+                      l: `Go to #${x.i + 1}`,
+                      go: () => go(x.i),
+                    })),
+                  }
+                : { t: `I don’t see any announcements from “${m[1]}”.` };
+            },
+          ],
+          [
+            /(edit|change|fix) (this|the current)/,
+            () => {
+              const c = cp();
+              if (!isAdmin || !c || c.name !== userName)
+                return {
+                  t: "Only the admin who wrote an announcement can edit it.",
+                };
+              startEdit(cur);
+              return {
+                t: "Opened the editor on this post — change the wording, then tap Save.",
+                hide: 1,
+              };
+            },
+          ],
+          [
+            /(open|start|new|write|make|create)\b.*(announcement|post)\b/,
+            () => {
+              if (!isAdmin) return null;
+              $("newBtn").click();
+              return {
+                t: "The composer is open — write your message and post when you’re ready.",
+                hide: 1,
+              };
+            },
+          ],
+        ];
+
+        /* ───────── answering with variety, memory and a polite repeat limit ───────── */
+        function opener() {
+          if (Math.random() > 0.45) return "";
+          const o = rnd([
+            "Sure — ",
+            "Good question. ",
+            "Of course. ",
+            "Happy to help. ",
+            "Right — ",
+          ]);
+          if (o === lastOpen) return "";
+          lastOpen = o;
+          return o;
+        }
+        const firstSentence = (s) =>
+          (s.match(/^.*?[.!?](\s|$)/) || [s])[0].trim();
+        function pickVar(e) {
+          const u = (used[e.id] = used[e.id] || []);
+          let idx = e.a.map((_, i) => i).filter((i) => !u.includes(i));
+          if (!idx.length) {
+            u.length = 0;
+            idx = e.a.map((_, i) => i);
+          }
+          const i = rnd(idx);
+          u.push(i);
+          return val(e.a[i]);
+        }
+        function related(e, n) {
+          const out = (e.c || [])
+            .map((id) => KB.find((x) => x.id === id))
+            .filter((x) => x && x.on !== false && (hist[x.id] || 0) < 2)
+            .map((x) => ({ l: x.t, go: () => topic(x) }));
+          if (e.m && n === 1 && !moreUsed[e.id])
+            out.unshift({ l: "Tell me more", q: "more" });
+          return out;
+        }
+        function topic(e) {
+          const n = (hist[e.id] = (hist[e.id] || 0) + 1);
+          ctx.topic = e;
+          miss = 0;
+          let t;
+          if (n === 1) t = opener() + pickVar(e);
+          else if (n === 2)
+            t =
+              rnd([
+                "Sure, once more in short: ",
+                "Happy to repeat — ",
+                "Quick recap: ",
+              ]) + firstSentence(val(e.a[0]));
+          else
+            t = rnd([
+              "We’ve been over this one a couple of times 🙂 Which part isn’t clear? Or ask me something different.",
+              "I think I’ve said all I can on that — is there a part you’d like explained another way?",
+            ]);
+          say(t, n >= 3 ? sugg() : related(e, n));
+        }
+        function sugg() {
+          const pool = KB.filter((e) => e.on !== false && !hist[e.id]);
+          const pick = pool
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 2)
+            .map((e) => ({ l: e.t, go: () => topic(e) }));
+          return [{ l: "What’s new?", q: "what is new" }, ...pick];
+        }
+        function logMiss(q) {
+          const l = get("gr_unanswered", []);
+          l.push({ q, t: Date.now() });
+          put("gr_unanswered", l.slice(-50));
+        }
+        window.graceUnanswered = () =>
+          get(
+            "gr_unanswered",
+            [],
+          ); /* run graceUnanswered() in the browser console to see what people asked that she couldn't answer */
+
+        function respond(raw) {
+          const lc = raw.toLowerCase().trim(),
+            q = norm(raw);
+          if (!q) return;
+          for (const [re, fn] of SMALL) {
+            const m = lc.match(re);
+            if (m) return say(fn(m));
+          }
+          if (
+            /^(more|tell me more|go on|why|how come|what else|explain( more)?)\W*$/.test(
+              lc,
+            )
+          ) {
+            const e = ctx.topic;
+            if (e && e.m && !moreUsed[e.id]) {
+              moreUsed[e.id] = 1;
+              return say(val(e.m), related(e, 2));
+            }
+            return say(
+              "That’s about all I have on that one — is there something else?",
+              sugg(),
+            );
+          }
+          for (const [re, fn] of LIVE) {
+            const m = lc.match(re);
+            if (m) {
+              const r = fn(m, q);
+              if (r) {
+                say(r.t, r.c);
+                if (r.hide) close();
+                return;
+              }
+            }
+          }
+          const k = kbMatch(q);
+          if (k && k.amb)
+            return say(
+              `Do you mean “${k.amb[0].t}” or “${k.amb[1].t}”?`,
+              k.amb.map((e) => ({ l: e.t, go: () => topic(e) })),
+            );
+          if (k) return topic(k.e);
+          logMiss(raw);
+          miss++;
+          say(
+            miss === 1
+              ? rnd([
+                  "Hmm, I’m not sure I follow — could you put it another way?",
+                  "I didn’t quite catch that. What are you hoping to find out?",
+                ])
+              : miss === 2
+                ? "I don’t have an answer for that one yet, and I’d rather not guess. Here’s what I can help with:"
+                : "Still stumped, sorry! The admins can answer that properly — I’ve noted your question so they can teach me.",
+            sugg(),
+          );
+        }
+
+        /* ───────── wiring ───────── */
+        const send = () => {
+          const v = gi.value.trim();
+          if (!v) return;
+          add("u", v);
+          gi.value = "";
+          respond(v);
+        };
+        $("gs").onclick = send;
+        gi.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            send();
+          }
+        });
+        $("gx").onclick = close;
+        $("gm").onclick = () => {
+          quiet = !quiet;
+          put("gr_quiet", quiet);
+          $("gm").textContent = quiet ? "🔕" : "🔔";
+          if (quiet) hideW();
+        };
+        $("gbtn").onclick = () => {
+          if (gp.classList.contains("open")) return close();
+          open();
+          mini(false);
+          if (!lg.children.length)
+            say(hello(), [
+              { l: "What’s new?", q: "what is new" },
+              { l: "How do I read these?", go: () => topic(KB[0]) },
+            ]);
+        };
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && !modalOpen()) close();
+        });
+        feed.addEventListener(
+          "scroll",
+          () => {
+            swiped = true;
+            if (gp.classList.contains("open")) mini(true);
+          },
+          { passive: true },
+        );
+
+        /* ───────── when she speaks up ───────── */
+        let started = false;
+        document.addEventListener("ann:update", (e) => {
+          const { n, added } = e.detail;
+          if (!started) {
+            started = true;
+            if (!get("gr_welcomed", false)) {
+              setTimeout(() => {
+                put("gr_welcomed", true);
+                say(
+                  `Welcome to the board, ${first}! 🕊️ I’m Grace. Every announcement gets its own screen — swipe up for older ones, down to go back. Ask me anything about them, or tap below.`,
+                  [
+                    { l: "What’s new?", q: "what is new" },
+                    { l: "Who writes these?", go: () => topic(KB[2]) },
+                    { l: "Maybe later", go: close },
+                  ],
+                );
+              }, 800);
+            } else {
+              const day = new Date().toDateString();
+              if (get("gr_day", "") !== day) {
+                put("gr_day", day);
+                if (unseen() > 0)
+                  setTimeout(
+                    () =>
+                      nudge(
+                        "",
+                        "You have " +
+                          unseen() +
+                          " new announcement" +
+                          (unseen() > 1 ? "s" : "") +
+                          " since your last visit.",
+                        "what is new",
+                      ),
+                    1500,
+                  );
+              }
+            }
+            setTimeout(() => {
+              if (!swiped && n > 1 && cur === 0)
+                nudge(
+                  "swipe",
+                  "Swipe up to see older announcements.",
+                  "how do i read these",
+                );
+            }, 20000);
+            if (isAdmin)
+              setTimeout(
+                () =>
+                  nudge(
+                    "admin",
+                    "You can post from the gold button — want a quick walkthrough?",
+                    "how do i post",
+                  ),
+                9000,
+              );
+          } else if (added > 0)
+            nudge("", "A new announcement just arrived.", "what is new");
+        });
+        document.addEventListener("keydown", () => {
+          swiped = true;
+        });
+      })();
+    </script>
+    <script>
+      if ("serviceWorker" in navigator)
+        navigator.serviceWorker
+          .register("./sw.js", { scope: "./" })
+          .catch((e) => console.error("SW error", e));
+    </script>
+  </body>
 </html>
-
-
