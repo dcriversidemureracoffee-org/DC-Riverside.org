@@ -1116,6 +1116,60 @@
         color: var(--steel);
         max-width: 320px;
       }
+
+      /* ── Responsive additions ── */
+button, .chip, .tab, .ib { touch-action: manipulation; }
+#sheet { max-height: 88vh; max-height: 88dvh; } /* vh fallback first */
+#list .list-empty { grid-column: 1 / -1; }
+
+/* Small phones */
+@media (max-width: 380px) {
+  .logo { font-size: 1.05rem; letter-spacing: 0.04em; }
+  #net { padding: 6px; }
+  #net-t { display: none; }          /* dot only */
+  .btn { padding: 9px 12px; }
+  .thumbs { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Touch devices */
+@media (pointer: coarse) {
+  .inp, #st-ctl select { font-size: 16px; }  /* stops iOS zoom */
+  .ib { width: 44px; height: 44px; }
+  .tb button, .tb input[type="color"] { min-width: 42px; height: 42px; }
+  .pg-h button { min-width: 40px; height: 40px; }
+  .bgt button { width: 30px; height: 30px; }
+  .chip { padding: 9px 14px; }
+}
+
+/* No hover on touch */
+@media (hover: none) {
+  .chat-row:hover, .btn:hover, .th:hover { transform: none; }
+}
+
+/* Tablets and desktops */
+@media (min-width: 900px) {
+  .wrap { max-width: 1100px; }
+  #list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 10px; }
+  .thumbs { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+}
+@media (min-width: 1400px) {
+  .wrap { max-width: 1280px; }
+  #list { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Short landscape screens */
+@media (max-height: 480px) {
+  #st-strip { display: none; }
+  #st-bot { padding-top: 12px; }
+  #sheet { max-height: 94dvh; }
+}
+
+/* Notch in landscape (slideshow bars) */
+#st-top, #st-bot {
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+}
+
       @media (prefers-reduced-motion: reduce) {
         *,
         *::before,
