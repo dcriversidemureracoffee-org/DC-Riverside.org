@@ -1,0 +1,2955 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Riverside Songs</title>
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#0a0f1e" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="maskable_icon_x192.png"
+    />
+    <style>
+      :root {
+        --ink: #e2e8f0;
+        --paper: #0a0f1e;
+        --surface: #0f172a;
+        --lift: #1a2540;
+        --wire: rgba(96, 165, 250, 0.18);
+        --steel: #64748b;
+        --lead: #94a3b8;
+        --accent: #3b82f6;
+        --accent2: #60a5fa;
+        --gold: #facc15;
+        --danger: #ef4444;
+        --green: #10b981;
+        --head:
+          Impact, "Arial Narrow Bold", "Haettenschweiler",
+          "Franklin Gothic Medium", sans-serif;
+        --body:
+          system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+          sans-serif;
+        --bar: 54px;
+        --top: env(safe-area-inset-top, 0px);
+        --bot: env(safe-area-inset-bottom, 0px);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body);
+        -webkit-font-smoothing: antialiased;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+        color: inherit;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent2);
+        outline-offset: 2px;
+      }
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        width: 60vmax;
+        height: 60vmax;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.18;
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::before {
+        background: var(--accent);
+        top: -25vmax;
+        left: -20vmax;
+        animation: drift 18s ease-in-out infinite alternate;
+      }
+      body::after {
+        background: #6366f1;
+        bottom: -30vmax;
+        right: -20vmax;
+        animation: drift 22s ease-in-out infinite alternate-reverse;
+      }
+      @keyframes drift {
+        to {
+          transform: translate(8vmax, 6vmax) scale(1.15);
+        }
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: scale(0.88) translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+        }
+        50% {
+          box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+      }
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        40% {
+          transform: translateY(-5px);
+          opacity: 1;
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      #topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(var(--bar) + var(--top));
+        padding: var(--top) max(10px, env(safe-area-inset-right)) 0
+          max(10px, env(safe-area-inset-left));
+        background: rgba(10, 15, 30, 0.85);
+        border-bottom: 1px solid var(--wire);
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        backdrop-filter: blur(16px);
+      }
+      .logo {
+        font-family: var(--head);
+        font-size: 1.3rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        white-space: nowrap;
+      }
+      .sp {
+        flex: 1;
+      }
+      #net {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 99px;
+        background: rgba(16, 185, 129, 0.14);
+        color: #34d399;
+      }
+      #net i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: pulse 2s infinite;
+      }
+      body.offline #net {
+        background: rgba(250, 204, 21, 0.14);
+        color: var(--gold);
+      }
+      body.offline #net i {
+        background: var(--gold);
+        animation: none;
+      }
+      .ib {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        background: none;
+        border: 0;
+        border-radius: 10px;
+        color: var(--lead);
+        cursor: pointer;
+        transition: 0.2s;
+        flex-shrink: 0;
+        text-decoration: none;
+      }
+      .ib:hover {
+        color: var(--accent2);
+        background: var(--lift);
+      }
+      .ib:active {
+        transform: scale(0.88);
+      }
+      .ib svg {
+        width: 19px;
+        height: 19px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ib.spinning svg {
+        animation: spin 0.8s linear infinite;
+      }
+      .av img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(96, 165, 250, 0.4);
+      }
+      #main {
+        position: fixed;
+        top: calc(var(--bar) + var(--top));
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        z-index: 1;
+        padding-bottom: calc(30px + var(--bot));
+      }
+      .wrap {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 12px max(14px, env(safe-area-inset-left)) 10px
+          max(14px, env(safe-area-inset-right));
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card {
+        background: linear-gradient(
+          160deg,
+          rgba(26, 37, 64, 0.7),
+          rgba(15, 23, 42, 0.8)
+        );
+        border: 1px solid var(--wire);
+        border-radius: 18px;
+        padding: 14px;
+        backdrop-filter: blur(8px);
+      }
+      .lbl {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--steel);
+        margin: 6px 4px;
+      }
+      .mut {
+        color: var(--lead);
+        font-size: 0.82rem;
+      }
+      .tabs {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .tabs::-webkit-scrollbar,
+      .chips::-webkit-scrollbar {
+        display: none;
+      }
+      .tab {
+        flex-shrink: 0;
+        padding: 8px 15px;
+        border-radius: 99px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--wire);
+        color: var(--lead);
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: 0.2s;
+        position: relative;
+      }
+      .tab.on {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .tab.adm {
+        display: none;
+      }
+      body.isadmin .tab.adm {
+        display: block;
+      }
+      .dotb {
+        position: absolute;
+        top: 3px;
+        right: 5px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--danger);
+        display: none;
+      }
+      .dotb.on {
+        display: block;
+      }
+      .btn {
+        background: var(--accent);
+        color: #fff;
+        border: 0;
+        border-radius: 99px;
+        padding: 9px 16px;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+      }
+      .btn:active {
+        transform: scale(0.94);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+      }
+      .btn.ghost {
+        background: rgba(96, 165, 250, 0.1);
+        color: var(--accent2);
+        border: 1px solid var(--wire);
+      }
+      .btn.danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      .v-act {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .inp {
+        width: 100%;
+        background: var(--paper);
+        border: 1px solid var(--wire);
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        transition: 0.2s;
+      }
+      .inp:focus {
+        border-color: var(--accent2);
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+      }
+      select.inp {
+        appearance: none;
+      }
+      .fg {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .fg .inp:first-child {
+        grid-column: 1/-1;
+      }
+      .chips {
+        display: flex;
+        gap: 7px;
+        overflow-x: auto;
+        padding: 8px 0 4px;
+        scrollbar-width: none;
+      }
+      .chip {
+        flex-shrink: 0;
+        padding: 7px 13px;
+        border-radius: 99px;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(96, 165, 250, 0.28);
+        color: var(--accent2);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .chip:hover {
+        background: rgba(59, 130, 246, 0.22);
+      }
+      .chip.hl,
+      .chip.on {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: rgba(250, 204, 21, 0.08);
+      }
+      .srow {
+        display: flex;
+        gap: 8px;
+      }
+      .srow select {
+        width: auto;
+        flex-shrink: 0;
+      }
+      .g-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .g-av {
+        position: relative;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #6366f1);
+        display: grid;
+        place-items: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+      }
+      .g-av i {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--green);
+        border: 2px solid var(--surface);
+        animation: pulse 2s infinite;
+      }
+      .g-name {
+        font-weight: 700;
+      }
+      #g-sub {
+        font-size: 0.76rem;
+        color: #34d399;
+      }
+      .chev {
+        margin-left: auto;
+        color: var(--lead);
+        transition: transform 0.25s;
+      }
+      #grace.collapsed .chev {
+        transform: rotate(-90deg);
+      }
+      #grace.collapsed #g-body {
+        display: none;
+      }
+      #g-body {
+        margin-top: 10px;
+      }
+      #log {
+        max-height: 230px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        scroll-behavior: smooth;
+      }
+      .b {
+        max-width: 90%;
+        padding: 9px 13px;
+        border-radius: 16px;
+        font-size: 0.88rem;
+        line-height: 1.45;
+        animation: pop 0.35s both;
+        background: var(--lift);
+        align-self: flex-start;
+        border-bottom-left-radius: 5px;
+        white-space: pre-line;
+      }
+      .b.me {
+        align-self: flex-end;
+        background: var(--accent);
+        color: #fff;
+        border-radius: 16px 16px 5px 16px;
+      }
+      .dots {
+        display: flex;
+        gap: 4px;
+        padding: 4px 2px;
+      }
+      .dots span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent2);
+        animation: bounce 1.1s infinite;
+      }
+      .dots span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .dots span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .send {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .chat-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--wire);
+        border-radius: 14px;
+        margin-bottom: 8px;
+        transition: 0.22s;
+      }
+      .chat-row:hover {
+        background: var(--lift);
+        transform: translateX(4px);
+        border-color: rgba(96, 165, 250, 0.4);
+      }
+      .row-avatar {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--lift);
+        border: 2px solid rgba(96, 165, 250, 0.18);
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+      }
+      .row-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .row-title-line,
+      .row-sub-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .row-title {
+        font-weight: 700;
+        font-size: 0.94rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .row-time {
+        font-size: 0.68rem;
+        color: var(--gold);
+        flex-shrink: 0;
+        font-weight: 700;
+      }
+      .row-sub-line {
+        margin-top: 2px;
+      }
+      .row-subtitle {
+        font-size: 0.8rem;
+        color: var(--lead);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .row-act {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+      .list-empty {
+        padding: 14px 8px;
+        color: var(--steel);
+        font-size: 0.82rem;
+        text-align: center;
+      }
+      #scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+        z-index: 3500;
+      }
+      #scrim.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #sheet {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        width: min(680px, 100%);
+        max-height: 88dvh;
+        background: var(--surface);
+        border: 1px solid var(--wire);
+        border-radius: 22px 22px 0 0;
+        z-index: 3501;
+        transform: translate(-50%, 105%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      #sheet.show {
+        transform: translate(-50%, 0);
+      }
+      .grab {
+        width: 42px;
+        height: 4px;
+        border-radius: 9px;
+        background: var(--steel);
+        margin: 9px auto 4px;
+        opacity: 0.5;
+      }
+      .sh-h {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 18px;
+        gap: 8px;
+      }
+      .sh-h h3 {
+        font-family: var(--head);
+        font-size: 1.5rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        font-weight: 400;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #sh-b {
+        overflow-y: auto;
+        padding: 4px 16px calc(20px + var(--bot));
+      }
+      .thumbs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .th {
+        cursor: pointer;
+        font-size: 0.7rem;
+        color: var(--lead);
+        text-align: center;
+        border-radius: 10px;
+        transition: 0.2s;
+      }
+      .th:hover {
+        transform: translateY(-2px);
+      }
+      .th .slide {
+        border-radius: 8px;
+        margin-bottom: 3px;
+        border: 1px solid var(--wire);
+      }
+      textarea.inp {
+        min-height: 180px;
+        resize: vertical;
+      }
+      .slide {
+        position: relative;
+        overflow: hidden;
+        container-type: size;
+        aspect-ratio: 16/9;
+        background: #0f172a;
+        width: 100%;
+      }
+      .slide .bg,
+      .slide .dim {
+        position: absolute;
+        inset: 0;
+      }
+      .slide .bg {
+        overflow: hidden;
+        background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      }
+      .slide .bg img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        user-select: none;
+        -webkit-user-drag: none;
+        pointer-events: none;
+      }
+      .slide .dim {
+        background: #000;
+      }
+      .slide .box {
+        position: absolute;
+        inset: 8% 6%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .slide .tx {
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        font-weight: 600;
+        line-height: 1.28;
+        text-shadow: 0 0.06em 0.22em rgba(0, 0, 0, 0.75);
+        overflow-wrap: anywhere;
+        animation-duration: var(--sp, 0.7s);
+        animation-fill-mode: both;
+        animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .tx b {
+        font-weight: 800;
+      }
+      @keyframes a-fade {
+        from {
+          opacity: 0;
+        }
+      }
+      @keyframes a-rise {
+        from {
+          opacity: 0;
+          transform: translateY(6cqh);
+        }
+      }
+      @keyframes a-zoom {
+        from {
+          opacity: 0;
+          transform: scale(0.88);
+        }
+      }
+      @keyframes a-blur {
+        from {
+          opacity: 0;
+          filter: blur(14px);
+        }
+      }
+      @keyframes a-slide {
+        from {
+          opacity: 0;
+          transform: translateX(8cqw);
+        }
+      }
+      .a-fade {
+        animation-name: a-fade;
+      }
+      .a-rise {
+        animation-name: a-rise;
+      }
+      .a-zoom {
+        animation-name: a-zoom;
+      }
+      .a-blur {
+        animation-name: a-blur;
+      }
+      .a-slide {
+        animation-name: a-slide;
+      }
+      #stage {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        z-index: 3000;
+        display: none;
+        cursor: default;
+      }
+      #stage.show {
+        display: block;
+      }
+      #st-slide {
+        position: absolute;
+        inset: 0;
+        aspect-ratio: auto !important;
+        height: 100%;
+      }
+      #st-blank {
+        position: absolute;
+        inset: 0;
+        background: #000;
+        display: none;
+      }
+      #stage.isblank #st-blank {
+        display: block;
+      }
+      #st-ui {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        transition: opacity 0.35s;
+      }
+      #stage.tools-off #st-bot {
+        display: none;
+      }
+      #st-ui > * {
+        pointer-events: auto;
+      }
+      #st-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: calc(10px + var(--top)) 14px 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(rgba(0, 0, 0, 0.65), transparent);
+        font-size: 0.85rem;
+      }
+      #st-bot {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 26px 14px calc(12px + var(--bot));
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #st-ctl {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+      }
+      #st-ctl select,
+      #st-ctl input[type="range"] {
+        width: auto;
+        max-width: 130px;
+      }
+      #st-ctl label {
+        font-size: 0.7rem;
+        color: var(--lead);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      #st-ctl select {
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid var(--wire);
+        border-radius: 8px;
+        padding: 5px 8px;
+        font-size: 0.78rem;
+      }
+      #st-strip {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        justify-content: flex-start;
+      }
+      #st-strip .chip {
+        background: rgba(15, 23, 42, 0.8);
+      }
+      #st-fsbtn {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        width: max-content;
+        height: max-content;
+        z-index: 5;
+      }
+      body.screen #st-ui {
+        display: none;
+      }
+      body.screen #topbar,
+      body.screen #main {
+        display: none;
+      }
+      .tb {
+        position: sticky;
+        top: 0;
+        z-index: 6;
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 8px;
+        background: rgba(15, 23, 42, 0.96);
+        border: 1px solid var(--wire);
+        border-radius: 14px;
+        backdrop-filter: blur(10px);
+      }
+      .tb button {
+        min-width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: var(--lift);
+        border: 1px solid var(--wire);
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .tb button:hover {
+        border-color: var(--accent2);
+      }
+      .tb input[type="color"] {
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--wire);
+        border-radius: 9px;
+        background: var(--lift);
+        padding: 2px;
+        cursor: pointer;
+      }
+      .pg {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--wire);
+        border-radius: 14px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      .pg-h {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .pg-h .inp {
+        padding: 7px 12px;
+      }
+      .pg-h button {
+        min-width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background: var(--lift);
+        border: 1px solid var(--wire);
+        cursor: pointer;
+      }
+      .ced {
+        min-height: 110px;
+        background: #0b1224;
+        border: 1px solid var(--wire);
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+        line-height: 1.5;
+        font-size: 1.05rem;
+        font-weight: 600;
+        outline: 0;
+      }
+      .ced:focus {
+        border-color: var(--accent2);
+      }
+      .bgp,
+      .bgg {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 8px;
+      }
+      .bgp {
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        padding-bottom: 4px;
+      }
+      .bgt {
+        position: relative;
+        flex-shrink: 0;
+        width: 96px;
+        aspect-ratio: 16/9;
+        border-radius: 8px;
+        background: #1e293b;
+        border: 2px solid transparent;
+        cursor: pointer;
+        font-size: 0.62rem;
+        display: grid;
+        place-items: center;
+        color: var(--lead);
+      }
+      .bgg .bgt {
+        width: auto;
+      }
+      .bgt {
+        overflow: hidden;
+      }
+      .bgt img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        pointer-events: none;
+      }
+      .bgt.on {
+        border-color: var(--gold);
+      }
+      .bgt button {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 0;
+        background: rgba(239, 68, 68, 0.9);
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.7rem;
+        z-index: 2;
+      }
+      #dlg-scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 6000;
+        display: none;
+        place-items: center;
+        padding: 20px;
+      }
+      #dlg-scrim.show {
+        display: grid;
+      }
+      #dlg {
+        width: min(380px, 100%);
+        background: var(--surface);
+        border: 1px solid var(--wire);
+        border-radius: 20px;
+        padding: 20px;
+        animation: pop 0.25s both;
+      }
+      #dlg h4 {
+        font-family: var(--head);
+        font-weight: 400;
+        font-size: 1.25rem;
+        letter-spacing: 0.06em;
+        color: var(--accent2);
+        margin-bottom: 6px;
+      }
+      #dlg p {
+        color: var(--lead);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 16px;
+        overflow-wrap: anywhere;
+      }
+      #dlg .v-act {
+        justify-content: flex-end;
+        margin-top: 0;
+      }
+      #toast-area {
+        position: fixed;
+        top: calc(var(--bar) + var(--top) + 10px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        pointer-events: none;
+        align-items: center;
+      }
+      .toast-msg {
+        padding: 9px 16px;
+        border-radius: 99px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #fff;
+        animation: pop 0.3s;
+        max-width: 92vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .toast-msg.ok {
+        background: rgba(16, 185, 129, 0.94);
+      }
+      .toast-msg.err {
+        background: rgba(239, 68, 68, 0.94);
+      }
+      .toast-msg.inf {
+        background: rgba(59, 130, 246, 0.94);
+      }
+      #pending-screen {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: var(--paper);
+        z-index: 5000;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 32px;
+        text-align: center;
+      }
+      #pending-screen.show {
+        display: flex;
+      }
+      .pending-title {
+        font-family: var(--head);
+        font-size: 2rem;
+        letter-spacing: 0.08em;
+        color: var(--lead);
+      }
+      .pending-sub {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--steel);
+        max-width: 320px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="topbar">
+      <a href="index.html" class="ib" aria-label="Back"
+        ><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg
+      ></a>
+      <div class="logo">RIVERSIDE SONGS</div>
+      <div class="sp"></div>
+      <div id="net"><i></i><span id="net-t">Live</span></div>
+      <button class="ib" id="refresh-btn" title="Refresh" aria-label="Refresh">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
+          <path d="M21 3v5h-5" />
+        </svg>
+      </button>
+      <a href="profile.html" class="ib av" title="Profile"
+        ><img id="user-avatar" src="" alt="Profile"
+      /></a>
+    </header>
+
+    <main id="main">
+      <div class="wrap">
+        <nav class="tabs" id="tabs">
+          <button class="tab on" data-v="lib">Library</button>
+          <button class="tab" data-v="pres">
+            Present<i class="dotb" id="pb"></i>
+          </button>
+          <button class="tab adm" data-v="edit">Add / Edit</button>
+          <button class="tab adm" data-v="bgs">Backgrounds</button>
+        </nav>
+
+        <section id="v-lib" class="v">
+          <section class="card collapsed" id="grace">
+            <div
+              class="g-head"
+              id="g-toggle"
+              role="button"
+              tabindex="0"
+              aria-expanded="false"
+            >
+              <div class="g-av">🕊️<i></i></div>
+              <div>
+                <div class="g-name">Grace · Songs Guide</div>
+                <div id="g-sub">ask me how anything works</div>
+              </div>
+              <svg
+                class="chev"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </div>
+            <div id="g-body">
+              <div id="log" aria-live="polite"></div>
+              <div class="chips" id="gchips"></div>
+              <div class="send">
+                <input
+                  class="inp"
+                  id="gmsg"
+                  placeholder="Ask Grace, e.g. how do I project?"
+                  maxlength="120"
+                  autocomplete="off"
+                /><button class="btn" id="gsend">Ask</button>
+              </div>
+            </div>
+          </section>
+          <div class="srow" style="margin-top: 12px">
+            <input
+              class="inp"
+              id="q"
+              placeholder='Search title, lyrics, author…  try genre:praise by:john "exact phrase"'
+              autocomplete="off"
+            />
+            <select class="inp" id="sort">
+              <option value="new">Newest</option>
+              <option value="az">A–Z</option>
+              <option value="genre">Genre</option>
+            </select>
+          </div>
+          <div class="chips" id="gf"></div>
+          <div class="srow">
+            <select class="inp" id="fa">
+              <option value="">All authors</option></select
+            ><button class="chip" id="mine">My uploads</button>
+          </div>
+          <div class="lbl" id="count"></div>
+          <div id="list"><div class="list-empty">Loading songs…</div></div>
+        </section>
+
+        <section id="v-pres" class="v" hidden>
+          <div class="card">
+            <div class="lbl">SLIDESHOW QUEUE</div>
+            <div id="queue"></div>
+            <div class="v-act">
+              <button class="btn" id="q-start">▶ Start slideshow</button>
+              <button class="btn ghost" id="q-proj">🖥 Projector window</button>
+              <button class="btn ghost" id="q-clear">Clear</button>
+            </div>
+            <div class="v-act adm-only" id="send-box" hidden>
+              <input
+                class="inp"
+                id="note"
+                placeholder="Note for the projector team (optional)"
+                maxlength="200"
+                style="flex: 1; min-width: 180px"
+              />
+              <button class="btn" id="q-send">📤 Send to projector</button>
+            </div>
+            <p class="mut" style="margin-top: 10px">
+              HDMI: connect the screen, press “Projector window”, drag it to the
+              HDMI display and click to go fullscreen. You keep control from
+              this screen.
+            </p>
+          </div>
+          <div class="card">
+            <div class="lbl">SENT BY ADMIN</div>
+            <div id="live">
+              <div class="list-empty">Nothing has been sent yet</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="v-edit" class="v" hidden>
+          <div class="card">
+            <div class="fg">
+              <input
+                class="inp"
+                id="e-title"
+                placeholder="Song title"
+                maxlength="120"
+              />
+              <input
+                class="inp"
+                id="e-author"
+                placeholder="Author / artist"
+                maxlength="80"
+              />
+              <select class="inp" id="e-genre"></select>
+              <input
+                class="inp"
+                id="e-tags"
+                placeholder="Tags (comma separated)"
+                maxlength="120"
+                style="grid-column: 1/-1"
+              />
+            </div>
+            <div class="lbl">BACKGROUND</div>
+            <div class="bgp" id="e-bgs"></div>
+          </div>
+          <div class="card">
+            <div class="lbl">LIVE PREVIEW</div>
+            <div class="slide" id="e-prev"></div>
+          </div>
+          <div class="tb" id="tb">
+            <button data-c="bold"><b>B</b></button
+            ><button data-c="italic"><i>I</i></button
+            ><button data-c="underline"><u>U</u></button>
+            <button data-c="sizeDown">A−</button
+            ><button data-c="sizeUp">A+</button>
+            <input
+              type="color"
+              id="tb-col"
+              value="#facc15"
+              title="Text colour"
+            />
+            <button data-c="justifyLeft" title="Left">⇤</button
+            ><button data-c="justifyCenter" title="Centre">↔</button
+            ><button data-c="justifyRight" title="Right">⇥</button>
+            <button data-c="removeFormat" title="Clear formatting">Tx</button
+            ><button data-c="undo">↶</button><button data-c="redo">↷</button>
+          </div>
+          <datalist id="lbls"></datalist>
+          <div id="e-pages"></div>
+          <div class="v-act">
+            <button class="btn ghost" id="e-add">+ Page</button>
+            <button class="btn ghost" id="e-split">Paste &amp; split</button>
+            <button class="btn" id="e-save">Save song</button>
+            <button class="btn ghost" id="e-cancel">Cancel</button>
+          </div>
+        </section>
+
+        <section id="v-bgs" class="v" hidden>
+          <div class="card">
+            <div class="lbl">BACKGROUND LIBRARY</div>
+            <p class="mut">
+              Images are shrunk to 1920px and stored in your Drive. Animations
+              never touch the background. Built-in images come from
+              <code>imgsrc/</code>.
+            </p>
+            <div class="v-act">
+              <button class="btn" id="bg-up">⬆ Upload images</button>
+            </div>
+            <input type="file" id="bg-file" accept="image/*" multiple hidden />
+            <div class="bgg" id="bg-grid" style="margin-top: 12px"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div id="stage" aria-label="Slideshow">
+      <div class="slide" id="st-slide"></div>
+      <div id="st-blank"></div>
+      <div id="st-ui">
+        <div id="st-top">
+          <b id="st-t"></b><span class="mut" id="st-n"></span
+          ><span class="sp"></span
+          ><button class="btn ghost" id="st-tg">▾ Tools</button
+          ><button class="btn ghost" id="st-x">✕ Close</button>
+        </div>
+        <div id="st-bot">
+          <div id="st-strip"></div>
+          <div id="st-ctl">
+            <button class="btn ghost" id="st-prev">◀ Prev</button>
+            <button class="btn ghost" id="st-blk">⬛ Blank</button>
+            <button class="btn" id="st-next">Next ▶</button>
+            <button class="btn ghost" id="st-fs">⛶ Full</button>
+            <label
+              >Anim
+              <select id="st-anim">
+                <option value="fade">Fade</option>
+                <option value="rise">Rise</option>
+                <option value="zoom">Zoom</option>
+                <option value="blur">Blur in</option>
+                <option value="slide">Slide</option>
+                <option value="none">None</option>
+              </select></label
+            >
+            <label
+              >Speed
+              <input type="range" id="st-sp" min="0.3" max="1.6" step="0.1"
+            /></label>
+            <label
+              >Text
+              <input type="range" id="st-sc" min="0.6" max="1.4" step="0.05"
+            /></label>
+            <label
+              >Dim <input type="range" id="st-dm" min="0" max="0.9" step="0.05"
+            /></label>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="st-fsbtn" hidden>Click to go fullscreen</button>
+    </div>
+
+    <div id="scrim"></div>
+    <div id="sheet" role="dialog" aria-modal="true">
+      <div class="grab"></div>
+      <div class="sh-h">
+        <h3 id="sh-t"></h3>
+        <button class="ib" id="sh-x" aria-label="Close">
+          <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <div id="sh-b"></div>
+    </div>
+    <div id="pending-screen">
+      <div class="pending-title">WELCOME</div>
+      <p class="pending-sub" id="pending-sub">
+        Your account is under review. Songs will unlock once you are approved.
+      </p>
+    </div>
+    <div id="dlg-scrim">
+      <div
+        id="dlg"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="dlg-t"
+      >
+        <h4 id="dlg-t"></h4>
+        <p id="dlg-m"></p>
+        <div class="v-act">
+          <button class="btn ghost" id="dlg-no">Cancel</button>
+          <button class="btn danger" id="dlg-yes">Delete</button>
+        </div>
+      </div>
+    </div>
+    <div id="toast-area"></div>
+
+    <script>
+      "use strict";
+      /* ═════ CONFIG ═════ */
+      const NEW_URL =
+        "https://script.google.com/macros/s/AKfycby3Ao_hmVWk8e0VVUe0aXPSiD4tPAbOwv1bkvNIXjo7WKZG48_KA031qKxwcafRyJUYHg/exec";
+      // Same script channel.html uses for getUserStatus (name, userStatus, isAdmin)
+      const OLD_URL =
+        "https://script.google.com/macros/s/AKfycbwdt4glYcp4zY3mFunF_xNn4v4JnJXkCnonCDzLkQKo6k3UxX1sCo3dLsQ2fenHVeJm/exec";
+      const DEF_BGS = ["imgsrc/bg1.png", "imgsrc/bg2.png", "imgsrc/bg3.png"];
+      const GENRES = {
+        Praise: "🙌",
+        Worship: "🕊️",
+        Hymn: "📜",
+        Gospel: "🎶",
+        Choir: "🎤",
+        Kids: "🧒",
+        Other: "🎵",
+      };
+      const LABELS = [
+        "Verse 1",
+        "Verse 2",
+        "Verse 3",
+        "Verse 4",
+        "Chorus",
+        "Pre-Chorus",
+        "Bridge",
+        "Tag",
+        "Intro",
+        "Outro",
+      ];
+
+      const SCREEN = new URLSearchParams(location.search).has("screen");
+      let userName = localStorage.getItem("userName") || "";
+      if (!userName && !SCREEN) location.href = "login.html";
+
+      const $ = (s, r = document) => r.querySelector(s);
+      const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const LS = {
+        get(k, d) {
+          try {
+            const v = JSON.parse(localStorage.getItem(k));
+            return v == null ? d : v;
+          } catch {
+            return d;
+          }
+        },
+        set(k, v) {
+          try {
+            localStorage.setItem(k, JSON.stringify(v));
+          } catch {}
+        },
+      };
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const norm = (s) =>
+        (s || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\p{L}\p{N}]+/gu, " ")
+          .trim();
+      const lh3 = (u) => {
+        const m = (u || "").match(/[-\w]{25,}/);
+        return m ? `https://lh3.googleusercontent.com/d/${m[0]}` : u || "";
+      };
+      const fb = (n) =>
+        "data:image/svg+xml," +
+        encodeURIComponent(
+          `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 88 88'><rect width='88' height='88' fill='#1e293b'/><text x='44' y='58' font-size='40' text-anchor='middle' fill='#60a5fa' font-family='sans-serif'>${((n || "R").trim()[0] || "R").toUpperCase()}</text></svg>`,
+        );
+      function toast(m, t = "inf", d = 3000) {
+        const e = document.createElement("div");
+        e.className = "toast-msg " + t;
+        e.textContent = m;
+        $("#toast-area").appendChild(e);
+        setTimeout(() => e.remove(), d);
+      }
+
+      /* Network badge reflects real request results, only for the songs script */
+      function setNet(ok, url = NEW_URL) {
+        if (url !== NEW_URL) return;
+        document.body.classList.toggle("offline", !ok);
+        $("#net-t").textContent = ok ? "Live" : "Offline";
+      }
+      async function api(params, post, url = NEW_URL) {
+        if (url === NEW_URL && NEW_URL.startsWith("PASTE"))
+          throw new Error("Set NEW_URL in songs.html");
+        const c = new AbortController(),
+          t = setTimeout(() => c.abort(), post ? 60000 : 20000);
+        try {
+          if (post && url === NEW_URL) post.admin = isAdmin === true;
+          const r = await fetch(
+            post ? url : url + "?" + new URLSearchParams(params),
+            post
+              ? {
+                  method: "POST",
+                  headers: { "Content-Type": "text/plain;charset=utf-8" },
+                  body: JSON.stringify(post),
+                  signal: c.signal,
+                }
+              : { signal: c.signal },
+          );
+          let j;
+          try {
+            j = await r.json();
+          } catch {
+            throw new Error(
+              "Bad server reply. Redeploy the script with Access: Anyone",
+            );
+          }
+          if (j.offline) {
+            setNet(false, url);
+            throw new Error(
+              "Request didn't reach the script. Check the deployment URL and Access: Anyone",
+            );
+          }
+          setNet(true, url);
+          if (j.error) throw new Error(j.error);
+          return j;
+        } catch (e) {
+          if (e.name === "AbortError") {
+            setNet(false, url);
+            throw new Error("Server took too long, try again");
+          }
+          if (e instanceof TypeError) {
+            setNet(false, url);
+            throw new Error("Can't reach the server");
+          }
+          throw e;
+        } finally {
+          clearTimeout(t);
+        }
+      }
+      function dl(blob, name) {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      }
+      const fname = (s) =>
+        (s || "song")
+          .replace(/[^\w\- ]+/g, "")
+          .trim()
+          .replace(/\s+/g, "-")
+          .slice(0, 50) || "song";
+
+      /* ═════ RICH TEXT: sanitiser + line model ═════ */
+      const FS = { 1: 0.6, 2: 0.8, 3: 1, 4: 1.25, 5: 1.6, 6: 2, 7: 2.6 };
+      const okc = (c) =>
+        /^(#[0-9a-f]{3,8}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|[a-z]{3,20})$/i.test(
+          c || "",
+        );
+      function san(h) {
+        const d = new DOMParser().parseFromString(
+          "<body>" + (h || "") + "</body>",
+          "text/html",
+        ).body;
+        const out = (n, pf) => {
+          let r = "";
+          n.childNodes.forEach((c) => {
+            if (c.nodeType == 3) {
+              r += esc(c.textContent);
+              return;
+            }
+            if (c.nodeType != 1) return;
+            const t = c.nodeName.toLowerCase();
+            if (t == "br") {
+              r += "<br>";
+              return;
+            }
+            if (t == "font" || t == "span") {
+              let st = "",
+                f = pf,
+                rel = null;
+              const col = c.getAttribute("color") || c.style.color;
+              if (okc(col)) st += "color:" + col + ";";
+              if (FS[c.getAttribute("size")]) {
+                f = FS[c.getAttribute("size")];
+                rel = f / pf;
+              } else if (/^[\d.]+em$/.test(c.style.fontSize)) {
+                rel = parseFloat(c.style.fontSize);
+                f = pf * rel;
+              }
+              if (rel && Math.abs(rel - 1) > 0.01)
+                st += "font-size:" + +rel.toFixed(3) + "em;";
+              const i = out(c, f);
+              r += st ? `<span style="${st}">${i}</span>` : i;
+              return;
+            }
+            const i = out(c, pf);
+            if (t == "b" || t == "strong") r += "<b>" + i + "</b>";
+            else if (t == "i" || t == "em") r += "<i>" + i + "</i>";
+            else if (t == "u") r += "<u>" + i + "</u>";
+            else if (t == "div" || t == "p" || t == "li") {
+              const al = c.style.textAlign || c.getAttribute("align");
+              r +=
+                "<div" +
+                (/^(left|center|right)$/.test(al)
+                  ? ` style="text-align:${al}"`
+                  : "") +
+                ">" +
+                i +
+                "</div>";
+            } else r += i;
+          });
+          return r;
+        };
+        return out(d, 1);
+      }
+      function toLines(h) {
+        const root = new DOMParser().parseFromString(
+          "<body>" + san(h) + "</body>",
+          "text/html",
+        ).body;
+        let lines = [],
+          cur = { runs: [], al: "center" },
+          brk = false;
+        lines.push(cur);
+        const nl = (al) => {
+          cur = { runs: [], al };
+          lines.push(cur);
+          brk = false;
+        };
+        (function walk(n, st) {
+          n.childNodes.forEach((c) => {
+            if (c.nodeType == 3) {
+              if (brk) nl(st.al);
+              cur.runs.push({ t: c.textContent, ...st });
+              return;
+            }
+            if (c.nodeName == "BR") {
+              if (brk) nl(st.al);
+              brk = true;
+              return;
+            }
+            const s = { ...st },
+              tn = c.nodeName;
+            if (tn == "B") s.b = 1;
+            if (tn == "I") s.i = 1;
+            if (tn == "U") s.u = 1;
+            if (c.style.color) s.c = c.style.color;
+            if (c.style.fontSize) s.s = st.s * parseFloat(c.style.fontSize);
+            const blk = tn == "DIV";
+            if (blk) {
+              s.al = c.style.textAlign || "center";
+              if (cur.runs.length || brk) nl(s.al);
+              else cur.al = s.al;
+            }
+            walk(c, s);
+            if (blk) brk = true;
+          });
+        })(root, { s: 1, al: "center" });
+        while (lines.length > 1 && !lines[lines.length - 1].runs.length)
+          lines.pop();
+        return lines;
+      }
+      const plain = (h) =>
+        toLines(h)
+          .map((l) => l.runs.map((r) => r.t).join(""))
+          .join("\n")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+      const nl2html = (t) =>
+        t
+          .split("\n")
+          .map((l) => "<div>" + (esc(l) || "<br>") + "</div>")
+          .join("");
+
+      /* ═════ SLIDE RENDER (DOM) ═════ */
+      function bgOf(s) {
+        return (s && s.bg) || DEF_BGS[0] || "";
+      }
+      function renderSlide(host, s, i, o = {}) {
+        host.innerHTML = "";
+        const bg = document.createElement("div");
+        bg.className = "bg";
+        const u = bgOf(s);
+        if (u) {
+          const im = document.createElement("img");
+          im.alt = "";
+          im.decoding = "async";
+          im.draggable = false;
+          im.onerror = () => im.remove(); // gradient shows through
+          im.src = u;
+          bg.appendChild(im);
+        }
+        const dim = document.createElement("div");
+        dim.className = "dim";
+        dim.style.opacity = o.dim ?? 0.45;
+        const box = document.createElement("div");
+        box.className = "box";
+        const tx = document.createElement("div");
+        tx.className =
+          "tx" + (o.anim && o.anim != "none" ? " a-" + o.anim : "");
+        tx.style.setProperty("--sp", (o.speed || 0.7) + "s");
+        tx.innerHTML = san(s.pages[i] ? s.pages[i].h : "");
+        box.appendChild(tx);
+        host.append(bg, dim, box);
+        let f = 6 * (o.scale || 1),
+          n = 0;
+        tx.style.fontSize = f + "cqw";
+        while (tx.offsetHeight > box.clientHeight && f > 1.1 && n++ < 70) {
+          f -= 0.2;
+          tx.style.fontSize = f + "cqw";
+        }
+      }
+
+      /* ═════ IMAGE EXPORT (canvas) ═════ */
+      const loadImg = (u) =>
+        new Promise((res, rej) => {
+          const im = new Image();
+          im.crossOrigin = "anonymous";
+          im.onload = () => res(im);
+          im.onerror = rej;
+          im.src = u;
+        });
+      async function slideBlob(s, i, o = {}, noBg = false) {
+        const W = 1920,
+          H = 1080,
+          c = document.createElement("canvas");
+        c.width = W;
+        c.height = H;
+        const x = c.getContext("2d");
+        let drawn = false;
+        if (!noBg && bgOf(s)) {
+          try {
+            const im = await loadImg(bgOf(s)),
+              k = Math.max(W / im.width, H / im.height);
+            x.drawImage(
+              im,
+              (W - im.width * k) / 2,
+              (H - im.height * k) / 2,
+              im.width * k,
+              im.height * k,
+            );
+            drawn = true;
+          } catch {}
+        }
+        if (!drawn) {
+          const g = x.createLinearGradient(0, 0, W, H);
+          g.addColorStop(0, "#0f172a");
+          g.addColorStop(1, "#1e3a8a");
+          x.fillStyle = g;
+          x.fillRect(0, 0, W, H);
+        }
+        x.fillStyle = `rgba(0,0,0,${o.dim ?? 0.45})`;
+        x.fillRect(0, 0, W, H);
+        const lines = toLines(s.pages[i].h),
+          maxW = W * 0.86,
+          maxH = H * 0.84;
+        const font = (r, px) =>
+          `${r.i ? "italic " : ""}${r.b ? 800 : 600} ${px}px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif`;
+        const layout = (base) => {
+          let h = 0;
+          const out = [];
+          lines.forEach((ln) => {
+            const rows = [];
+            let row = { segs: [], w: 0, h: base * 1.28 };
+            const flush = () => {
+              rows.push(row);
+              row = { segs: [], w: 0, h: base * 1.28 };
+            };
+            ln.runs.forEach((r) => {
+              const px = base * r.s;
+              x.font = font(r, px);
+              r.t.split(/(\s+)/).forEach((w) => {
+                if (!w) return;
+                const ww = x.measureText(w).width;
+                if (row.w + ww > maxW && row.segs.length && w.trim()) flush();
+                if (!row.segs.length && !w.trim()) return;
+                row.segs.push({ t: w, r, px, w: ww });
+                row.w += ww;
+                row.h = Math.max(row.h, px * 1.28);
+              });
+            });
+            rows.push(row);
+            rows.forEach((rw) => {
+              h += rw.h;
+              out.push({ rw, al: ln.al });
+            });
+          });
+          return { h, out };
+        };
+        let base = 112,
+          L = layout(base);
+        while (L.h > maxH && base > 22) {
+          base -= 3;
+          L = layout(base);
+        }
+        let y = (H - L.h) / 2;
+        x.textBaseline = "middle";
+        x.shadowColor = "rgba(0,0,0,.75)";
+        x.shadowBlur = 10;
+        x.shadowOffsetY = 3;
+        L.out.forEach(({ rw, al }) => {
+          let px0 =
+            al == "left"
+              ? W * 0.07
+              : al == "right"
+                ? W * 0.93 - rw.w
+                : (W - rw.w) / 2;
+          rw.segs.forEach((sg) => {
+            x.font = font(sg.r, sg.px);
+            x.fillStyle = sg.r.c || "#fff";
+            x.fillText(sg.t, px0, y + rw.h / 2);
+            if (sg.r.u)
+              x.fillRect(
+                px0,
+                y + rw.h / 2 + sg.px * 0.42,
+                sg.w,
+                Math.max(2, sg.px * 0.05),
+              );
+            px0 += sg.w;
+          });
+          y += rw.h;
+        });
+        try {
+          return await new Promise((res, rej) =>
+            c.toBlob((b) => (b ? res(b) : rej(new Error("blob"))), "image/png"),
+          );
+        } catch (e) {
+          if (!noBg) return slideBlob(s, i, o, true);
+          throw e;
+        }
+      }
+      async function exportImages(s, only) {
+        const idx = only == null ? s.pages.map((_, i) => i) : [only];
+        toast("Creating image" + (idx.length > 1 ? "s…" : "…"), "inf", 1500);
+        for (const i of idx) {
+          const b = await slideBlob(s, i, st);
+          dl(b, `${fname(s.title)}-${String(i + 1).padStart(2, "0")}.png`);
+          await sleep(350);
+        }
+      }
+      async function shareImage(s, i) {
+        const b = await slideBlob(s, i, st),
+          f = new File([b], fname(s.title) + ".png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [f] })) {
+          try {
+            await navigator.share({ files: [f], title: s.title });
+            return;
+          } catch (e) {
+            if (e.name == "AbortError") return;
+          }
+        }
+        dl(b, f.name);
+        toast("Image downloaded", "ok");
+      }
+      const songText = (s) =>
+        `${s.title}${s.author ? "\n" + s.author : ""}\n\n` +
+        s.pages.map((p) => `[${p.l}]\n${plain(p.h)}`).join("\n\n");
+
+      /* ═════ STATE / SESSION ═════ */
+      let lib = [],
+        bgs = [],
+        isAdmin = false,
+        queue = LS.get("rc_queue", []),
+        live = LS.get("rc_live", null),
+        me = { ...LS.get("rc_me", {}) };
+      let st = {
+        anim: "fade",
+        speed: 0.7,
+        scale: 1,
+        dim: 0.45,
+        ...LS.get("rc_st", {}),
+      };
+      const byId = (id) => lib.find((s) => s.id == id);
+      const setAdmin = (a) => {
+        isAdmin = !!a;
+        document.body.classList.toggle("isadmin", isAdmin);
+        $("#send-box").hidden = !isAdmin;
+        LS.set("rc_me", { admin: isAdmin });
+      };
+      isAdmin = !!me.admin;
+      if (isAdmin) setAdmin(true);
+
+      (() => {
+        const av = $("#user-avatar"),
+          pic = localStorage.getItem("userPicLink");
+        av.alt = userName;
+        av.onerror = () => {
+          av.onerror = null;
+          av.src = fb("RC");
+        };
+        av.src = pic ? lh3(pic) : fb(userName);
+      })();
+      if ("serviceWorker" in navigator)
+        addEventListener("load", () =>
+          navigator.serviceWorker
+            .register("./sw.js", { scope: "./" })
+            .catch(() => {}),
+        );
+      addEventListener("online", () => refreshAll(true));
+
+      async function loadSession() {
+        try {
+          const d = await api(
+            { operation: "getUserStatus", name: userName },
+            null,
+            OLD_URL,
+          );
+          const nn = d.name || d.userName;
+          if (nn && nn !== userName) {
+            userName = nn;
+            localStorage.setItem("userName", nn);
+          }
+          const s = (d.userStatus || "").toLowerCase();
+          LS.set("rc_status", s);
+          if (s && s !== "approved") {
+            $("#pending-screen").classList.add("show");
+            return false;
+          }
+          setAdmin(!!d.isAdmin);
+        } catch {
+          const s = LS.get("rc_status", "approved");
+          if (s && s !== "approved") {
+            $("#pending-screen").classList.add("show");
+            return false;
+          }
+        }
+        return true;
+      }
+
+      /* ═════ DATA ═════ */
+      function prep(s) {
+        s.pages = s.pages || [];
+        s.plain = s.pages.map((p) => plain(p.h)).join("\n");
+        s._p = norm(s.plain);
+        s._t = norm(s.title);
+        s._n = norm([s.title, s.author, s.tags, s.genre, s.plain].join(" "));
+        return s;
+      }
+      async function loadSongs(force) {
+        const c = LS.get("rc_songs", null);
+        if (c && !lib.length) {
+          lib = c.songs.map(prep);
+          renderLib();
+        }
+        try {
+          const d = await api({
+            operation: "getSongs",
+            name: userName,
+            rev: force ? "" : c ? c.rev : "",
+          });
+          if (!d.same) {
+            lib = d.songs.map(prep);
+            LS.set("rc_songs", { rev: d.rev, songs: d.songs });
+          }
+        } catch (e) {
+          if (!lib.length)
+            $("#list").innerHTML =
+              `<div class="list-empty">${esc(e.message)}</div>`;
+        }
+        fillAuthors();
+        renderLib();
+        renderQueue();
+      }
+      async function loadBgs() {
+        bgs = LS.get("rc_bgs", []);
+        try {
+          bgs = (await api({ operation: "getBackgrounds", name: userName }))
+            .backgrounds;
+          LS.set("rc_bgs", bgs);
+        } catch {}
+        renderBgs();
+      }
+      async function loadLive() {
+        try {
+          const d = await api({
+            operation: "getLive",
+            name: userName,
+            rev: live ? live.version : "",
+          });
+          if (d.live === null) {
+            live = null;
+            LS.set("rc_live", null);
+          }
+          if (d.live) {
+            const isNew = !live || d.live.version != live.version;
+            live = d.live;
+            LS.set("rc_live", live);
+            if (isNew) {
+              $("#pb").classList.add("on");
+              if (!SCREEN)
+                toast("New songs sent by " + (live.by || "admin"), "inf", 4000);
+            }
+          }
+        } catch {}
+        renderLive();
+      }
+      let refreshing = false;
+      async function refreshAll(quiet) {
+        if (refreshing) return;
+        refreshing = true;
+        $("#refresh-btn").classList.add("spinning");
+        await Promise.all([loadSongs(!quiet), loadBgs(), loadLive()]);
+        $("#refresh-btn").classList.remove("spinning");
+        refreshing = false;
+        if (!quiet) toast("Refreshed", "ok", 1400);
+      }
+      $("#refresh-btn").onclick = () => refreshAll();
+
+      /* ═════ TABS ═════ */
+      function go(v) {
+        if ((v == "edit" || v == "bgs") && !isAdmin)
+          return toast("Admins only", "err");
+        $$(".v").forEach((x) => (x.hidden = x.id != "v-" + v));
+        $$(".tab").forEach((t) => t.classList.toggle("on", t.dataset.v == v));
+        if (v == "pres") {
+          $("#pb").classList.remove("on");
+          renderQueue();
+          renderLive();
+        }
+        if (v == "edit" && !ed) openEditor();
+        $("#main").scrollTop = 0;
+      }
+      $("#tabs").onclick = (e) => {
+        const b = e.target.closest(".tab");
+        if (b) go(b.dataset.v);
+      };
+
+      /* ═════ IN-APP CONFIRM DIALOG ═════ */
+      let dlgDone = null;
+      function ask(title, msg, yes = "Delete") {
+        return new Promise((res) => {
+          $("#dlg-t").textContent = title;
+          $("#dlg-m").textContent = msg;
+          $("#dlg-yes").textContent = yes;
+          $("#dlg-scrim").classList.add("show");
+          $("#dlg-no").focus();
+          dlgDone = (v) => {
+            $("#dlg-scrim").classList.remove("show");
+            dlgDone = null;
+            res(v);
+          };
+        });
+      }
+      $("#dlg-yes").onclick = () => dlgDone && dlgDone(true);
+      $("#dlg-no").onclick = () => dlgDone && dlgDone(false);
+      $("#dlg-scrim").onclick = (e) => {
+        if (e.target.id == "dlg-scrim" && dlgDone) dlgDone(false);
+      };
+
+      /* ═════ SHEET ═════ */
+      function openSheet(t, h) {
+        $("#sh-t").textContent = t;
+        $("#sh-b").innerHTML = h;
+        $("#scrim").classList.add("show");
+        $("#sheet").classList.add("show");
+        $("#sh-b").scrollTop = 0;
+      }
+      function closeSheet() {
+        $("#scrim").classList.remove("show");
+        $("#sheet").classList.remove("show");
+      }
+      $("#scrim").onclick = $("#sh-x").onclick = closeSheet;
+
+      /* ═════ LIBRARY ═════ */
+      let fg = "",
+        mineOn = false;
+      function fillAuthors() {
+        const a = [...new Set(lib.map((s) => s.author).filter(Boolean))].sort(),
+          cur = $("#fa").value;
+        $("#fa").innerHTML =
+          '<option value="">All authors</option>' +
+          a.map((x) => `<option>${esc(x)}</option>`).join("");
+        $("#fa").value = a.includes(cur) ? cur : "";
+      }
+      $("#gf").innerHTML = ["All", ...Object.keys(GENRES)]
+        .map(
+          (g) =>
+            `<button class="chip${g == "All" ? " on" : ""}" data-g="${g == "All" ? "" : g}">${GENRES[g] || "🎼"} ${g}</button>`,
+        )
+        .join("");
+      $("#gf").onclick = (e) => {
+        const b = e.target.closest("[data-g]");
+        if (!b) return;
+        fg = b.dataset.g;
+        $$("#gf .chip").forEach((c) => c.classList.toggle("on", c == b));
+        renderLib();
+      };
+      $("#mine").onclick = () => {
+        mineOn = !mineOn;
+        $("#mine").classList.toggle("on", mineOn);
+        renderLib();
+      };
+      ["#q", "#fa", "#sort"].forEach((i) => ($(i).oninput = renderLib));
+      function parseQ(q) {
+        const o = { w: [], ph: [], g: "", by: "", tag: "" };
+        q.replace(/(\w+):("[^"]+"|\S+)|"([^"]+)"|(\S+)/g, (m, k, v, p, w) => {
+          const kk = (k || "").toLowerCase();
+          if (kk == "genre") o.g = norm(v.replace(/"/g, ""));
+          else if (kk == "by") o.by = norm(v.replace(/"/g, ""));
+          else if (kk == "tag") o.tag = norm(v.replace(/"/g, ""));
+          else if (p) o.ph.push(norm(p));
+          else o.w.push(...norm(w || m).split(" "));
+        });
+        o.w = o.w.filter(Boolean);
+        return o;
+      }
+      function renderLib() {
+        const o = parseQ($("#q").value),
+          au = $("#fa").value,
+          sort = $("#sort").value;
+        let r = lib.filter(
+          (s) =>
+            (!fg || s.genre == fg) &&
+            (!au || s.author == au) &&
+            (!mineOn || s.by == userName) &&
+            (!o.g || norm(s.genre).includes(o.g)) &&
+            (!o.by || norm(s.author + " " + s.by).includes(o.by)) &&
+            (!o.tag || norm(s.tags).includes(o.tag)) &&
+            o.w.every((w) => s._n.includes(w)) &&
+            o.ph.every((p) => s._n.includes(p)),
+        );
+        r.sort(
+          sort == "az"
+            ? (a, b) => a._t.localeCompare(b._t)
+            : sort == "genre"
+              ? (a, b) =>
+                  a.genre.localeCompare(b.genre) || a._t.localeCompare(b._t)
+              : (a, b) => String(b.updated).localeCompare(String(a.updated)),
+        );
+        $("#count").textContent = lib.length
+          ? `${r.length} of ${lib.length} songs`
+          : "";
+        const term = o.ph[0] || o.w[0];
+        $("#list").innerHTML = r.length
+          ? r
+              .map((s) => {
+                let sn = "";
+                if (term && !s._t.includes(term)) {
+                  const ln = s.plain
+                    .split("\n")
+                    .find((l) => norm(l).includes(term));
+                  if (ln) sn = "…" + ln.trim();
+                }
+                const sub =
+                  sn ||
+                  [
+                    s.author,
+                    s.pages.length + (s.pages.length > 1 ? " pages" : " page"),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ");
+                return `<div class="chat-row" data-id="${esc(s.id)}"><div class="row-avatar">${GENRES[s.genre] || "🎵"}</div><div class="row-content"><div class="row-title-line"><span class="row-title">${esc(s.title)}</span><span class="row-time">${esc(s.genre)}</span></div><div class="row-sub-line"><span class="row-subtitle">${esc(sub)}</span></div></div></div>`;
+              })
+              .join("")
+          : `<div class="list-empty">${lib.length ? "No songs match these filters" : "No songs yet"}</div>`;
+      }
+      $("#list").onclick = (e) => {
+        const r = e.target.closest("[data-id]");
+        if (r) songSheet(r.dataset.id);
+      };
+
+      function songSheet(id) {
+        const s = byId(id);
+        if (!s) return;
+        openSheet(
+          s.title,
+          `<div class="mut">${esc([s.author, s.genre, s.tags].filter(Boolean).join(" · "))}</div>
+<div class="thumbs">${s.pages.map((p, i) => `<div class="th" data-p="${i}"><div class="slide"></div>${esc(p.l)}</div>`).join("")}</div>
+<div class="v-act">
+<button class="btn" data-a="present">▶ Present</button><button class="btn ghost" data-a="queue">➕ Queue</button>
+<button class="btn ghost" data-a="png">🖼 Images</button><button class="btn ghost" data-a="share">↗ Share image</button><button class="btn ghost" data-a="txt">📝 Text</button>
+${isAdmin ? '<button class="btn ghost" data-a="edit">✏ Edit</button><button class="btn danger" data-a="del">🗑 Delete</button>' : ""}
+</div>`,
+        );
+        $$("#sh-b .th").forEach((t) =>
+          renderSlide($(".slide", t), s, +t.dataset.p, { dim: st.dim }),
+        );
+        $("#sh-b").onclick = async (e) => {
+          const th = e.target.closest(".th"),
+            b = e.target.closest("[data-a]");
+          if (th) {
+            closeSheet();
+            return startShow([s.id], +th.dataset.p);
+          }
+          if (!b) return;
+          const a = b.dataset.a;
+          if (a == "present") {
+            closeSheet();
+            startShow([s.id]);
+          } else if (a == "queue") addQ(s.id);
+          else if (a == "png")
+            exportImages(s).catch(() => toast("Could not create image", "err"));
+          else if (a == "share")
+            shareImage(s, 0).catch(() =>
+              toast("Could not create image", "err"),
+            );
+          else if (a == "txt")
+            dl(
+              new Blob([songText(s)], { type: "text/plain" }),
+              fname(s.title) + ".txt",
+            );
+          else if (a == "edit") {
+            closeSheet();
+            openEditor(s);
+          } else if (a == "del") {
+            if (
+              !(await ask(
+                "Delete song?",
+                `“${s.title}” will be removed for everyone. This can't be undone.`,
+              ))
+            )
+              return;
+            try {
+              await api(null, {
+                operation: "deleteSong",
+                name: userName,
+                id: s.id,
+              });
+              toast("Deleted", "ok");
+              closeSheet();
+              await loadSongs(true);
+              loadLive();
+            } catch (er) {
+              toast(er.message, "err");
+            }
+          }
+        };
+      }
+
+      /* ═════ QUEUE + SENT SET ═════ */
+      const saveQ = () => LS.set("rc_queue", queue);
+      function addQ(id) {
+        if (!queue.includes(id)) queue.push(id);
+        saveQ();
+        renderQueue();
+        toast("Added to queue", "ok", 1400);
+      }
+      function renderQueue() {
+        queue = queue.filter((id) => byId(id) || !lib.length);
+        $("#queue").innerHTML = queue.length
+          ? queue
+              .map((id, i) => {
+                const s = byId(id);
+                return `<div class="chat-row" style="cursor:default"><div class="row-avatar">${s ? GENRES[s.genre] || "🎵" : "…"}</div><div class="row-content"><div class="row-title">${esc(s ? s.title : id)}</div><div class="row-subtitle">${s ? s.pages.length + " pages" : ""}</div></div><div class="row-act"><button class="ib" data-q="up" data-i="${i}">▲</button><button class="ib" data-q="dn" data-i="${i}">▼</button><button class="ib" data-q="rm" data-i="${i}">✕</button></div></div>`;
+              })
+              .join("")
+          : '<div class="list-empty">Queue is empty. Open a song and tap “Queue”.</div>';
+      }
+      $("#queue").onclick = (e) => {
+        const b = e.target.closest("[data-q]");
+        if (!b) return;
+        const i = +b.dataset.i,
+          k = b.dataset.q;
+        if (k == "rm") queue.splice(i, 1);
+        else {
+          const j = k == "up" ? i - 1 : i + 1;
+          if (j < 0 || j >= queue.length) return;
+          [queue[i], queue[j]] = [queue[j], queue[i]];
+        }
+        saveQ();
+        renderQueue();
+      };
+      $("#q-clear").onclick = () => {
+        queue = [];
+        saveQ();
+        renderQueue();
+      };
+      $("#q-start").onclick = () =>
+        queue.length ? startShow(queue) : toast("Queue is empty", "err");
+      $("#q-proj").onclick = openProjector;
+      $("#q-send").onclick = async () => {
+        if (!queue.length) return toast("Queue is empty", "err");
+        try {
+          await api(null, {
+            operation: "present",
+            name: userName,
+            songIds: queue,
+            note: $("#note").value.trim(),
+          });
+          toast("Sent to projector team", "ok");
+          $("#note").value = "";
+          loadLive();
+        } catch (e) {
+          toast(e.message, "err");
+        }
+      };
+      function renderLive() {
+        if (!live) {
+          $("#live").innerHTML =
+            '<div class="list-empty">Nothing has been sent yet</div>';
+          return;
+        }
+        const t = live.songIds.map((id) => byId(id)).filter(Boolean);
+        $("#live").innerHTML =
+          `<div class="mut">From ${esc(live.by || "admin")} · ${new Date(live.created).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</div>${live.note ? `<p style="margin:6px 0">${esc(live.note)}</p>` : ""}
+${t.map((s, i) => `<div class="row-subtitle" style="padding:3px 0">${i + 1}. ${esc(s.title)}</div>`).join("") || '<div class="list-empty">Songs not loaded yet</div>'}
+<div class="v-act"><button class="btn" id="l-start">▶ Start slideshow</button><button class="btn ghost" id="l-load">Load into queue</button></div>`;
+        const ids = live.songIds.filter((id) => byId(id));
+        $("#l-start").onclick = () =>
+          ids.length ? startShow(ids) : toast("Songs not available", "err");
+        $("#l-load").onclick = () => {
+          queue = ids;
+          saveQ();
+          renderQueue();
+          toast("Loaded into queue", "ok");
+        };
+      }
+
+      /* ═════ STAGE / PROJECTION ═════ */
+      const bc =
+        "BroadcastChannel" in window ? new BroadcastChannel("rc-songs") : null;
+      let slides = [],
+        si = 0,
+        blank = false,
+        idleT,
+        projWin = null;
+      const stage = $("#stage");
+      const flat = (ids) =>
+        ids.flatMap((id) => {
+          const s = byId(id);
+          return s ? s.pages.map((p, i) => ({ s, i })) : [];
+        });
+      function startShow(ids, from = 0) {
+        slides = flat(ids);
+        if (!slides.length) return toast("Nothing to present", "err");
+        const first = slides.findIndex((x) => x.s.id == ids[0]);
+        si = Math.max(0, first) + from;
+        blank = false;
+        stage.classList.add("show");
+        document.documentElement.requestFullscreen?.().catch(() => {});
+        $("#st-anim").value = st.anim;
+        $("#st-sp").value = st.speed;
+        $("#st-sc").value = st.scale;
+        $("#st-dm").value = st.dim;
+        buildStrip();
+        show();
+        poke();
+      }
+      function buildStrip() {
+        $("#st-strip").innerHTML = slides
+          .map(
+            (x, k) =>
+              `<button class="chip" data-k="${k}">${esc(x.s.title.slice(0, 16))} · ${esc(x.s.pages[x.i].l)}</button>`,
+          )
+          .join("");
+      }
+      function paint(s, i, o, bl) {
+        stage.classList.toggle("isblank", !!bl);
+        renderSlide($("#st-slide"), s, i, o);
+      }
+      function show() {
+        const x = slides[si];
+        if (!x) return;
+        paint(x.s, x.i, st, blank);
+        $("#st-t").textContent = x.s.title;
+        $("#st-n").textContent =
+          `${x.s.pages[x.i].l} · ${si + 1}/${slides.length}`;
+        $$("#st-strip .chip").forEach((c, k) =>
+          c.classList.toggle("on", k == si),
+        );
+        $("#st-strip .on")?.scrollIntoView({
+          inline: "center",
+          block: "nearest",
+        });
+        bc?.postMessage({ t: "state", s: x.s, i: x.i, st, blank });
+      }
+      const step = (d) => {
+        const n = si + d;
+        if (n < 0 || n >= slides.length) return;
+        si = n;
+        blank = false;
+        show();
+      };
+      function closeStage() {
+        stage.classList.remove("show");
+        if (document.fullscreenElement) document.exitFullscreen?.();
+        bc?.postMessage({ t: "close" });
+      }
+      function poke() {} // tools stay visible; hide them only with the Tools button
+      stage.addEventListener("mousemove", poke);
+      stage.addEventListener("touchstart", poke, { passive: true });
+      $("#st-prev").onclick = () => step(-1);
+      $("#st-next").onclick = () => step(1);
+      $("#st-blk").onclick = () => {
+        blank = !blank;
+        show();
+      };
+      $("#st-x").onclick = closeStage;
+      $("#st-tg").onclick = () => {
+        const off = stage.classList.toggle("tools-off");
+        $("#st-tg").textContent = off ? "▴ Tools" : "▾ Tools";
+      };
+      $("#st-fs").onclick = () =>
+        document.fullscreenElement
+          ? document.exitFullscreen()
+          : document.documentElement.requestFullscreen?.();
+      $("#st-strip").onclick = (e) => {
+        const b = e.target.closest("[data-k]");
+        if (b) {
+          si = +b.dataset.k;
+          blank = false;
+          show();
+        }
+      };
+      $("#st-slide").onclick = (e) =>
+        step(e.clientX < innerWidth * 0.3 ? -1 : 1);
+      [
+        ["#st-anim", "anim"],
+        ["#st-sp", "speed"],
+        ["#st-sc", "scale"],
+        ["#st-dm", "dim"],
+      ].forEach(([id, k]) => {
+        $(id).onchange = $(id).oninput = (e) => {
+          st[k] = k == "anim" ? e.target.value : +e.target.value;
+          LS.set("rc_st", st);
+          show();
+          if (e.type == "change") e.target.blur(); // so arrow keys go back to the slides
+        };
+      });
+      addEventListener("keydown", (e) => {
+        if (e.key == "Escape") {
+          if (dlgDone) return dlgDone(false);
+          closeSheet();
+        }
+        if (
+          !stage.classList.contains("show") ||
+          SCREEN ||
+          /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)
+        )
+          return;
+        if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) {
+          e.preventDefault();
+          step(1);
+        } else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) {
+          e.preventDefault();
+          step(-1);
+        } else if (e.key == "Home") {
+          si = 0;
+          show();
+        } else if (e.key == "End") {
+          si = slides.length - 1;
+          show();
+        } else if (e.key.toLowerCase() == "b") {
+          blank = !blank;
+          show();
+        } else if (e.key.toLowerCase() == "f") $("#st-fs").click();
+        else if (e.key.toLowerCase() == "t") $("#st-tg").click();
+        else if (e.key == "Escape" && !document.fullscreenElement) closeStage();
+        poke();
+      });
+      async function openProjector() {
+        let feat = "width=1280,height=720";
+        try {
+          if (window.getScreenDetails) {
+            const d = await getScreenDetails(),
+              s = d.screens.find((x) => !x.isPrimary) || d.screens[0];
+            feat = `left=${s.availLeft},top=${s.availTop},width=${s.availWidth},height=${s.availHeight}`;
+          }
+        } catch {}
+        projWin = window.open("songs.html?screen=1", "rcproj", feat);
+        if (!projWin)
+          toast("Allow pop-ups to open the projector window", "err");
+      }
+      if (bc)
+        bc.onmessage = (e) => {
+          const m = e.data;
+          if (SCREEN) {
+            if (m.t == "state") {
+              stage.classList.add("show");
+              paint(m.s, m.i, m.st, m.blank);
+            }
+            if (m.t == "close") stage.classList.remove("isblank");
+          } else if (m.t == "hello" && slides[si]) show();
+        };
+      if (SCREEN) {
+        document.body.classList.add("screen");
+        stage.classList.add("show");
+        const fsb = $("#st-fsbtn");
+        fsb.hidden = false;
+        fsb.onclick = () => {
+          document.documentElement.requestFullscreen?.();
+          fsb.hidden = true;
+        };
+        $("#st-slide").onclick = null;
+        bc?.postMessage({ t: "hello" });
+      }
+
+      /* ═════ EDITOR ═════ */
+      let ed = null,
+        activeEd = null,
+        rng = null,
+        prevT;
+      $("#e-genre").innerHTML = Object.keys(GENRES)
+        .map((g) => `<option>${g}</option>`)
+        .join("");
+      $("#lbls").innerHTML = LABELS.map((l) => `<option value="${l}">`).join(
+        "",
+      );
+      function openEditor(s) {
+        ed = s
+          ? JSON.parse(JSON.stringify(s))
+          : {
+              id: "",
+              title: "",
+              author: "",
+              genre: "Praise",
+              tags: "",
+              bg: "",
+              pages: [{ l: "Verse 1", h: "" }],
+            };
+        delete ed.plain;
+        delete ed._n;
+        delete ed._p;
+        delete ed._t;
+        ed.chk = "";
+        $("#e-title").value = ed.title;
+        $("#e-author").value = ed.author || "";
+        $("#e-genre").value = ed.genre;
+        $("#e-tags").value = ed.tags || "";
+        drawPages();
+        drawBgPick();
+        go("edit");
+        prevPage();
+      }
+      function drawPages() {
+        $("#e-pages").innerHTML = ed.pages
+          .map(
+            (p, i) =>
+              `<div class="pg" data-i="${i}"><div class="pg-h"><input class="inp pl" list="lbls" value="${esc(p.l)}" maxlength="40" /><button data-m="up">▲</button><button data-m="dn">▼</button><button data-m="dup">⧉</button><button data-m="rm">✕</button></div><div class="ced" contenteditable="true" spellcheck="true">${san(p.h)}</div></div>`,
+          )
+          .join("");
+        activeEd = null;
+      }
+      const gather = () =>
+        $$("#e-pages .pg").map((el) => ({
+          l: $(".pl", el).value.trim() || "Slide",
+          h: san($(".ced", el).innerHTML),
+        }));
+      $("#e-pages").onclick = (e) => {
+        const b = e.target.closest("[data-m]");
+        if (!b) return;
+        ed.pages = gather();
+        const i = +b.closest(".pg").dataset.i,
+          m = b.dataset.m;
+        if (m == "rm") {
+          if (ed.pages.length > 1) ed.pages.splice(i, 1);
+        } else if (m == "dup") ed.pages.splice(i + 1, 0, { ...ed.pages[i] });
+        else {
+          const j = m == "up" ? i - 1 : i + 1;
+          if (j < 0 || j >= ed.pages.length) return;
+          [ed.pages[i], ed.pages[j]] = [ed.pages[j], ed.pages[i]];
+        }
+        drawPages();
+        prevPage();
+      };
+      $("#e-add").onclick = () => {
+        ed.pages = gather();
+        const n = ed.pages.length;
+        ed.pages.push({ l: LABELS[Math.min(n, 4)] || "Slide", h: "" });
+        drawPages();
+        $$("#e-pages .ced").pop().focus();
+      };
+      document.addEventListener("focusin", (e) => {
+        if (e.target.classList?.contains("ced")) {
+          activeEd = e.target;
+          prevPage();
+        }
+      });
+      document.addEventListener("selectionchange", () => {
+        const s = getSelection();
+        if (s.rangeCount && activeEd && activeEd.contains(s.anchorNode))
+          rng = s.getRangeAt(0).cloneRange();
+      });
+      $("#e-pages").addEventListener("input", () => {
+        clearTimeout(prevT);
+        prevT = setTimeout(prevPage, 250);
+      });
+      $("#e-pages").addEventListener("paste", (e) => {
+        if (e.target.classList?.contains("ced")) {
+          e.preventDefault();
+          document.execCommand(
+            "insertText",
+            false,
+            (e.clipboardData || window.clipboardData).getData("text/plain"),
+          );
+        }
+      });
+      function prevPage() {
+        if (!ed) return;
+        const pgs = $$("#e-pages .pg"),
+          el = activeEd ? activeEd.closest(".pg") : pgs[0];
+        if (!el) return;
+        renderSlide(
+          $("#e-prev"),
+          { bg: ed.bg, pages: [{ h: san($(".ced", el).innerHTML) }] },
+          0,
+          { dim: st.dim },
+        );
+      }
+      function fmt(c, v) {
+        if (!activeEd) return toast("Tap inside a page first", "inf", 1600);
+        activeEd.focus();
+        if (rng) {
+          const s = getSelection();
+          s.removeAllRanges();
+          s.addRange(rng);
+        }
+        document.execCommand("styleWithCSS", false, false);
+        if (c == "sizeUp" || c == "sizeDown") {
+          const n = +document.queryCommandValue("fontSize") || 3;
+          document.execCommand(
+            "fontSize",
+            false,
+            Math.max(1, Math.min(7, n + (c == "sizeUp" ? 1 : -1))),
+          );
+        } else document.execCommand(c, false, v);
+        prevPage();
+      }
+      $("#tb").addEventListener("mousedown", (e) => {
+        if (e.target.closest("button")) e.preventDefault();
+      });
+      $("#tb").onclick = (e) => {
+        const b = e.target.closest("[data-c]");
+        if (b) fmt(b.dataset.c);
+      };
+      $("#tb-col").oninput = (e) => fmt("foreColor", e.target.value);
+      function drawBgPick() {
+        const all = [
+          { url: "", name: "Auto" },
+          ...DEF_BGS.map((u) => ({ url: u, name: "" })),
+          ...bgs,
+        ];
+        $("#e-bgs").innerHTML = all
+          .map(
+            (b) =>
+              `<div class="bgt${(ed.bg || "") == b.url ? " on" : ""}" data-u="${esc(b.url)}">${b.url ? `<img src="${esc(b.url)}" alt="${esc(b.name || "Background")}" loading="lazy" draggable="false">` : "Auto"}</div>`,
+          )
+          .join("");
+      }
+      $("#e-bgs").onclick = (e) => {
+        const b = e.target.closest("[data-u]");
+        if (!b) return;
+        ed.bg = b.dataset.u;
+        drawBgPick();
+        prevPage();
+      };
+      $("#e-cancel").onclick = () => {
+        ed = null;
+        go("lib");
+      };
+      $("#e-split").onclick = () => {
+        openSheet(
+          "Paste & split",
+          `<p class="mut">Paste the full lyrics. Blank lines start a new page. A first line like “Chorus” becomes the page label.</p><textarea class="inp" id="sp-t" placeholder="Paste lyrics here…" style="margin:8px 0"></textarea><button class="btn" id="sp-go">Split into pages</button>`,
+        );
+        $("#sp-go").onclick = () => {
+          const blocks = $("#sp-t")
+            .value.replace(/\r/g, "")
+            .split(/\n\s*\n/)
+            .map((b) => b.trim())
+            .filter(Boolean);
+          if (!blocks.length) return;
+          let v = 0;
+          const pgs = blocks.map((b) => {
+            const ls = b.split("\n");
+            let l = "";
+            if (
+              /^\[?(verse|chorus|pre-?chorus|bridge|tag|intro|outro|refrain|coda)\b[^\n]{0,12}\]?:?$/i.test(
+                ls[0].trim(),
+              )
+            )
+              l = ls
+                .shift()
+                .replace(/[\[\]:]/g, "")
+                .trim();
+            if (!l) l = "Verse " + ++v;
+            return {
+              l: l.replace(/^\w/, (c) => c.toUpperCase()),
+              h: nl2html(ls.join("\n")),
+            };
+          });
+          const cur = gather();
+          ed.pages =
+            cur.length == 1 && !plain(cur[0].h) ? pgs : [...cur, ...pgs];
+          drawPages();
+          closeSheet();
+          prevPage();
+          toast(pgs.length + " pages added", "ok");
+        };
+      };
+      function dupAsk(d) {
+        openSheet(
+          "Possible duplicate",
+          `<p style="margin:6px 0 12px">“${esc(d.title)}” already exists (${esc(d.why)}).</p><div class="v-act"><button class="btn ghost" id="d-view">View existing</button><button class="btn" id="d-force">Save anyway</button><button class="btn ghost" id="d-no">Cancel</button></div>`,
+        );
+        $("#d-view").onclick = () => {
+          closeSheet();
+          setTimeout(() => songSheet(d.id), 450);
+        };
+        $("#d-force").onclick = () => {
+          closeSheet();
+          saveSong(true);
+        };
+        $("#d-no").onclick = closeSheet;
+      }
+      async function saveSong(force) {
+        const title = $("#e-title").value.trim();
+        if (!title) return toast("Enter a title", "err");
+        const pages = gather().filter((p) => plain(p.h));
+        if (!pages.length) return toast("Add some lyrics", "err");
+        const song = {
+          title,
+          author: $("#e-author").value.trim(),
+          genre: $("#e-genre").value,
+          tags: $("#e-tags").value.trim(),
+          bg: ed.bg || "",
+          pages,
+        };
+        if (!force) {
+          const tk = norm(title),
+            txt = norm(pages.map((p) => plain(p.h)).join(" ")),
+            key = tk + "|" + txt;
+          if (key != ed.chk) {
+            const fk = txt.split(" ").slice(0, 8).join(" ");
+            for (const s of lib) {
+              if (s.id == ed.id) continue;
+              const why =
+                s._p == txt
+                  ? "same lyrics"
+                  : s._t == tk
+                    ? "same title"
+                    : fk.length > 12 && s._p.startsWith(fk)
+                      ? "same opening lines"
+                      : "";
+              if (why) return dupAsk({ id: s.id, title: s.title, why });
+            }
+            ed.chk = key;
+          }
+        }
+        $("#e-save").disabled = true;
+        try {
+          const r = await api(null, {
+            operation: ed.id ? "updateSong" : "addSong",
+            name: userName,
+            id: ed.id,
+            song,
+            force: !!force,
+          });
+          if (r.duplicate) return dupAsk(r.duplicate);
+          toast("Song saved", "ok");
+          ed = null;
+          await loadSongs(true);
+          go("lib");
+        } catch (e) {
+          toast(e.message, "err", 4000);
+        } finally {
+          $("#e-save").disabled = false;
+        }
+      }
+      $("#e-save").onclick = () => saveSong(false);
+
+      /* ═════ BACKGROUNDS ═════ */
+      function renderBgs() {
+        $("#bg-grid").innerHTML = [
+          ...DEF_BGS.map((u) => ({ url: u, name: "Built-in", id: "" })),
+          ...bgs,
+        ]
+          .map(
+            (b) =>
+              `<div class="bgt" title="${esc(b.name)}"><img src="${esc(b.url)}" alt="${esc(b.name || "Background")}" loading="lazy" draggable="false">${b.id ? `<button data-d="${esc(b.id)}" aria-label="Delete background">✕</button>` : ""}</div>`,
+          )
+          .join("");
+      }
+      $("#bg-grid").onclick = async (e) => {
+        const b = e.target.closest("[data-d]");
+        if (!b) return;
+        if (
+          !(await ask(
+            "Delete background?",
+            "This image will be removed from the library. Songs using it will fall back to the default look.",
+          ))
+        )
+          return;
+        try {
+          await api(null, {
+            operation: "deleteBackground",
+            name: userName,
+            id: b.dataset.d,
+          });
+          await loadBgs();
+          toast("Deleted", "ok");
+        } catch (er) {
+          toast(er.message, "err");
+        }
+      };
+      $("#bg-up").onclick = () => $("#bg-file").click();
+      $("#bg-file").onchange = async (e) => {
+        for (const f of e.target.files) {
+          try {
+            const im = await loadImg(URL.createObjectURL(f)),
+              k = Math.min(1, 1920 / im.width),
+              c = document.createElement("canvas");
+            c.width = im.width * k;
+            c.height = im.height * k;
+            c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+            const data = c.toDataURL("image/jpeg", 0.82).split(",")[1];
+            await api(null, {
+              operation: "addBackground",
+              name: userName,
+              label: f.name.replace(/\.[^.]+$/, ""),
+              mime: "image/jpeg",
+              data,
+            });
+            toast("Uploaded " + f.name, "ok", 1600);
+          } catch (er) {
+            toast("Upload failed: " + er.message, "err", 4000);
+          }
+        }
+        e.target.value = "";
+        loadBgs();
+      };
+
+      /* ═════ GRACE (guide only) ═════ */
+      const GUIDE = [
+        [
+          "Add a song",
+          "add|upload|new song|create",
+          "Admins: open Add / Edit, enter the title, author and genre, then type the lyrics one stanza per page. Use “Paste & split” to paste a whole song; blank lines become new pages.",
+        ],
+        [
+          "Format text",
+          "format|bold|colou?r|size|align|style",
+          "Tap inside a page, then use the toolbar: bold, italic, underline, A− / A+ for size, the colour box, alignment, Tx to clear formatting. The preview above shows exactly what the screen will show.",
+        ],
+        [
+          "Project on HDMI",
+          "hdmi|project|screen|projector|display",
+          "Add songs to the queue, go to Present and tap “Projector window”. Drag that window onto the HDMI screen and click once to go fullscreen. Control it from your own screen with ◀ ▶, B for blank and F for fullscreen.",
+        ],
+        [
+          "Share as image",
+          "image|share|png|picture|video ?psalm|download",
+          "Open a song and tap Images for every page as a 1920×1080 PNG, or Share image for the first page. Text downloads as a .txt file. Import the PNGs into your video or slide software.",
+        ],
+        [
+          "Duplicates",
+          "duplic|exist|already|same",
+          "When an admin saves, the title and lyrics are compared with the library. If they match you can view the existing song or save anyway. Edits are only checked when the title or lyrics change.",
+        ],
+        [
+          "Backgrounds",
+          "background|image library|bg|photo",
+          "Admins can upload backgrounds under Backgrounds and choose one per song in the editor. Animations only move the text, never the background.",
+        ],
+        [
+          "Search tips",
+          "search|find|filter",
+          "Type words to search titles and lyrics together. Narrow with genre:praise, by:name or tag:easter, or put a phrase in quotes. Use the genre chips, author list and My uploads too.",
+        ],
+      ];
+      const gl = $("#log");
+      let gq = Promise.resolve();
+      async function gsay(t, mine) {
+        const d = document.createElement("div");
+        d.className = "b" + (mine ? " me" : "");
+        gl.appendChild(d);
+        if (!mine) {
+          d.innerHTML =
+            '<div class="dots"><span></span><span></span><span></span></div>';
+          gl.scrollTop = gl.scrollHeight;
+          await sleep(450);
+        }
+        d.textContent = t;
+        gl.scrollTop = gl.scrollHeight;
+      }
+      function gask(q, label) {
+        gsay(label || q, true);
+        const g = GUIDE.find((x) => new RegExp(x[1], "i").test(q));
+        gq = gq.then(() =>
+          gsay(
+            g
+              ? g[2]
+              : "I can explain adding songs, formatting, projecting, sharing images, duplicates, backgrounds and search. Tap a topic below.",
+          ),
+        );
+      }
+      $("#gchips").innerHTML = GUIDE.map(
+        (g, i) => `<button class="chip" data-i="${i}">${g[0]}</button>`,
+      ).join("");
+      $("#gchips").onclick = (e) => {
+        const b = e.target.closest("[data-i]");
+        if (b) gask(GUIDE[b.dataset.i][1].split("|")[0], GUIDE[b.dataset.i][0]);
+      };
+      const gsend = () => {
+        const t = $("#gmsg").value.trim();
+        if (t) {
+          $("#gmsg").value = "";
+          gask(t);
+        }
+      };
+      $("#gsend").onclick = gsend;
+      $("#gmsg").onkeydown = (e) => e.key == "Enter" && gsend();
+      const gt = $("#g-toggle");
+      function setGrace(o) {
+        $("#grace").classList.toggle("collapsed", !o);
+        gt.setAttribute("aria-expanded", o);
+        LS.set("rc_sg_open", o);
+      }
+      gt.onclick = () => setGrace($("#grace").classList.contains("collapsed"));
+      gt.onkeydown = (e) => {
+        if (e.key == "Enter" || e.key == " ") {
+          e.preventDefault();
+          gt.click();
+        }
+      };
+      setGrace(LS.get("rc_sg_open", false));
+      gsay(
+        `Hello ${userName.split(" ")[0] || "friend"}! I'm Grace. Tap a topic and I'll walk you through it.`,
+      );
+
+      /* ═════ INIT ═════ */
+      if (!SCREEN)
+        addEventListener("DOMContentLoaded", async () => {
+          renderQueue();
+          renderBgs();
+          if (await loadSession())
+            await Promise.all([loadSongs(), loadBgs(), loadLive()]);
+          setInterval(() => {
+            if (!document.hidden) loadLive();
+          }, 12000);
+        });
+    </script>
+  </body>
+</html>

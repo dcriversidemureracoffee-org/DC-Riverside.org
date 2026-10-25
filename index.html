@@ -595,6 +595,21 @@
       .tile:active {
         transform: scale(0.94);
       }
+      a.tile {
+        text-decoration: none;
+        color: inherit;
+        text-align: center;
+      }
+      .tile img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        transition: 0.25s;
+      }
+      .tile:hover img {
+        transform: scale(1.12) rotate(-4deg);
+      }
 
       /* rows */
       .list-section-label {
@@ -996,8 +1011,12 @@
             </section>
 
             <section class="in" style="--i: 3">
-              <div class="lbl">GUIDES FOR YOUR HEART</div>
-              <div class="tiles" id="tiles"></div>
+              <div class="lbl">CHURCH RESOURCES</div>
+              <div class="tiles" id="resources">
+                <a href="songs.html" class="tile"
+                  ><img src="songs-icon.png" alt="" />Songs</a>
+                
+              </div>
             </section>
           </div>
 
@@ -1691,16 +1710,6 @@
           respond(k);
         };
       }
-      $("#tiles").innerHTML = Object.entries(T)
-        .map(
-          ([k, t], i) =>
-            `<button class="tile in" style="--i:${i + 3}" data-k="${k}"><span>${t.e}</span>${t.n}</button>`,
-        )
-        .join("");
-      $("#tiles").onclick = (e) => {
-        const b = e.target.closest("[data-k]");
-        if (b) topicSheet(b.dataset.k);
-      };
 
       /* ══════════ STREAK ══════════ */
       (() => {
