@@ -101,6 +101,7 @@ const STATIC_ASSETS = [
   "./split.html",
   "./announce.html",
   "./channel.html",
+   "./pledges.html",
   "./call.html",
   "./manifest.json",
   "./maskable_icon_x192.png",
