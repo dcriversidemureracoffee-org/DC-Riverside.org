@@ -1,0 +1,1318 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Pledge Handler · Riverside Connect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <meta name="theme-color" content="#0a0f1e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <style>
+      :root {
+        --ink: #e2e8f0;
+        --paper: #0a0f1e;
+        --surface: #0f172a;
+        --lift: #1a2540;
+        --wire: rgba(96, 165, 250, 0.18);
+        --steel: #64748b;
+        --lead: #94a3b8;
+        --accent: #3b82f6;
+        --accent2: #60a5fa;
+        --gold: #facc15;
+        --danger: #ef4444;
+        --green: #10b981;
+        --head: "Bebas Neue", Impact, sans-serif;
+        --body:
+          "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --bar: 54px;
+        --top: env(safe-area-inset-top, 0px);
+        --bot: env(safe-area-inset-bottom, 0px);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--body);
+        -webkit-font-smoothing: antialiased;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent2);
+        outline-offset: 2px;
+      }
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        width: 60vmax;
+        height: 60vmax;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.18;
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::before {
+        background: var(--accent);
+        top: -25vmax;
+        left: -20vmax;
+        animation: drift 18s ease-in-out infinite alternate;
+      }
+      body::after {
+        background: #6366f1;
+        bottom: -30vmax;
+        right: -20vmax;
+        animation: drift 22s ease-in-out infinite alternate-reverse;
+      }
+      @keyframes drift {
+        to {
+          transform: translate(8vmax, 6vmax) scale(1.15);
+        }
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes flash {
+        0% {
+          color: var(--gold);
+          transform: scale(1.12);
+        }
+        100% {
+          transform: none;
+        }
+      }
+
+      #topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(var(--bar) + var(--top));
+        padding: var(--top) max(10px, env(safe-area-inset-right)) 0
+          max(10px, env(safe-area-inset-left));
+        background: rgba(10, 15, 30, 0.85);
+        border-bottom: 1px solid var(--wire);
+        z-index: 900;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        backdrop-filter: blur(16px);
+      }
+      .logo {
+        font-family: var(--head);
+        font-size: 1.3rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        white-space: nowrap;
+      }
+      .sp {
+        flex: 1;
+      }
+      .ib {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        background: none;
+        border: 0;
+        border-radius: 10px;
+        color: var(--lead);
+        cursor: pointer;
+        transition: 0.2s;
+        flex-shrink: 0;
+        text-decoration: none;
+      }
+      .ib:hover {
+        color: var(--accent2);
+        background: var(--lift);
+      }
+      .ib:active {
+        transform: scale(0.88);
+      }
+      .ib svg {
+        width: 19px;
+        height: 19px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        pointer-events: none;
+      }
+
+      #main {
+        position: fixed;
+        top: calc(var(--bar) + var(--top));
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        z-index: 1;
+        padding-bottom: calc(30px + var(--bot));
+      }
+      .wrap {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 14px max(14px, env(safe-area-inset-left)) 10px
+          max(14px, env(safe-area-inset-right));
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card {
+        background: linear-gradient(
+          160deg,
+          rgba(26, 37, 64, 0.7),
+          rgba(15, 23, 42, 0.8)
+        );
+        border: 1px solid var(--wire);
+        border-radius: 18px;
+        padding: 14px;
+        backdrop-filter: blur(8px);
+      }
+      .lbl {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--steel);
+        margin: 10px 2px 6px;
+      }
+      .mut {
+        color: var(--lead);
+        font-size: 0.82rem;
+      }
+
+      .chips {
+        display: flex;
+        gap: 7px;
+        overflow-x: auto;
+        padding: 2px 0 4px;
+        scrollbar-width: none;
+      }
+      .chips::-webkit-scrollbar {
+        display: none;
+      }
+      .chip {
+        flex-shrink: 0;
+        padding: 8px 14px;
+        border-radius: 99px;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(96, 165, 250, 0.28);
+        color: var(--accent2);
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .chip:active {
+        transform: scale(0.94);
+      }
+      .chip.hl {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: rgba(250, 204, 21, 0.08);
+      }
+      .btn {
+        background: var(--accent);
+        color: #fff;
+        border: 0;
+        border-radius: 99px;
+        padding: 10px 16px;
+        font-weight: 700;
+        font-size: 0.84rem;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn:hover {
+        background: #2563eb;
+      }
+      .btn:active {
+        transform: scale(0.95);
+      }
+      .btn.ghost {
+        background: rgba(96, 165, 250, 0.1);
+        color: var(--accent2);
+        border: 1px solid var(--wire);
+      }
+      .btn.danger {
+        background: rgba(239, 68, 68, 0.14);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      .btn.wide {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      /* summary */
+      .s-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .cname {
+        font-family: var(--head);
+        font-size: 1.5rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        line-height: 1.1;
+      }
+      .total {
+        font-family: var(--head);
+        font-size: 3rem;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        margin-top: 6px;
+        color: #fff;
+      }
+      .total.fl {
+        animation: flash 0.7s;
+      }
+      .trio {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .trio div {
+        background: var(--lift);
+        border-radius: 12px;
+        padding: 8px 10px;
+        min-width: 0;
+      }
+      .trio span {
+        display: block;
+        font-size: 0.68rem;
+        color: var(--steel);
+        font-weight: 700;
+      }
+      .trio b {
+        display: block;
+        font-size: 0.88rem;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .bar {
+        height: 7px;
+        border-radius: 9px;
+        background: var(--lift);
+        overflow: hidden;
+        margin-top: 12px;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        border-radius: 9px;
+        background: linear-gradient(90deg, var(--accent), var(--green));
+        transition: width 0.5s cubic-bezier(0.2, 0.9, 0.25, 1);
+      }
+
+      /* toolbar + pager */
+      .tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .tools .cnt {
+        flex: 1;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--lead);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #pager {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        align-items: flex-start;
+        scrollbar-width: none;
+        overscroll-behavior-x: contain;
+      }
+      #pager::-webkit-scrollbar {
+        display: none;
+      }
+      .slide {
+        flex: 0 0 100%;
+        min-width: 0;
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+      }
+      .p-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .p-av {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #6366f1);
+        display: grid;
+        place-items: center;
+        font-family: var(--head);
+        font-size: 1.5rem;
+        flex-shrink: 0;
+      }
+      .p-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .p-top > div:nth-child(2) {
+        flex: 1;
+        min-width: 0;
+      }
+      .nums {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .nums div {
+        background: var(--lift);
+        border-radius: 12px;
+        padding: 10px 12px;
+      }
+      .nums span {
+        font-size: 0.7rem;
+        color: var(--steel);
+        font-weight: 700;
+      }
+      .nums b {
+        display: block;
+        font-size: 1.08rem;
+        margin-top: 2px;
+      }
+      .nums .bal b {
+        color: var(--gold);
+      }
+      .nums .bal.done b {
+        color: #34d399;
+      }
+      .plus {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin: 16px auto 4px;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        color: var(--lead);
+        font-size: 0.78rem;
+      }
+      .plus b {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), #6366f1);
+        color: #fff;
+        font-size: 2rem;
+        font-weight: 300;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 8px 22px rgba(59, 130, 246, 0.35);
+        transition: 0.2s;
+      }
+      .plus:active b {
+        transform: scale(0.9);
+      }
+      .pay {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        background: var(--lift);
+        border-radius: 10px;
+        margin-bottom: 6px;
+        font-size: 0.86rem;
+      }
+      .pay div {
+        flex: 1;
+        min-width: 0;
+      }
+      .pay small {
+        display: block;
+        color: var(--steel);
+        font-size: 0.72rem;
+      }
+      .pay button {
+        background: none;
+        border: 0;
+        color: var(--steel);
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 2px 6px;
+      }
+      .rcpt {
+        background: var(--paper);
+        border: 1px dashed rgba(96, 165, 250, 0.35);
+        border-radius: 12px;
+        padding: 12px;
+        font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 0.74rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: var(--ink);
+        user-select: text;
+      }
+      .row2 {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .row2 .btn {
+        flex: 1;
+      }
+      .empty {
+        text-align: center;
+        padding: 26px 10px;
+        color: var(--lead);
+        line-height: 1.6;
+        font-size: 0.9rem;
+      }
+      .empty b {
+        display: block;
+        font-family: var(--head);
+        font-size: 1.6rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        font-weight: 400;
+        margin-bottom: 4px;
+      }
+
+      /* sheet */
+      #scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+        z-index: 1000;
+      }
+      #scrim.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #sheet {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        width: min(640px, 100%);
+        max-height: 86dvh;
+        background: var(--surface);
+        border: 1px solid var(--wire);
+        border-radius: 22px 22px 0 0;
+        z-index: 1001;
+        transform: translate(-50%, 105%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      #sheet.show {
+        transform: translate(-50%, 0);
+      }
+      .grab {
+        width: 42px;
+        height: 4px;
+        border-radius: 9px;
+        background: var(--steel);
+        margin: 9px auto 4px;
+        opacity: 0.5;
+      }
+      .sh-h {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 18px;
+      }
+      .sh-h h3 {
+        font-family: var(--head);
+        font-size: 1.5rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        font-weight: 400;
+      }
+      #sh-b {
+        overflow-y: auto;
+        padding: 4px 16px calc(20px + var(--bot));
+      }
+      .fld {
+        width: 100%;
+        background: var(--paper);
+        border: 1px solid var(--wire);
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        margin-top: 8px;
+        transition: 0.2s;
+      }
+      .fld:focus {
+        border-color: var(--accent2);
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+      }
+      .fl-l {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--steel);
+        margin: 12px 2px 0;
+        display: block;
+      }
+      .after {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: rgba(250, 204, 21, 0.08);
+        color: var(--gold);
+        font-size: 0.86rem;
+      }
+      .lrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        text-align: left;
+        padding: 10px 12px;
+        background: var(--lift);
+        border: 1px solid var(--wire);
+        border-radius: 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .lrow .p-av {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+      }
+      .lrow div {
+        flex: 1;
+        min-width: 0;
+      }
+      .lrow b {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.94rem;
+      }
+      .lrow small {
+        color: var(--lead);
+        font-size: 0.78rem;
+      }
+      .tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 3px 9px;
+        border-radius: 99px;
+        background: rgba(250, 204, 21, 0.12);
+        color: var(--gold);
+        white-space: nowrap;
+      }
+      .tag.ok {
+        background: rgba(16, 185, 129, 0.18);
+        color: #34d399;
+      }
+
+      #toast-area {
+        position: fixed;
+        top: calc(var(--bar) + var(--top) + 10px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        pointer-events: none;
+        align-items: center;
+      }
+      .toast-msg {
+        padding: 9px 16px;
+        border-radius: 99px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+        animation: pop 0.3s;
+        max-width: 92vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .toast-msg.ok {
+        background: rgba(16, 185, 129, 0.94);
+      }
+      .toast-msg.err {
+        background: rgba(239, 68, 68, 0.94);
+      }
+      .toast-msg.inf {
+        background: rgba(59, 130, 246, 0.94);
+      }
+
+      #lock {
+        position: fixed;
+        inset: 0;
+        background: var(--paper);
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 32px;
+        text-align: center;
+      }
+      #lock[hidden] {
+        display: none;
+      }
+      #lock .pending-title {
+        font-family: var(--head);
+        font-size: 2rem;
+        letter-spacing: 0.08em;
+        color: var(--lead);
+      }
+      #lock .fld {
+        max-width: 260px;
+        text-align: center;
+        letter-spacing: 0.4em;
+      }
+      #lock .btn {
+        width: 100%;
+        max-width: 260px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+        #pager {
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="topbar">
+      <a href="index.html" class="ib" aria-label="Back"
+        ><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg
+      ></a>
+      <div class="logo">PLEDGE HANDLER</div>
+      <div class="sp"></div>
+      <button class="ib" data-a="lock" aria-label="Lock">
+        <svg viewBox="0 0 24 24">
+          <rect x="4" y="11" width="16" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+      </button>
+    </header>
+
+    <main id="main">
+      <div class="wrap">
+        <div class="chips" id="cats"></div>
+        <section class="card" id="sum"></section>
+        <div class="tools" id="tools">
+          <button class="ib" data-a="prev" aria-label="Previous person">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+          <div class="cnt" id="cnt"></div>
+          <button class="ib" data-a="next" aria-label="Next person">
+            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+          </button>
+          <button class="btn ghost" data-a="list">All names</button>
+          <button class="btn" data-a="adduser">+ Person</button>
+        </div>
+        <div id="pager"></div>
+      </div>
+    </main>
+
+    <div id="scrim"></div>
+    <div id="sheet" role="dialog" aria-modal="true">
+      <div class="grab"></div>
+      <div class="sh-h">
+        <h3 id="sh-t"></h3>
+        <button class="ib" id="sh-x" aria-label="Close">
+          <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <div id="sh-b"></div>
+    </div>
+
+    <div id="lock" hidden>
+      <div style="font-size: 3rem">🔐</div>
+      <div class="pending-title" id="lock-t">ADMIN ONLY</div>
+      <p class="mut" id="lock-s" style="max-width: 280px"></p>
+      <input
+        class="fld"
+        id="pin"
+        type="password"
+        inputmode="numeric"
+        autocomplete="off"
+        maxlength="12"
+        placeholder="PIN"
+        aria-label="PIN"
+      />
+      <input
+        class="fld"
+        id="pin2"
+        type="password"
+        inputmode="numeric"
+        autocomplete="off"
+        maxlength="12"
+        placeholder="Repeat PIN"
+        aria-label="Repeat PIN"
+        hidden
+      />
+      <button class="btn" id="lock-go">Unlock</button>
+      <a href="index.html" class="mut" style="margin-top: 6px"
+        >Back to Riverside Connect</a
+      >
+    </div>
+    <div id="toast-area"></div>
+
+    <script>
+      "use strict";
+      if (!localStorage.getItem("userName")) location.href = "login.html";
+
+      const $ = (s) => document.querySelector(s);
+      const KEY = "rc_pledges_v1",
+        CUR = "KES",
+        GAP = 12;
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const uid = () =>
+        Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const num = (v) => {
+        const n = parseFloat(String(v).replace(/,/g, ""));
+        return isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 0;
+      };
+      const fmt = (n) =>
+        CUR + " " + (+n).toLocaleString("en-KE", { maximumFractionDigits: 2 });
+      const fd = (ts) =>
+        new Date(ts).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      const ft = (ts) =>
+        fd(ts) +
+        ", " +
+        new Date(ts).toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      function toast(m, t = "inf", d = 2600) {
+        const e = document.createElement("div");
+        e.className = "toast-msg " + t;
+        e.textContent = m;
+        $("#toast-area").appendChild(e);
+        setTimeout(() => e.remove(), d);
+      }
+      async function copy(t) {
+        try {
+          await navigator.clipboard.writeText(t);
+          toast("Receipt copied", "ok", 1500);
+        } catch {
+          const a = document.createElement("textarea");
+          a.value = t;
+          document.body.appendChild(a);
+          a.select();
+          try {
+            document.execCommand("copy");
+            toast("Receipt copied", "ok", 1500);
+          } catch {
+            toast("Could not copy", "err");
+          }
+          a.remove();
+        }
+      }
+
+      /* ── data ── */
+      let S = {};
+      try {
+        S = JSON.parse(localStorage.getItem(KEY)) || {};
+      } catch {}
+      S.cats = Array.isArray(S.cats) ? S.cats : [];
+      const save = () => {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(S));
+        } catch {
+          toast("Storage full — could not save", "err");
+        }
+      };
+      const paid = (m) => m.pays.reduce((a, p) => a + p.amt, 0);
+      const cat = () => S.cats.find((c) => c.id === S.active) || S.cats[0];
+      const mem = (id) => (cat()?.members || []).find((m) => m.id === id);
+      let idx = 0,
+        lastTotal = null;
+
+      /* ── admin PIN ── */
+      const sha = async (t) => {
+        try {
+          const b = await crypto.subtle.digest(
+            "SHA-256",
+            new TextEncoder().encode("rcpl:" + t),
+          );
+          return [...new Uint8Array(b)]
+            .map((x) => x.toString(16).padStart(2, "0"))
+            .join("");
+        } catch {
+          return btoa("rcpl:" + t);
+        }
+      };
+      function showLock() {
+        sessionStorage.removeItem("rc_pl_ok");
+        const setup = !S.pin;
+        $("#lock-t").textContent = setup ? "SET ADMIN PIN" : "ADMIN ONLY";
+        $("#lock-s").textContent = setup
+          ? "Choose a PIN (4+ digits). You'll use it each time you open this page."
+          : "Enter your admin PIN to continue.";
+        $("#pin2").hidden = !setup;
+        $("#pin").value = "";
+        $("#pin2").value = "";
+        $("#lock-go").textContent = setup ? "Save PIN" : "Unlock";
+        $("#lock").hidden = false;
+        setTimeout(() => $("#pin").focus(), 60);
+      }
+      function unlock() {
+        sessionStorage.setItem("rc_pl_ok", "1");
+        $("#lock").hidden = true;
+        render();
+      }
+      async function tryLock() {
+        const p = $("#pin").value.trim();
+        if (p.length < 4) return toast("PIN needs at least 4 digits", "err");
+        if (!S.pin) {
+          if (p !== $("#pin2").value.trim())
+            return toast("PINs don't match", "err");
+          S.pin = await sha(p);
+          save();
+          unlock();
+        } else if ((await sha(p)) === S.pin) unlock();
+        else {
+          toast("Wrong PIN", "err");
+          $("#pin").value = "";
+        }
+      }
+      $("#lock-go").onclick = tryLock;
+      $("#lock").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") tryLock();
+      });
+
+      /* ── sheet ── */
+      function openSheet(t, h) {
+        $("#sh-t").textContent = t;
+        $("#sh-b").innerHTML = h;
+        $("#scrim").classList.add("show");
+        $("#sheet").classList.add("show");
+        const f = $("#sh-b .fld");
+        if (f) setTimeout(() => f.focus(), 350);
+      }
+      function closeSheet() {
+        $("#scrim").classList.remove("show");
+        $("#sheet").classList.remove("show");
+      }
+      $("#scrim").onclick = $("#sh-x").onclick = closeSheet;
+      addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeSheet();
+      });
+      $("#sh-b").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && e.target.tagName === "INPUT")
+          $("#ok")?.click();
+      });
+
+      /* ── receipt ── */
+      function receipt(c, m) {
+        const L = "━━━━━━━━━━━━━━━━━━━━━━",
+          l = "──────────────────────";
+        const p = paid(m),
+          b = m.pledge - p;
+        const no = (
+          "RC-" +
+          c.id.slice(-3) +
+          m.id.slice(-3) +
+          "-" +
+          String(m.pays.length).padStart(2, "0")
+        ).toUpperCase();
+        const rows = m.pays.length
+          ? m.pays
+              .map(
+                (x, i) =>
+                  `${i + 1}. ${fd(x.ts)}  ${fmt(x.amt)}${x.note ? " (" + x.note + ")" : ""}`,
+              )
+              .join("\n")
+          : "No payments yet";
+        const status =
+          m.pledge > 0
+            ? b <= 0
+              ? "FULLY PAID ✅"
+              : "PARTIAL ⏳"
+            : "CONTRIBUTION";
+        const out = [
+          L,
+          "   RIVERSIDE CONNECT",
+          "   PAYMENT RECEIPT",
+          L,
+          `Receipt No: ${no}`,
+          `Date: ${ft(Date.now())}`,
+          `Category: ${c.name}`,
+          `Received from: ${m.name}`,
+          l,
+          "PAYMENTS",
+          rows,
+          l,
+        ];
+        if (m.pledge > 0) out.push(`Pledged:  ${fmt(m.pledge)}`);
+        out.push(`Paid:     ${fmt(p)}`);
+        if (m.pledge > 0)
+          out.push(b >= 0 ? `Balance:  ${fmt(b)}` : `Overpaid: ${fmt(-b)}`);
+        out.push(L, `Status: ${status}`, "Thank you & God bless 🙏");
+        return out.join("\n");
+      }
+
+      /* ── render ── */
+      function render() {
+        if (sessionStorage.getItem("rc_pl_ok") !== "1") return;
+        const c = cat();
+        if (c) S.active = c.id;
+        $("#cats").innerHTML =
+          S.cats
+            .map(
+              (x) =>
+                `<button class="chip${c && x.id === c.id ? " hl" : ""}" data-a="cat" data-id="${x.id}">${esc(x.name)}</button>`,
+            )
+            .join("") +
+          `<button class="chip" data-a="newcat">＋ Category</button>`;
+        const sum = $("#sum"),
+          pager = $("#pager");
+        if (!c) {
+          sum.innerHTML = `<div class="empty"><b>NO CATEGORIES YET</b>Create one (like “Building Fund” or “Welfare”), then add people and their pledges.</div>`;
+          $("#tools").hidden = true;
+          pager.innerHTML = "";
+          return;
+        }
+        $("#tools").hidden = false;
+        const ms = c.members;
+        const total = ms.reduce((a, m) => a + paid(m), 0);
+        const pledged = ms.reduce((a, m) => a + m.pledge, 0);
+        const out = ms.reduce((a, m) => a + Math.max(0, m.pledge - paid(m)), 0);
+        const pct = pledged > 0 ? Math.min(100, (total / pledged) * 100) : 0;
+        sum.innerHTML = `<div class="s-head"><div><div class="cname">${esc(c.name)}</div><div class="mut">Total collected</div></div><button class="ib" data-a="delcat" aria-label="Delete category"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg></button></div>
+          <div class="total${lastTotal !== null && lastTotal !== total ? " fl" : ""}">${fmt(total)}</div>
+          <div class="trio"><div><span>Pledged</span><b>${fmt(pledged)}</b></div><div><span>Outstanding</span><b>${fmt(out)}</b></div><div><span>People</span><b>${ms.length}</b></div></div>
+          <div class="bar"><i style="width:${pct}%"></i></div>`;
+        lastTotal = total;
+        if (!ms.length) {
+          pager.innerHTML = `<div class="card empty" style="flex:0 0 100%"><b>NO ONE YET</b>Tap “+ Person” to add the first name in ${esc(c.name)}.</div>`;
+          $("#cnt").textContent = "";
+          return;
+        }
+        idx = Math.min(idx, ms.length - 1);
+        pager.innerHTML = ms
+          .map((m) => {
+            const p = paid(m),
+              b = m.pledge - p,
+              done = m.pledge > 0 && b <= 0;
+            const pc =
+              m.pledge > 0
+                ? Math.min(100, (p / m.pledge) * 100)
+                : p > 0
+                  ? 100
+                  : 0;
+            const pays = m.pays.length
+              ? m.pays
+                  .map(
+                    (x) =>
+                      `<div class="pay"><div><b>${fmt(x.amt)}</b>${x.note ? " · " + esc(x.note) : ""}<small>${ft(x.ts)}</small></div><button data-a="delpay" data-m="${m.id}" data-id="${x.id}" aria-label="Remove payment">✕</button></div>`,
+                  )
+                  .join("")
+              : `<div class="mut" style="padding:4px 2px">No payments yet.</div>`;
+            return `<div class="slide"><div class="card">
+            <div class="p-top"><div class="p-av">${esc((m.name[0] || "?").toUpperCase())}</div><div><div class="p-name">${esc(m.name)}</div><div class="mut">${m.pledge > 0 ? "Pledge " + fmt(m.pledge) : "No pledge set"}</div></div><button class="ib" data-a="editm" data-m="${m.id}" aria-label="Edit person"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg></button></div>
+            <div class="nums"><div><span>Paid</span><b>${fmt(p)}</b></div><div class="bal${done ? " done" : ""}"><span>${m.pledge <= 0 ? "Balance" : b < 0 ? "Overpaid" : "Balance"}</span><b>${m.pledge <= 0 ? "—" : fmt(Math.abs(b))}</b></div></div>
+            <div class="bar"><i style="width:${pc}%"></i></div>
+            <button class="plus" data-a="addamt" data-m="${m.id}"><b>+</b>Add amount</button>
+            <div class="lbl">PAYMENTS</div>${pays}
+            <div class="lbl">RECEIPT</div><pre class="rcpt">${esc(receipt(c, m))}</pre>
+            <div class="row2"><button class="btn" data-a="copy" data-m="${m.id}">Copy receipt</button><button class="btn ghost" data-a="share" data-m="${m.id}">Share</button></div>
+          </div></div>`;
+          })
+          .join("");
+        pager.scrollLeft = idx * (pager.clientWidth + GAP);
+        updNav();
+      }
+      function updNav() {
+        const ms = cat()?.members || [];
+        $("#cnt").textContent = ms.length
+          ? `${idx + 1} / ${ms.length} · ${ms[idx]?.name || ""}`
+          : "";
+      }
+      function goTo(i) {
+        const n = (cat()?.members || []).length;
+        if (!n) return;
+        idx = Math.max(0, Math.min(n - 1, i));
+        updNav();
+        const p = $("#pager");
+        p.scrollTo({ left: idx * (p.clientWidth + GAP), behavior: "smooth" });
+      }
+      let st;
+      $("#pager").addEventListener("scroll", () => {
+        clearTimeout(st);
+        st = setTimeout(() => {
+          const p = $("#pager"),
+            i = Math.round(p.scrollLeft / (p.clientWidth + GAP));
+          if (i !== idx && cat()?.members[i]) {
+            idx = i;
+            updNav();
+          }
+        }, 80);
+      });
+
+      /* ── sheets ── */
+      function newCat() {
+        openSheet(
+          "New category",
+          `<input class="fld" id="f1" placeholder="e.g. Building Fund" maxlength="40" /><button class="btn wide" id="ok">Create category</button>`,
+        );
+        $("#ok").onclick = () => {
+          const n = $("#f1").value.trim();
+          if (!n) return toast("Enter a category name", "err");
+          const c = { id: uid(), name: n, members: [] };
+          S.cats.push(c);
+          S.active = c.id;
+          idx = 0;
+          lastTotal = null;
+          save();
+          closeSheet();
+          render();
+          toast("Category created", "ok");
+        };
+      }
+      function addUser() {
+        const c = cat();
+        if (!c) return;
+        openSheet(
+          "Add person",
+          `<label class="fl-l" for="f1">Name</label><input class="fld" id="f1" placeholder="Full name" maxlength="50" />
+          <label class="fl-l" for="f2">Pledge amount (optional)</label><input class="fld" id="f2" inputmode="decimal" placeholder="${CUR} 0" /><button class="btn wide" id="ok">Add to ${esc(c.name)}</button>`,
+        );
+        $("#ok").onclick = () => {
+          const n = $("#f1").value.trim();
+          if (!n) return toast("Enter a name", "err");
+          c.members.push({
+            id: uid(),
+            name: n,
+            pledge: num($("#f2").value),
+            pays: [],
+          });
+          idx = c.members.length - 1;
+          save();
+          closeSheet();
+          render();
+          toast(n + " added", "ok");
+        };
+      }
+      function addAmt(id) {
+        const m = mem(id);
+        if (!m) return;
+        const bal = m.pledge - paid(m);
+        openSheet(
+          "Add amount",
+          `<div class="mut"><b style="color:var(--ink)">${esc(m.name)}</b>${m.pledge > 0 ? " · balance " + fmt(Math.max(0, bal)) : ""}</div>
+          <input class="fld" id="f1" inputmode="decimal" placeholder="${CUR} 0" />
+          <input class="fld" id="f2" placeholder="Note (optional) e.g. M-Pesa, cash" maxlength="40" />
+          <div class="after" id="aft" ${m.pledge > 0 ? "" : "hidden"}></div>
+          ${bal > 0 ? `<button class="btn ghost wide" id="full">Pay full balance (${fmt(bal)})</button>` : ""}
+          <button class="btn wide" id="ok">Save payment</button>`,
+        );
+        const upd = () => {
+          const a = num($("#f1").value),
+            r = bal - a;
+          $("#aft").textContent =
+            r >= 0 ? `Balance after: ${fmt(r)}` : `Overpaid by ${fmt(-r)}`;
+        };
+        $("#f1").oninput = upd;
+        upd();
+        if ($("#full"))
+          $("#full").onclick = () => {
+            $("#f1").value = bal;
+            upd();
+          };
+        $("#ok").onclick = () => {
+          const a = num($("#f1").value);
+          if (!a) return toast("Enter an amount above 0", "err");
+          m.pays.push({
+            id: uid(),
+            amt: a,
+            ts: Date.now(),
+            note: $("#f2").value.trim(),
+          });
+          save();
+          closeSheet();
+          render();
+          toast(fmt(a) + " recorded", "ok");
+        };
+      }
+      function editM(id) {
+        const m = mem(id);
+        if (!m) return;
+        openSheet(
+          "Edit person",
+          `<label class="fl-l" for="f1">Name</label><input class="fld" id="f1" value="${esc(m.name)}" maxlength="50" />
+          <label class="fl-l" for="f2">Pledge amount</label><input class="fld" id="f2" inputmode="decimal" value="${m.pledge || ""}" placeholder="${CUR} 0" />
+          <button class="btn wide" id="ok">Save changes</button><button class="btn danger wide" id="del">Remove person</button>`,
+        );
+        $("#ok").onclick = () => {
+          const n = $("#f1").value.trim();
+          if (!n) return toast("Enter a name", "err");
+          m.name = n;
+          m.pledge = num($("#f2").value);
+          save();
+          closeSheet();
+          render();
+          toast("Saved", "ok");
+        };
+        $("#del").onclick = () => {
+          if (!confirm(`Remove ${m.name} and all their payments?`)) return;
+          const c = cat();
+          c.members = c.members.filter((x) => x.id !== id);
+          idx = Math.max(0, idx - 1);
+          save();
+          closeSheet();
+          render();
+          toast("Removed", "inf");
+        };
+      }
+      function listAll() {
+        const c = cat();
+        if (!c) return;
+        const rows = c.members
+          .map((m, i) => {
+            const b = m.pledge - paid(m),
+              ok = m.pledge > 0 && b <= 0;
+            return `<button class="lrow" data-a="go" data-i="${i}"><div class="p-av">${esc((m.name[0] || "?").toUpperCase())}</div><div><b>${esc(m.name)}</b><small>Paid ${fmt(paid(m))}${m.pledge > 0 ? " of " + fmt(m.pledge) : ""}</small></div><span class="tag${ok ? " ok" : ""}">${m.pledge <= 0 ? "No pledge" : ok ? "Cleared" : fmt(b)}</span></button>`;
+          })
+          .join("");
+        openSheet(c.name, rows || `<div class="empty">No names yet.</div>`);
+      }
+
+      /* ── actions ── */
+      const A = {
+        cat: (t) => {
+          S.active = t.dataset.id;
+          idx = 0;
+          lastTotal = null;
+          save();
+          render();
+        },
+        newcat: newCat,
+        adduser: addUser,
+        list: listAll,
+        lock: showLock,
+        addamt: (t) => addAmt(t.dataset.m),
+        editm: (t) => editM(t.dataset.m),
+        prev: () => goTo(idx - 1),
+        next: () => goTo(idx + 1),
+        go: (t) => {
+          closeSheet();
+          goTo(+t.dataset.i);
+        },
+        delcat: () => {
+          const c = cat();
+          if (
+            !c ||
+            !confirm(`Delete “${c.name}” with all its people and payments?`)
+          )
+            return;
+          S.cats = S.cats.filter((x) => x.id !== c.id);
+          S.active = S.cats[0]?.id;
+          idx = 0;
+          lastTotal = null;
+          save();
+          render();
+        },
+        delpay: (t) => {
+          const m = mem(t.dataset.m);
+          if (!m || !confirm("Remove this payment?")) return;
+          m.pays = m.pays.filter((x) => x.id !== t.dataset.id);
+          save();
+          render();
+        },
+        copy: (t) => {
+          const m = mem(t.dataset.m);
+          if (m) copy(receipt(cat(), m));
+        },
+        share: (t) => {
+          const m = mem(t.dataset.m);
+          if (!m) return;
+          const txt = receipt(cat(), m);
+          if (navigator.share) navigator.share({ text: txt }).catch(() => {});
+          else copy(txt);
+        },
+      };
+      document.addEventListener("click", (e) => {
+        const t = e.target.closest("[data-a]");
+        if (t && A[t.dataset.a]) A[t.dataset.a](t);
+      });
+
+      /* ── init ── */
+      if (sessionStorage.getItem("rc_pl_ok") === "1") render();
+      else showLock();
+    </script>
+  </body>
+</html>
