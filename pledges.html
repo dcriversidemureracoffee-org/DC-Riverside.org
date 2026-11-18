@@ -46,6 +46,9 @@
         box-sizing: border-box;
         -webkit-tap-highlight-color: transparent;
       }
+      [hidden] {
+        display: none !important;
+      }
       html,
       body {
         height: 100%;
@@ -56,7 +59,8 @@
         -webkit-font-smoothing: antialiased;
       }
       button,
-      input {
+      input,
+      textarea {
         font: inherit;
         color: inherit;
       }
@@ -110,6 +114,11 @@
         }
         100% {
           transform: none;
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
       }
 
@@ -171,6 +180,9 @@
         stroke-linejoin: round;
         pointer-events: none;
       }
+      .ib.spinning svg {
+        animation: spin 0.8s linear infinite;
+      }
 
       #main {
         position: fixed;
@@ -226,6 +238,9 @@
         display: none;
       }
       .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         flex-shrink: 0;
         padding: 8px 14px;
         border-radius: 99px;
@@ -236,6 +251,41 @@
         font-weight: 500;
         cursor: pointer;
         transition: 0.2s;
+        white-space: nowrap;
+      }
+      .chip small {
+        font-size: 0.74rem;
+        opacity: 0.7;
+      }
+      .c-av {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      .s-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+      .s-av {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        object-fit: cover;
+        border: 2px solid var(--wire);
+        flex-shrink: 0;
+      }
+      .prev {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        object-fit: cover;
+        border: 2px solid var(--wire);
+        margin: 10px auto 0;
+        display: block;
       }
       .chip:active {
         transform: scale(0.94);
@@ -261,6 +311,10 @@
       }
       .btn:active {
         transform: scale(0.95);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        pointer-events: none;
       }
       .btn.ghost {
         background: rgba(96, 165, 250, 0.1);
@@ -344,12 +398,17 @@
       }
 
       /* toolbar + pager */
-      .tools {
+      #tools {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .nav {
         display: flex;
         align-items: center;
         gap: 8px;
       }
-      .tools .cnt {
+      .nav .cnt {
         flex: 1;
         text-align: center;
         font-size: 0.8rem;
@@ -358,6 +417,14 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      .acts {
+        display: flex;
+        gap: 8px;
+      }
+      .acts .btn {
+        flex: 1;
+        padding: 10px 8px;
       }
       #pager {
         display: flex;
@@ -459,32 +526,13 @@
       .plus:active b {
         transform: scale(0.9);
       }
-      .pay {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      .note {
+        margin-top: 12px;
         padding: 8px 10px;
         background: var(--lift);
         border-radius: 10px;
-        margin-bottom: 6px;
-        font-size: 0.86rem;
-      }
-      .pay div {
-        flex: 1;
-        min-width: 0;
-      }
-      .pay small {
-        display: block;
-        color: var(--steel);
-        font-size: 0.72rem;
-      }
-      .pay button {
-        background: none;
-        border: 0;
-        color: var(--steel);
-        font-size: 1.1rem;
-        cursor: pointer;
-        padding: 2px 6px;
+        font-size: 0.82rem;
+        color: var(--lead);
       }
       .rcpt {
         background: var(--paper);
@@ -627,9 +675,10 @@
       .lrow .p-av {
         width: 40px;
         height: 40px;
+        flex: 0 0 40px;
         font-size: 1.2rem;
       }
-      .lrow div {
+      .lrow > div:not(.p-av) {
         flex: 1;
         min-width: 0;
       }
@@ -692,7 +741,7 @@
         background: rgba(59, 130, 246, 0.94);
       }
 
-      #lock {
+      #gate {
         position: fixed;
         inset: 0;
         background: var(--paper);
@@ -705,21 +754,13 @@
         padding: 32px;
         text-align: center;
       }
-      #lock[hidden] {
-        display: none;
-      }
-      #lock .pending-title {
+      #gate .g-title {
         font-family: var(--head);
         font-size: 2rem;
         letter-spacing: 0.08em;
         color: var(--lead);
       }
-      #lock .fld {
-        max-width: 260px;
-        text-align: center;
-        letter-spacing: 0.4em;
-      }
-      #lock .btn {
+      #gate .btn {
         width: 100%;
         max-width: 260px;
       }
@@ -744,10 +785,10 @@
       ></a>
       <div class="logo">PLEDGE HANDLER</div>
       <div class="sp"></div>
-      <button class="ib" data-a="lock" aria-label="Lock">
+      <button class="ib" id="refresh-btn" data-a="refresh" aria-label="Refresh">
         <svg viewBox="0 0 24 24">
-          <rect x="4" y="11" width="16" height="10" rx="2" />
-          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
+          <path d="M21 3v5h-5" />
         </svg>
       </button>
     </header>
@@ -756,16 +797,21 @@
       <div class="wrap">
         <div class="chips" id="cats"></div>
         <section class="card" id="sum"></section>
-        <div class="tools" id="tools">
-          <button class="ib" data-a="prev" aria-label="Previous person">
-            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
-          </button>
-          <div class="cnt" id="cnt"></div>
-          <button class="ib" data-a="next" aria-label="Next person">
-            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
-          </button>
-          <button class="btn ghost" data-a="list">All names</button>
-          <button class="btn" data-a="adduser">+ Person</button>
+        <div id="tools" hidden>
+          <div class="nav">
+            <button class="ib" data-a="prev" aria-label="Previous person">
+              <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+            </button>
+            <div class="cnt" id="cnt"></div>
+            <button class="ib" data-a="next" aria-label="Next person">
+              <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+            </button>
+          </div>
+          <div class="acts">
+            <button class="btn ghost" data-a="list">All names</button>
+            <button class="btn ghost" data-a="report">Report</button>
+            <button class="btn" id="add-btn" data-a="adduser">+ Person</button>
+          </div>
         </div>
         <div id="pager"></div>
       </div>
@@ -783,32 +829,13 @@
       <div id="sh-b"></div>
     </div>
 
-    <div id="lock" hidden>
+    <div id="gate">
       <div style="font-size: 3rem">🔐</div>
-      <div class="pending-title" id="lock-t">ADMIN ONLY</div>
-      <p class="mut" id="lock-s" style="max-width: 280px"></p>
-      <input
-        class="fld"
-        id="pin"
-        type="password"
-        inputmode="numeric"
-        autocomplete="off"
-        maxlength="12"
-        placeholder="PIN"
-        aria-label="PIN"
-      />
-      <input
-        class="fld"
-        id="pin2"
-        type="password"
-        inputmode="numeric"
-        autocomplete="off"
-        maxlength="12"
-        placeholder="Repeat PIN"
-        aria-label="Repeat PIN"
-        hidden
-      />
-      <button class="btn" id="lock-go">Unlock</button>
+      <div class="g-title" id="g-t">CHECKING ACCESS</div>
+      <p class="mut" id="g-s" style="max-width: 290px">
+        Verifying your treasurer role…
+      </p>
+      <button class="btn" id="g-btn" hidden>Try again</button>
       <a href="index.html" class="mut" style="margin-top: 6px"
         >Back to Riverside Connect</a
       >
@@ -817,12 +844,15 @@
 
     <script>
       "use strict";
-      if (!localStorage.getItem("userName")) location.href = "login.html";
+      const API =
+        "https://script.google.com/macros/s/AKfycbwWv2rfL2mpy-62lwwPDBFVvTklnu43tVQ-IHMz-FW_h58slnPLSRWQ8HhS2UJoVIym/exec";
+      const ME = localStorage.getItem("userName") || "";
+      if (!ME) location.href = "login.html";
 
       const $ = (s) => document.querySelector(s);
-      const KEY = "rc_pledges_v1",
-        CUR = "KES",
-        GAP = 12;
+      const CUR = "KES",
+        GAP = 12,
+        CK = "rc_pl_cache";
       const esc = (s) =>
         String(s ?? "").replace(
           /[&<>"']/g,
@@ -835,22 +865,32 @@
               "'": "&#39;",
             })[c],
         );
-      const uid = () =>
-        Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       const num = (v) => {
         const n = parseFloat(String(v).replace(/,/g, ""));
         return isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 0;
       };
-      const fmt = (n) =>
-        CUR + " " + (+n).toLocaleString("en-KE", { maximumFractionDigits: 2 });
-      const fd = (ts) =>
+      const n2 = (n) =>
+        (+n).toLocaleString("en-KE", { maximumFractionDigits: 2 });
+      const fmt = (n) => CUR + " " + n2(n);
+      const short = (n) => {
+        const f = (v, u) => v / 10 + u;
+        return n >= 1e6
+          ? f(Math.floor(n / 1e5), "M")
+          : n >= 1e3
+            ? f(Math.floor(n / 100), "K")
+            : String(Math.floor(n));
+      };
+      const same = (a, b) => String(a) === String(b);
+      const gdrive = (l) => {
+        const id = (l || "").match(/[-\w]{25,}/)?.[0];
+        return id ? `https://lh3.googleusercontent.com/d/${id}` : "";
+      };
+      const ft = (ts) =>
         new Date(ts).toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
           year: "numeric",
-        });
-      const ft = (ts) =>
-        fd(ts) +
+        }) +
         ", " +
         new Date(ts).toLocaleTimeString("en-GB", {
           hour: "2-digit",
@@ -866,7 +906,7 @@
       async function copy(t) {
         try {
           await navigator.clipboard.writeText(t);
-          toast("Receipt copied", "ok", 1500);
+          toast("Report copied", "ok", 1500);
         } catch {
           const a = document.createElement("textarea");
           a.value = t;
@@ -874,7 +914,7 @@
           a.select();
           try {
             document.execCommand("copy");
-            toast("Receipt copied", "ok", 1500);
+            toast("Report copied", "ok", 1500);
           } catch {
             toast("Could not copy", "err");
           }
@@ -882,77 +922,123 @@
         }
       }
 
-      /* ── data ── */
-      let S = {};
-      try {
-        S = JSON.parse(localStorage.getItem(KEY)) || {};
-      } catch {}
-      S.cats = Array.isArray(S.cats) ? S.cats : [];
-      const save = () => {
-        try {
-          localStorage.setItem(KEY, JSON.stringify(S));
-        } catch {
-          toast("Storage full — could not save", "err");
-        }
-      };
-      const paid = (m) => m.pays.reduce((a, p) => a + p.amt, 0);
-      const cat = () => S.cats.find((c) => c.id === S.active) || S.cats[0];
-      const mem = (id) => (cat()?.members || []).find((m) => m.id === id);
-      let idx = 0,
-        lastTotal = null;
-
-      /* ── admin PIN ── */
-      const sha = async (t) => {
-        try {
-          const b = await crypto.subtle.digest(
-            "SHA-256",
-            new TextEncoder().encode("rcpl:" + t),
-          );
-          return [...new Uint8Array(b)]
-            .map((x) => x.toString(16).padStart(2, "0"))
-            .join("");
-        } catch {
-          return btoa("rcpl:" + t);
-        }
-      };
-      function showLock() {
-        sessionStorage.removeItem("rc_pl_ok");
-        const setup = !S.pin;
-        $("#lock-t").textContent = setup ? "SET ADMIN PIN" : "ADMIN ONLY";
-        $("#lock-s").textContent = setup
-          ? "Choose a PIN (4+ digits). You'll use it each time you open this page."
-          : "Enter your admin PIN to continue.";
-        $("#pin2").hidden = !setup;
-        $("#pin").value = "";
-        $("#pin2").value = "";
-        $("#lock-go").textContent = setup ? "Save PIN" : "Unlock";
-        $("#lock").hidden = false;
-        setTimeout(() => $("#pin").focus(), 60);
+      /* ── backend (same API + operations as user.html) ── */
+      async function get(params) {
+        const r = await fetch(API + "?" + new URLSearchParams(params));
+        return r.json();
       }
-      function unlock() {
-        sessionStorage.setItem("rc_pl_ok", "1");
-        $("#lock").hidden = true;
+      async function post(body) {
+        const r = await fetch(API, {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
+        const d = await r.json();
+        if (d.status !== "success") throw new Error(d.message || "Failed");
+        return d;
+      }
+
+      /* ── state ── */
+      let sets = [],
+        ents = {},
+        failed = {},
+        idx = 0,
+        lastTotal = null,
+        Q = Promise.resolve();
+      let active = localStorage.getItem("rc_pl_active") || "";
+      const cur = () => sets.find((s) => same(s.id, active)) || sets[0];
+      const canEdit = (s) => !!s && s.creator === ME;
+      const ent = (id) => (ents[cur()?.id] || []).find((e) => same(e.id, id));
+      const tot = (es, k) => es.reduce((a, e) => a + e[k], 0);
+      const outst = (es) =>
+        es.reduce((a, e) => a + Math.max(0, e.pledged - e.contributed), 0);
+      const queue = (fn) => (Q = Q.then(fn, fn));
+      const saveCache = () => {
+        try {
+          localStorage.setItem(CK, JSON.stringify({ sets, ents }));
+        } catch {}
+      };
+      function loadCache() {
+        try {
+          const c = JSON.parse(localStorage.getItem(CK));
+          if (c) {
+            sets = c.sets || [];
+            ents = c.ents || {};
+          }
+        } catch {}
+      }
+
+      async function fetchSets() {
+        const d = await get({ operation: "getContributionSets" });
+        sets = (d.sets || []).map((s) => ({
+          id: s.id,
+          name: s.name || "",
+          description: s.description || "",
+          creator: s.creator || "",
+          picLink: s.picLink || "",
+        }));
+        Object.keys(ents).forEach((k) => {
+          if (!sets.some((s) => same(s.id, k))) delete ents[k];
+        });
+        saveCache();
         render();
       }
-      async function tryLock() {
-        const p = $("#pin").value.trim();
-        if (p.length < 4) return toast("PIN needs at least 4 digits", "err");
-        if (!S.pin) {
-          if (p !== $("#pin2").value.trim())
-            return toast("PINs don't match", "err");
-          S.pin = await sha(p);
-          save();
-          unlock();
-        } else if ((await sha(p)) === S.pin) unlock();
-        else {
-          toast("Wrong PIN", "err");
-          $("#pin").value = "";
+      async function loadEntries(id) {
+        try {
+          const d = await get({
+            operation: "getContributionEntries",
+            contributionId: id,
+          });
+          ents[id] = (d.entries || []).map((e) => ({
+            id: e.id,
+            participant: e.participant || "",
+            pledged: +e.pledged || 0,
+            contributed: +e.contributed || 0,
+            notes: e.notes || "",
+          }));
+          delete failed[id];
+          saveCache();
+        } catch {
+          failed[id] = true;
         }
+        renderChips();
+        if (same(cur()?.id, id)) renderMain();
       }
-      $("#lock-go").onclick = tryLock;
-      $("#lock").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") tryLock();
-      });
+      async function loadAll() {
+        await fetchSets();
+        await Promise.all(sets.map((s) => loadEntries(s.id)));
+      }
+
+      /* ── access (same rule as user.html: role must be treasurer) ── */
+      function gate(t, s, retry) {
+        $("#g-t").textContent = t;
+        $("#g-s").textContent = s;
+        $("#g-btn").hidden = !retry;
+        $("#gate").hidden = false;
+      }
+      async function init() {
+        gate("CHECKING ACCESS", "Verifying your treasurer role…", false);
+        try {
+          const d = await get({ operation: "getUserStatus", name: ME });
+          const role = (d.role || "").trim().toLowerCase();
+          if (role !== "treasurer")
+            return gate(
+              "TREASURER ONLY",
+              "This page is for treasurers. Ask an admin to update your role.",
+              false,
+            );
+        } catch {
+          return gate(
+            "NO CONNECTION",
+            "Couldn't verify your access. Check your internet and try again.",
+            true,
+          );
+        }
+        $("#gate").hidden = true;
+        loadCache();
+        render();
+        loadAll().catch(() => toast("Couldn't reach the server", "err"));
+      }
+      $("#g-btn").onclick = init;
 
       /* ── sheet ── */
       function openSheet(t, h) {
@@ -976,120 +1062,116 @@
           $("#ok")?.click();
       });
 
-      /* ── receipt ── */
-      function receipt(c, m) {
+      /* ── report (one for the whole category) ── */
+      function report(s, es) {
         const L = "━━━━━━━━━━━━━━━━━━━━━━",
           l = "──────────────────────";
-        const p = paid(m),
-          b = m.pledge - p;
-        const no = (
-          "RC-" +
-          c.id.slice(-3) +
-          m.id.slice(-3) +
-          "-" +
-          String(m.pays.length).padStart(2, "0")
-        ).toUpperCase();
-        const rows = m.pays.length
-          ? m.pays
-              .map(
-                (x, i) =>
-                  `${i + 1}. ${fd(x.ts)}  ${fmt(x.amt)}${x.note ? " (" + x.note + ")" : ""}`,
-              )
+        const P = tot(es, "pledged"),
+          C = tot(es, "contributed"),
+          O = outst(es);
+        const rows = es.length
+          ? es
+              .map((e, i) => {
+                const b = e.pledged - e.contributed;
+                const bal = e.pledged > 0 ? n2(Math.max(0, b)) : "-";
+                return `${i + 1}. ${e.participant}${e.pledged > 0 && b <= 0 ? " ✅" : ""}\n    Pledged ${e.pledged > 0 ? n2(e.pledged) : "-"} | Paid ${n2(e.contributed)} | Bal ${bal}`;
+              })
               .join("\n")
-          : "No payments yet";
-        const status =
-          m.pledge > 0
-            ? b <= 0
-              ? "FULLY PAID ✅"
-              : "PARTIAL ⏳"
-            : "CONTRIBUTION";
+          : "No members yet";
         const out = [
           L,
           "   RIVERSIDE CONNECT",
-          "   PAYMENT RECEIPT",
+          "   CONTRIBUTION REPORT",
           L,
-          `Receipt No: ${no}`,
+          `Category: ${s.name}`,
           `Date: ${ft(Date.now())}`,
-          `Category: ${c.name}`,
-          `Received from: ${m.name}`,
+          `Amounts in ${CUR}`,
           l,
-          "PAYMENTS",
           rows,
           l,
+          `Members:      ${es.length}`,
+          `Pledged:      ${n2(P)}`,
+          `Contributed:  ${n2(C)}`,
+          `Outstanding:  ${n2(O)}`,
         ];
-        if (m.pledge > 0) out.push(`Pledged:  ${fmt(m.pledge)}`);
-        out.push(`Paid:     ${fmt(p)}`);
-        if (m.pledge > 0)
-          out.push(b >= 0 ? `Balance:  ${fmt(b)}` : `Overpaid: ${fmt(-b)}`);
-        out.push(L, `Status: ${status}`, "Thank you & God bless 🙏");
+        if (P > 0)
+          out.push(
+            `Collected:    ${Math.min(100, Math.round((C / P) * 100))}% of pledges`,
+          );
+        out.push(L, "Thank you & God bless 🙏");
         return out.join("\n");
       }
 
       /* ── render ── */
       function render() {
-        if (sessionStorage.getItem("rc_pl_ok") !== "1") return;
-        const c = cat();
-        if (c) S.active = c.id;
+        renderChips();
+        renderMain();
+      }
+      function renderChips() {
+        const c = cur();
         $("#cats").innerHTML =
-          S.cats
-            .map(
-              (x) =>
-                `<button class="chip${c && x.id === c.id ? " hl" : ""}" data-a="cat" data-id="${x.id}">${esc(x.name)}</button>`,
-            )
+          sets
+            .map((s) => {
+              const es = ents[s.id];
+              return `<button class="chip${c && same(s.id, c.id) ? " hl" : ""}" data-a="cat" data-id="${esc(s.id)}">${s.picLink ? `<img class="c-av" src="${esc(gdrive(s.picLink))}" alt="" onerror="this.remove()">` : ""}${esc(s.name)}${es ? `<small>${CUR} ${short(tot(es, "contributed"))}</small>` : ""}</button>`;
+            })
             .join("") +
           `<button class="chip" data-a="newcat">＋ Category</button>`;
-        const sum = $("#sum"),
+      }
+      function renderMain() {
+        const s = cur(),
+          sum = $("#sum"),
           pager = $("#pager");
-        if (!c) {
+        if (!s) {
           sum.innerHTML = `<div class="empty"><b>NO CATEGORIES YET</b>Create one (like “Building Fund” or “Welfare”), then add people and their pledges.</div>`;
           $("#tools").hidden = true;
           pager.innerHTML = "";
           return;
         }
+        active = s.id;
+        const es = ents[s.id],
+          ce = canEdit(s);
         $("#tools").hidden = false;
-        const ms = c.members;
-        const total = ms.reduce((a, m) => a + paid(m), 0);
-        const pledged = ms.reduce((a, m) => a + m.pledge, 0);
-        const out = ms.reduce((a, m) => a + Math.max(0, m.pledge - paid(m)), 0);
-        const pct = pledged > 0 ? Math.min(100, (total / pledged) * 100) : 0;
-        sum.innerHTML = `<div class="s-head"><div><div class="cname">${esc(c.name)}</div><div class="mut">Total collected</div></div><button class="ib" data-a="delcat" aria-label="Delete category"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg></button></div>
-          <div class="total${lastTotal !== null && lastTotal !== total ? " fl" : ""}">${fmt(total)}</div>
-          <div class="trio"><div><span>Pledged</span><b>${fmt(pledged)}</b></div><div><span>Outstanding</span><b>${fmt(out)}</b></div><div><span>People</span><b>${ms.length}</b></div></div>
-          <div class="bar"><i style="width:${pct}%"></i></div>`;
-        lastTotal = total;
-        if (!ms.length) {
-          pager.innerHTML = `<div class="card empty" style="flex:0 0 100%"><b>NO ONE YET</b>Tap “+ Person” to add the first name in ${esc(c.name)}.</div>`;
+        $("#add-btn").hidden = !ce;
+        const total = es ? tot(es, "contributed") : 0;
+        const pct =
+          es && tot(es, "pledged") > 0
+            ? Math.min(100, (total / tot(es, "pledged")) * 100)
+            : 0;
+        sum.innerHTML = `<div class="s-head"><div class="s-left">${s.picLink ? `<img class="s-av" src="${esc(gdrive(s.picLink))}" alt="" onerror="this.remove()">` : ""}<div><div class="cname">${esc(s.name)}</div><div class="mut">Total contributed · by ${esc(s.creator || "—")}</div></div></div>${ce ? `<button class="ib" data-a="delcat" aria-label="Delete category"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg></button>` : ""}</div>
+          <div class="total${lastTotal !== null && es && lastTotal !== total ? " fl" : ""}">${es ? fmt(total) : "…"}</div>
+          <div class="trio"><div><span>Pledged</span><b>${es ? fmt(tot(es, "pledged")) : "…"}</b></div><div><span>Outstanding</span><b>${es ? fmt(outst(es)) : "…"}</b></div><div><span>People</span><b>${es ? es.length : "…"}</b></div></div>
+          <div class="bar"><i style="width:${pct}%"></i></div>
+          ${s.description ? `<div class="mut" style="margin-top:10px">${esc(s.description)}</div>` : ""}
+          ${ce ? "" : `<div class="note">View only — this category was created by ${esc(s.creator)}.</div>`}`;
+        if (es) lastTotal = total;
+        if (!es) {
+          pager.innerHTML = `<div class="card empty" style="flex:0 0 100%">${failed[s.id] ? "Couldn't load this category. Tap refresh to retry." : "Loading…"}</div>`;
           $("#cnt").textContent = "";
           return;
         }
-        idx = Math.min(idx, ms.length - 1);
-        pager.innerHTML = ms
-          .map((m) => {
-            const p = paid(m),
-              b = m.pledge - p,
-              done = m.pledge > 0 && b <= 0;
+        if (!es.length) {
+          pager.innerHTML = `<div class="card empty" style="flex:0 0 100%"><b>NO ONE YET</b>${ce ? `Tap “+ Person” to add the first name in ${esc(s.name)}.` : "No members have been added yet."}</div>`;
+          $("#cnt").textContent = "";
+          return;
+        }
+        idx = Math.min(idx, es.length - 1);
+        pager.innerHTML = es
+          .map((e) => {
+            const b = e.pledged - e.contributed,
+              done = e.pledged > 0 && b <= 0;
             const pc =
-              m.pledge > 0
-                ? Math.min(100, (p / m.pledge) * 100)
-                : p > 0
+              e.pledged > 0
+                ? Math.min(100, (e.contributed / e.pledged) * 100)
+                : e.contributed > 0
                   ? 100
                   : 0;
-            const pays = m.pays.length
-              ? m.pays
-                  .map(
-                    (x) =>
-                      `<div class="pay"><div><b>${fmt(x.amt)}</b>${x.note ? " · " + esc(x.note) : ""}<small>${ft(x.ts)}</small></div><button data-a="delpay" data-m="${m.id}" data-id="${x.id}" aria-label="Remove payment">✕</button></div>`,
-                  )
-                  .join("")
-              : `<div class="mut" style="padding:4px 2px">No payments yet.</div>`;
             return `<div class="slide"><div class="card">
-            <div class="p-top"><div class="p-av">${esc((m.name[0] || "?").toUpperCase())}</div><div><div class="p-name">${esc(m.name)}</div><div class="mut">${m.pledge > 0 ? "Pledge " + fmt(m.pledge) : "No pledge set"}</div></div><button class="ib" data-a="editm" data-m="${m.id}" aria-label="Edit person"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg></button></div>
-            <div class="nums"><div><span>Paid</span><b>${fmt(p)}</b></div><div class="bal${done ? " done" : ""}"><span>${m.pledge <= 0 ? "Balance" : b < 0 ? "Overpaid" : "Balance"}</span><b>${m.pledge <= 0 ? "—" : fmt(Math.abs(b))}</b></div></div>
+            <div class="p-top"><div class="p-av">${esc((e.participant[0] || "?").toUpperCase())}</div><div><div class="p-name">${esc(e.participant)}</div><div class="mut">${e.pledged > 0 ? "Pledge " + fmt(e.pledged) : "No pledge set"}</div></div>${ce ? `<button class="ib" data-a="editm" data-m="${esc(e.id)}" aria-label="Edit person"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg></button>` : ""}</div>
+            <div class="nums"><div><span>Contributed</span><b>${fmt(e.contributed)}</b></div><div class="bal${done ? " done" : ""}"><span>${e.pledged > 0 && b < 0 ? "Overpaid" : "Balance"}</span><b>${e.pledged <= 0 ? "—" : fmt(Math.abs(b))}</b></div></div>
             <div class="bar"><i style="width:${pc}%"></i></div>
-            <button class="plus" data-a="addamt" data-m="${m.id}"><b>+</b>Add amount</button>
-            <div class="lbl">PAYMENTS</div>${pays}
-            <div class="lbl">RECEIPT</div><pre class="rcpt">${esc(receipt(c, m))}</pre>
-            <div class="row2"><button class="btn" data-a="copy" data-m="${m.id}">Copy receipt</button><button class="btn ghost" data-a="share" data-m="${m.id}">Share</button></div>
+            ${ce ? `<button class="plus" data-a="addamt" data-m="${esc(e.id)}"><b>+</b>Add amount</button>` : ""}
+            ${e.notes ? `<div class="note">📝 ${esc(e.notes)}</div>` : ""}
           </div></div>`;
           })
           .join("");
@@ -1097,13 +1179,13 @@
         updNav();
       }
       function updNav() {
-        const ms = cat()?.members || [];
-        $("#cnt").textContent = ms.length
-          ? `${idx + 1} / ${ms.length} · ${ms[idx]?.name || ""}`
+        const es = ents[cur()?.id] || [];
+        $("#cnt").textContent = es.length
+          ? `${idx + 1} / ${es.length} · ${es[idx]?.participant || ""}`
           : "";
       }
       function goTo(i) {
-        const n = (cat()?.members || []).length;
+        const n = (ents[cur()?.id] || []).length;
         if (!n) return;
         idx = Math.max(0, Math.min(n - 1, i));
         updNav();
@@ -1116,7 +1198,7 @@
         st = setTimeout(() => {
           const p = $("#pager"),
             i = Math.round(p.scrollLeft / (p.clientWidth + GAP));
-          if (i !== idx && cat()?.members[i]) {
+          if (i !== idx && (ents[cur()?.id] || [])[i]) {
             idx = i;
             updNav();
           }
@@ -1124,65 +1206,146 @@
       });
 
       /* ── sheets ── */
+      function shrink(file) {
+        return new Promise((res, rej) => {
+          const img = new Image(),
+            u = URL.createObjectURL(file);
+          img.onload = () => {
+            const k = Math.min(1, 640 / Math.max(img.width, img.height));
+            const c = document.createElement("canvas");
+            c.width = Math.round(img.width * k);
+            c.height = Math.round(img.height * k);
+            const x = c.getContext("2d");
+            x.fillStyle = "#fff";
+            x.fillRect(0, 0, c.width, c.height);
+            x.drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(u);
+            res({
+              data: c.toDataURL("image/jpeg", 0.85).split(",")[1],
+              name: file.name.replace(/\.[^.]+$/, "") + ".jpg",
+            });
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(u);
+            rej(new Error("Could not read that image"));
+          };
+          img.src = u;
+        });
+      }
       function newCat() {
         openSheet(
           "New category",
-          `<input class="fld" id="f1" placeholder="e.g. Building Fund" maxlength="40" /><button class="btn wide" id="ok">Create category</button>`,
+          `<label class="fl-l" for="f1">Name</label><input class="fld" id="f1" placeholder="e.g. Building Fund" maxlength="40" />
+          <label class="fl-l" for="f2">Description (optional)</label><input class="fld" id="f2" placeholder="What is it for?" maxlength="120" />
+          <label class="fl-l" for="f3">Profile image (optional)</label><input class="fld" id="f3" type="file" accept="image/*" /><img id="prev" class="prev" alt="" hidden />
+          <button class="btn wide" id="ok">Create category</button>`,
         );
-        $("#ok").onclick = () => {
-          const n = $("#f1").value.trim();
-          if (!n) return toast("Enter a category name", "err");
-          const c = { id: uid(), name: n, members: [] };
-          S.cats.push(c);
-          S.active = c.id;
-          idx = 0;
-          lastTotal = null;
-          save();
-          closeSheet();
-          render();
-          toast("Category created", "ok");
+        $("#f3").onchange = (ev) => {
+          const f = ev.target.files[0],
+            p = $("#prev");
+          if (f) {
+            p.src = URL.createObjectURL(f);
+            p.hidden = false;
+          } else p.hidden = true;
+        };
+        $("#ok").onclick = async () => {
+          const name = $("#f1").value.trim();
+          if (!name) return toast("Enter a category name", "err");
+          const b = $("#ok");
+          b.disabled = true;
+          b.textContent = "Creating…";
+          try {
+            const file = $("#f3").files[0],
+              img = file ? await shrink(file) : null;
+            const before = sets.map((s) => String(s.id));
+            await post({
+              operation: "createContributionSet",
+              creator: ME,
+              name,
+              description: $("#f2").value.trim(),
+              imageData: img ? img.data : null,
+              imageName: img ? img.name : null,
+            });
+            await fetchSets();
+            const nw =
+              sets.find((s) => !before.includes(String(s.id))) ||
+              sets[sets.length - 1];
+            if (nw) {
+              active = nw.id;
+              localStorage.setItem("rc_pl_active", active);
+              ents[nw.id] = [];
+              idx = 0;
+              lastTotal = null;
+              render();
+            }
+            closeSheet();
+            toast("Category created", "ok");
+          } catch (e) {
+            toast("Error: " + e.message, "err");
+            b.disabled = false;
+            b.textContent = "Create category";
+          }
         };
       }
       function addUser() {
-        const c = cat();
-        if (!c) return;
+        const s = cur();
+        if (!canEdit(s)) return;
         openSheet(
           "Add person",
           `<label class="fl-l" for="f1">Name</label><input class="fld" id="f1" placeholder="Full name" maxlength="50" />
-          <label class="fl-l" for="f2">Pledge amount (optional)</label><input class="fld" id="f2" inputmode="decimal" placeholder="${CUR} 0" /><button class="btn wide" id="ok">Add to ${esc(c.name)}</button>`,
+          <label class="fl-l" for="f2">Pledge amount (optional)</label><input class="fld" id="f2" inputmode="decimal" placeholder="${CUR} 0" />
+          <label class="fl-l" for="f3">Already contributed (optional)</label><input class="fld" id="f3" inputmode="decimal" placeholder="${CUR} 0" />
+          <button class="btn wide" id="ok">Add to ${esc(s.name)}</button><button class="btn ghost wide" id="next">Save &amp; add another</button>`,
         );
-        $("#ok").onclick = () => {
-          const n = $("#f1").value.trim();
-          if (!n) return toast("Enter a name", "err");
-          c.members.push({
-            id: uid(),
-            name: n,
-            pledge: num($("#f2").value),
-            pays: [],
-          });
-          idx = c.members.length - 1;
-          save();
-          closeSheet();
-          render();
-          toast(n + " added", "ok");
+        const submit = async (more) => {
+          const name = $("#f1").value.trim();
+          if (!name) return toast("Enter a name", "err");
+          const bs = [$("#ok"), $("#next")];
+          bs.forEach((b) => (b.disabled = true));
+          try {
+            await post({
+              operation: "addMultipleContributionEntries",
+              contributionId: s.id,
+              entries: [
+                {
+                  participantName: name,
+                  pledged: num($("#f2").value),
+                  contributed: num($("#f3").value),
+                  notes: "",
+                },
+              ],
+            });
+            idx = (ents[s.id] || []).length;
+            await loadEntries(s.id);
+            toast(name + " added", "ok");
+            if (more) {
+              ["#f1", "#f2", "#f3"].forEach((q) => ($(q).value = ""));
+              bs.forEach((b) => (b.disabled = false));
+              $("#f1").focus();
+            } else closeSheet();
+          } catch (e) {
+            toast("Error: " + e.message, "err");
+            bs.forEach((b) => (b.disabled = false));
+          }
         };
+        $("#ok").onclick = () => submit(false);
+        $("#next").onclick = () => submit(true);
       }
       function addAmt(id) {
-        const m = mem(id);
-        if (!m) return;
-        const bal = m.pledge - paid(m);
+        const s = cur(),
+          e = ent(id);
+        if (!canEdit(s) || !e) return;
+        const bal = e.pledged - e.contributed;
         openSheet(
           "Add amount",
-          `<div class="mut"><b style="color:var(--ink)">${esc(m.name)}</b>${m.pledge > 0 ? " · balance " + fmt(Math.max(0, bal)) : ""}</div>
+          `<div class="mut"><b style="color:var(--ink)">${esc(e.participant)}</b>${e.pledged > 0 ? " · balance " + fmt(Math.max(0, bal)) : ""}</div>
           <input class="fld" id="f1" inputmode="decimal" placeholder="${CUR} 0" />
-          <input class="fld" id="f2" placeholder="Note (optional) e.g. M-Pesa, cash" maxlength="40" />
-          <div class="after" id="aft" ${m.pledge > 0 ? "" : "hidden"}></div>
+          <div class="after" id="aft" ${e.pledged > 0 ? "" : "hidden"}></div>
           ${bal > 0 ? `<button class="btn ghost wide" id="full">Pay full balance (${fmt(bal)})</button>` : ""}
-          <button class="btn wide" id="ok">Save payment</button>`,
+          <button class="btn wide" id="ok">Save amount</button>`,
         );
         const upd = () => {
-          const a = num($("#f1").value),
-            r = bal - a;
+          const r = bal - num($("#f1").value);
           $("#aft").textContent =
             r >= 0 ? `Balance after: ${fmt(r)}` : `Overpaid by ${fmt(-r)}`;
         };
@@ -1196,74 +1359,125 @@
         $("#ok").onclick = () => {
           const a = num($("#f1").value);
           if (!a) return toast("Enter an amount above 0", "err");
-          m.pays.push({
-            id: uid(),
-            amt: a,
-            ts: Date.now(),
-            note: $("#f2").value.trim(),
-          });
-          save();
+          e.contributed = Math.round((e.contributed + a) * 100) / 100; // live update
+          const val = e.contributed,
+            sid = s.id;
           closeSheet();
-          render();
-          toast(fmt(a) + " recorded", "ok");
+          renderChips();
+          renderMain();
+          saveCache();
+          queue(async () => {
+            try {
+              await post({
+                operation: "bulkUpdateContributionEntries",
+                contributionId: sid,
+                updates: [
+                  {
+                    entryId: e.id,
+                    participantName: e.participant,
+                    pledged: e.pledged,
+                    contributed: val,
+                    notes: e.notes,
+                  },
+                ],
+              });
+              toast(fmt(a) + " saved", "ok");
+            } catch (err) {
+              toast("Couldn't save — reloading", "err");
+              await loadEntries(sid);
+            }
+          });
         };
       }
       function editM(id) {
-        const m = mem(id);
-        if (!m) return;
+        const s = cur(),
+          e = ent(id);
+        if (!canEdit(s) || !e) return;
         openSheet(
           "Edit person",
-          `<label class="fl-l" for="f1">Name</label><input class="fld" id="f1" value="${esc(m.name)}" maxlength="50" />
-          <label class="fl-l" for="f2">Pledge amount</label><input class="fld" id="f2" inputmode="decimal" value="${m.pledge || ""}" placeholder="${CUR} 0" />
+          `<label class="fl-l" for="f1">Name</label><input class="fld" id="f1" value="${esc(e.participant)}" maxlength="50" />
+          <label class="fl-l" for="f2">Pledge amount</label><input class="fld" id="f2" inputmode="decimal" value="${e.pledged || ""}" placeholder="${CUR} 0" />
+          <label class="fl-l" for="f3">Total contributed</label><input class="fld" id="f3" inputmode="decimal" value="${e.contributed || ""}" placeholder="${CUR} 0" />
+          <label class="fl-l" for="f4">Notes</label><input class="fld" id="f4" value="${esc(e.notes)}" maxlength="120" placeholder="Optional" />
           <button class="btn wide" id="ok">Save changes</button><button class="btn danger wide" id="del">Remove person</button>`,
         );
-        $("#ok").onclick = () => {
-          const n = $("#f1").value.trim();
-          if (!n) return toast("Enter a name", "err");
-          m.name = n;
-          m.pledge = num($("#f2").value);
-          save();
-          closeSheet();
-          render();
-          toast("Saved", "ok");
+        $("#ok").onclick = async () => {
+          const name = $("#f1").value.trim();
+          if (!name) return toast("Enter a name", "err");
+          const b = $("#ok");
+          b.disabled = true;
+          try {
+            await post({
+              operation: "bulkUpdateContributionEntries",
+              contributionId: s.id,
+              updates: [
+                {
+                  entryId: e.id,
+                  participantName: name,
+                  pledged: num($("#f2").value),
+                  contributed: num($("#f3").value),
+                  notes: $("#f4").value.trim(),
+                },
+              ],
+            });
+            closeSheet();
+            await loadEntries(s.id);
+            toast("Saved", "ok");
+          } catch (err) {
+            toast("Error: " + err.message, "err");
+            b.disabled = false;
+          }
         };
-        $("#del").onclick = () => {
-          if (!confirm(`Remove ${m.name} and all their payments?`)) return;
-          const c = cat();
-          c.members = c.members.filter((x) => x.id !== id);
-          idx = Math.max(0, idx - 1);
-          save();
-          closeSheet();
-          render();
-          toast("Removed", "inf");
+        $("#del").onclick = async () => {
+          if (!confirm(`Remove ${e.participant} from ${s.name}?`)) return;
+          try {
+            await post({ operation: "deleteContributionEntry", entryId: e.id });
+            idx = Math.max(0, idx - 1);
+            closeSheet();
+            await loadEntries(s.id);
+            toast("Removed", "inf");
+          } catch (err) {
+            toast("Error: " + err.message, "err");
+          }
         };
       }
       function listAll() {
-        const c = cat();
-        if (!c) return;
-        const rows = c.members
-          .map((m, i) => {
-            const b = m.pledge - paid(m),
-              ok = m.pledge > 0 && b <= 0;
-            return `<button class="lrow" data-a="go" data-i="${i}"><div class="p-av">${esc((m.name[0] || "?").toUpperCase())}</div><div><b>${esc(m.name)}</b><small>Paid ${fmt(paid(m))}${m.pledge > 0 ? " of " + fmt(m.pledge) : ""}</small></div><span class="tag${ok ? " ok" : ""}">${m.pledge <= 0 ? "No pledge" : ok ? "Cleared" : fmt(b)}</span></button>`;
+        const s = cur(),
+          es = ents[s?.id];
+        if (!es) return;
+        const rows = es
+          .map((e, i) => {
+            const b = e.pledged - e.contributed,
+              ok = e.pledged > 0 && b <= 0;
+            return `<button class="lrow" data-a="go" data-i="${i}"><div class="p-av">${esc((e.participant[0] || "?").toUpperCase())}</div><div><b>${esc(e.participant)}</b><small>Paid ${fmt(e.contributed)}${e.pledged > 0 ? " of " + fmt(e.pledged) : ""}</small></div><span class="tag${ok ? " ok" : ""}">${e.pledged <= 0 ? "No pledge" : ok ? "Cleared" : fmt(b)}</span></button>`;
           })
           .join("");
-        openSheet(c.name, rows || `<div class="empty">No names yet.</div>`);
+        openSheet(s.name, rows || `<div class="empty">No names yet.</div>`);
+      }
+      function openReport() {
+        const s = cur(),
+          es = ents[s?.id];
+        if (!es) return toast("Still loading…", "inf");
+        openSheet(
+          "Report",
+          `<pre class="rcpt" id="rp"></pre><div class="row2"><button class="btn" data-a="copyrep">Copy report</button><button class="btn ghost" data-a="sharerep">Share</button></div>`,
+        );
+        $("#rp").textContent = report(s, es);
       }
 
       /* ── actions ── */
       const A = {
         cat: (t) => {
-          S.active = t.dataset.id;
+          active = t.dataset.id;
+          localStorage.setItem("rc_pl_active", active);
           idx = 0;
           lastTotal = null;
-          save();
           render();
         },
         newcat: newCat,
         adduser: addUser,
         list: listAll,
-        lock: showLock,
+        report: openReport,
         addamt: (t) => addAmt(t.dataset.m),
         editm: (t) => editM(t.dataset.m),
         prev: () => goTo(idx - 1),
@@ -1272,37 +1486,49 @@
           closeSheet();
           goTo(+t.dataset.i);
         },
-        delcat: () => {
-          const c = cat();
+        refresh: async () => {
+          const b = $("#refresh-btn");
+          b.classList.add("spinning");
+          try {
+            await loadAll();
+            toast("Refreshed", "ok", 1400);
+          } catch {
+            toast("Couldn't reach the server", "err");
+          }
+          b.classList.remove("spinning");
+        },
+        delcat: async () => {
+          const s = cur();
           if (
-            !c ||
-            !confirm(`Delete “${c.name}” with all its people and payments?`)
+            !canEdit(s) ||
+            !confirm(`Delete “${s.name}” with all its people and amounts?`)
           )
             return;
-          S.cats = S.cats.filter((x) => x.id !== c.id);
-          S.active = S.cats[0]?.id;
-          idx = 0;
-          lastTotal = null;
-          save();
-          render();
+          try {
+            await post({
+              operation: "deleteContributionSet",
+              contributionId: s.id,
+              user: ME,
+            });
+            active = "";
+            idx = 0;
+            lastTotal = null;
+            await fetchSets();
+            toast("Category deleted", "inf");
+          } catch (e) {
+            toast("Error: " + e.message, "err");
+          }
         },
-        delpay: (t) => {
-          const m = mem(t.dataset.m);
-          if (!m || !confirm("Remove this payment?")) return;
-          m.pays = m.pays.filter((x) => x.id !== t.dataset.id);
-          save();
-          render();
+        copyrep: () => {
+          const s = cur();
+          if (ents[s?.id]) copy(report(s, ents[s.id]));
         },
-        copy: (t) => {
-          const m = mem(t.dataset.m);
-          if (m) copy(receipt(cat(), m));
-        },
-        share: (t) => {
-          const m = mem(t.dataset.m);
-          if (!m) return;
-          const txt = receipt(cat(), m);
-          if (navigator.share) navigator.share({ text: txt }).catch(() => {});
-          else copy(txt);
+        sharerep: () => {
+          const s = cur();
+          if (!ents[s?.id]) return;
+          const t = report(s, ents[s.id]);
+          if (navigator.share) navigator.share({ text: t }).catch(() => {});
+          else copy(t);
         },
       };
       document.addEventListener("click", (e) => {
@@ -1310,9 +1536,7 @@
         if (t && A[t.dataset.a]) A[t.dataset.a](t);
       });
 
-      /* ── init ── */
-      if (sessionStorage.getItem("rc_pl_ok") === "1") render();
-      else showLock();
+      init();
     </script>
   </body>
 </html>
