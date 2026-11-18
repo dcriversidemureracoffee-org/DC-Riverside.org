@@ -741,6 +741,38 @@
         background: rgba(59, 130, 246, 0.94);
       }
 
+      #ask {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 3000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .ask-box {
+        width: min(360px, 100%);
+        background: var(--surface);
+        border: 1px solid var(--wire);
+        border-radius: 20px;
+        padding: 18px;
+        animation: pop 0.25s;
+      }
+      .ask-t {
+        font-family: var(--head);
+        font-size: 1.5rem;
+        letter-spacing: 0.08em;
+        color: var(--accent2);
+        margin-bottom: 6px;
+      }
+      .ask-box .mut {
+        line-height: 1.5;
+        font-size: 0.9rem;
+      }
+      .ask-box .row2 {
+        margin-top: 16px;
+      }
       #gate {
         position: fixed;
         inset: 0;
@@ -839,6 +871,21 @@
       <a href="index.html" class="mut" style="margin-top: 6px"
         >Back to Riverside Connect</a
       >
+    </div>
+    <div id="ask" hidden>
+      <div
+        class="ask-box"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="ask-t"
+      >
+        <div class="ask-t" id="ask-t"></div>
+        <p class="mut" id="ask-m"></p>
+        <div class="row2">
+          <button class="btn ghost" id="ask-n">Cancel</button
+          ><button class="btn danger" id="ask-y">Delete</button>
+        </div>
+      </div>
     </div>
     <div id="toast-area"></div>
 
@@ -961,7 +1008,7 @@
         try {
           const c = JSON.parse(localStorage.getItem(CK));
           if (c) {
-            sets = c.sets || [];
+            sets = (c.sets || []).filter((s) => s.creator === ME);
             ents = c.ents || {};
           }
         } catch {}
@@ -969,13 +1016,15 @@
 
       async function fetchSets() {
         const d = await get({ operation: "getContributionSets" });
-        sets = (d.sets || []).map((s) => ({
-          id: s.id,
-          name: s.name || "",
-          description: s.description || "",
-          creator: s.creator || "",
-          picLink: s.picLink || "",
-        }));
+        sets = (d.sets || [])
+          .map((s) => ({
+            id: s.id,
+            name: s.name || "",
+            description: s.description || "",
+            creator: s.creator || "",
+            picLink: s.picLink || "",
+          }))
+          .filter((s) => s.creator === ME); // treasurers only see their own categories
         Object.keys(ents).forEach((k) => {
           if (!sets.some((s) => same(s.id, k))) delete ents[k];
         });
@@ -1023,7 +1072,7 @@
           if (role !== "treasurer")
             return gate(
               "TREASURER ONLY",
-              "This page is for treasurers. Ask an admin to update your role.",
+              "This page is for treasurers only.",
               false,
             );
         } catch {
@@ -1054,8 +1103,31 @@
         $("#sheet").classList.remove("show");
       }
       $("#scrim").onclick = $("#sh-x").onclick = closeSheet;
+      function ask(title, msg, yes = "Delete") {
+        return new Promise((res) => {
+          const box = $("#ask");
+          $("#ask-t").textContent = title;
+          $("#ask-m").textContent = msg;
+          $("#ask-y").textContent = yes;
+          box.hidden = false;
+          $("#ask-n").focus();
+          const done = (v) => {
+            box.hidden = true;
+            $("#ask-y").onclick = $("#ask-n").onclick = box.onclick = null;
+            res(v);
+          };
+          $("#ask-y").onclick = () => done(true);
+          $("#ask-n").onclick = () => done(false);
+          box.onclick = (e) => {
+            if (e.target === box) done(false);
+          };
+        });
+      }
       addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeSheet();
+        if (e.key === "Escape") {
+          if (!$("#ask").hidden) $("#ask-n").click();
+          else closeSheet();
+        }
       });
       $("#sh-b").addEventListener("keydown", (e) => {
         if (e.key === "Enter" && e.target.tagName === "INPUT")
@@ -1138,7 +1210,7 @@
           es && tot(es, "pledged") > 0
             ? Math.min(100, (total / tot(es, "pledged")) * 100)
             : 0;
-        sum.innerHTML = `<div class="s-head"><div class="s-left">${s.picLink ? `<img class="s-av" src="${esc(gdrive(s.picLink))}" alt="" onerror="this.remove()">` : ""}<div><div class="cname">${esc(s.name)}</div><div class="mut">Total contributed · by ${esc(s.creator || "—")}</div></div></div>${ce ? `<button class="ib" data-a="delcat" aria-label="Delete category"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg></button>` : ""}</div>
+        sum.innerHTML = `<div class="s-head"><div class="s-left">${s.picLink ? `<img class="s-av" src="${esc(gdrive(s.picLink))}" alt="" onerror="this.remove()">` : ""}<div><div class="cname">${esc(s.name)}</div><div class="mut">Total contributed · by ${esc(s.creator || "—")}</div></div></div>${ce ? `<div style="display:flex;flex-shrink:0"><button class="ib" data-a="editcat" aria-label="Edit category"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg></button><button class="ib" data-a="delcat" aria-label="Delete category"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg></button></div>` : ""}</div>
           <div class="total${lastTotal !== null && es && lastTotal !== total ? " fl" : ""}">${es ? fmt(total) : "…"}</div>
           <div class="trio"><div><span>Pledged</span><b>${es ? fmt(tot(es, "pledged")) : "…"}</b></div><div><span>Outstanding</span><b>${es ? fmt(outst(es)) : "…"}</b></div><div><span>People</span><b>${es ? es.length : "…"}</b></div></div>
           <div class="bar"><i style="width:${pct}%"></i></div>
@@ -1287,6 +1359,53 @@
           }
         };
       }
+      function editCat() {
+        const s = cur();
+        if (!canEdit(s)) return;
+        const src = gdrive(s.picLink);
+        openSheet(
+          "Edit category",
+          `<label class="fl-l" for="f1">Name</label><input class="fld" id="f1" value="${esc(s.name)}" maxlength="40" />
+          <label class="fl-l" for="f2">Description</label><input class="fld" id="f2" value="${esc(s.description)}" maxlength="120" placeholder="What is it for?" />
+          <label class="fl-l" for="f3">New profile image (leave empty to keep current)</label><input class="fld" id="f3" type="file" accept="image/*" /><img id="prev" class="prev" alt="" ${src ? `src="${esc(src)}"` : "hidden"} />
+          <button class="btn wide" id="ok">Save changes</button>`,
+        );
+        $("#f3").onchange = (ev) => {
+          const f = ev.target.files[0],
+            p = $("#prev");
+          if (f) {
+            p.src = URL.createObjectURL(f);
+            p.hidden = false;
+          }
+        };
+        $("#ok").onclick = async () => {
+          const name = $("#f1").value.trim();
+          if (!name) return toast("Enter a category name", "err");
+          const b = $("#ok");
+          b.disabled = true;
+          b.textContent = "Saving…";
+          try {
+            const file = $("#f3").files[0],
+              img = file ? await shrink(file) : null;
+            await post({
+              operation: "updateContributionSet",
+              contributionId: s.id,
+              name,
+              description: $("#f2").value.trim(),
+              imageData: img ? img.data : null,
+              imageName: img ? img.name : null,
+              user: ME,
+            });
+            await fetchSets();
+            closeSheet();
+            toast("Category updated", "ok");
+          } catch (e) {
+            toast("Error: " + e.message, "err");
+            b.disabled = false;
+            b.textContent = "Save changes";
+          }
+        };
+      }
       function addUser() {
         const s = cur();
         if (!canEdit(s)) return;
@@ -1429,7 +1548,14 @@
           }
         };
         $("#del").onclick = async () => {
-          if (!confirm(`Remove ${e.participant} from ${s.name}?`)) return;
+          if (
+            !(await ask(
+              "Remove person",
+              `Remove ${e.participant} from ${s.name}? This can't be undone.`,
+              "Remove",
+            ))
+          )
+            return;
           try {
             await post({ operation: "deleteContributionEntry", entryId: e.id });
             idx = Math.max(0, idx - 1);
@@ -1475,6 +1601,7 @@
           render();
         },
         newcat: newCat,
+        editcat: editCat,
         adduser: addUser,
         list: listAll,
         report: openReport,
@@ -1501,7 +1628,10 @@
           const s = cur();
           if (
             !canEdit(s) ||
-            !confirm(`Delete “${s.name}” with all its people and amounts?`)
+            !(await ask(
+              "Delete category",
+              `Delete “${s.name}” with all its people and amounts? This can't be undone.`,
+            ))
           )
             return;
           try {
