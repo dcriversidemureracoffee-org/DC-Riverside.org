@@ -64,6 +64,7 @@
         --body:
           "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         --bar: 54px;
+        --nav: 62px;
         --top: env(safe-area-inset-top, 0px);
         --bot: env(safe-area-inset-bottom, 0px);
       }
@@ -108,11 +109,6 @@
           );
         pointer-events: none;
         z-index: 0;
-      }
-      @keyframes drift {
-        to {
-          transform: translate(8vmax, 6vmax) scale(1.15);
-        }
       }
       @keyframes up {
         from {
@@ -160,24 +156,15 @@
           transform: rotate(360deg);
         }
       }
-      @keyframes flt {
-        to {
-          transform: translateY(-120px) scale(1.4);
+      @keyframes slideup {
+        from {
           opacity: 0;
+          transform: translateY(30px) scale(0.94);
         }
-      }
-      @keyframes glow {
-        0%,
-        100% {
-          box-shadow: 0 0 0 0 rgba(250, 204, 21, 0);
+        to {
+          opacity: 1;
+          transform: none;
         }
-        50% {
-          box-shadow: 0 0 18px 2px rgba(250, 204, 21, 0.25);
-        }
-      }
-      .in {
-        animation: up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-        animation-delay: calc(var(--i, 0) * 70ms);
       }
 
       #topbar {
@@ -211,11 +198,14 @@
         gap: 6px;
         font-size: 0.7rem;
         font-weight: 700;
-        padding: 4px 10px;
+        padding: 6px;
         border-radius: 99px;
-        background: rgba(16, 185, 129, 0.14);
+        background: none;
         color: #34d399;
         transition: 0.3s;
+      }
+      #net #net-t {
+        display: none;
       }
       #net i {
         width: 7px;
@@ -225,8 +215,12 @@
         animation: pulse 2s infinite;
       }
       body.offline #net {
+        padding: 4px 10px;
         background: rgba(250, 204, 21, 0.14);
         color: var(--gold);
+      }
+      body.offline #net #net-t {
+        display: inline;
       }
       body.offline #net i {
         background: var(--gold);
@@ -263,13 +257,10 @@
         stroke-linecap: round;
         stroke-linejoin: round;
       }
-      .ib.spinning svg {
-        animation: spin 0.8s linear infinite;
-      }
       .tb-badge {
         position: absolute;
         top: 2px;
-        right: 2px;
+        right: calc(50% - 26px);
         min-width: 16px;
         height: 16px;
         background: var(--danger);
@@ -303,43 +294,16 @@
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         z-index: 1;
-        padding-bottom: calc(24px + var(--bot));
+        padding-bottom: calc(var(--nav) + 28px + var(--bot));
+      }
+      body.has-install #chat-list {
+        padding-bottom: calc(var(--nav) + 90px + var(--bot));
       }
       .wrap {
-        max-width: 1100px;
+        max-width: 720px;
         margin: 0 auto;
-        padding: 14px max(14px, env(safe-area-inset-left)) 10px
+        padding: 4px max(14px, env(safe-area-inset-left)) 10px
           max(14px, env(safe-area-inset-right));
-      }
-      .cols {
-        display: grid;
-        gap: 14px;
-      }
-      @media (min-width: 900px) {
-        .cols {
-          grid-template-columns: 1.05fr 1fr;
-          align-items: start;
-        }
-        .col-l {
-          position: sticky;
-          top: 14px;
-        }
-      }
-      .col {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        min-width: 0;
-      }
-      .card {
-        background: linear-gradient(
-          160deg,
-          rgba(26, 37, 64, 0.7),
-          rgba(15, 23, 42, 0.8)
-        );
-        border: 1px solid var(--wire);
-        border-radius: 18px;
-        padding: 14px;
       }
       .lbl {
         font-size: 0.72rem;
@@ -349,10 +313,13 @@
         margin: 6px 4px;
       }
 
-      /* smart search */
+      /* search */
       .searchwrap {
-        position: relative;
-        z-index: 20;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        padding: 8px 0 10px;
+        background: linear-gradient(var(--paper) 78%, transparent);
       }
       .searchbox {
         position: relative;
@@ -427,7 +394,7 @@
         position: absolute;
         left: 0;
         right: 0;
-        top: calc(100% + 6px);
+        top: calc(100% - 4px);
         flex-direction: column;
         gap: 4px;
         padding: 6px;
@@ -440,6 +407,14 @@
       }
       #results.show {
         display: flex;
+      }
+      .res-h {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--steel);
+        padding: 4px 8px 2px;
       }
       .hit {
         display: flex;
@@ -513,6 +488,11 @@
         color: var(--gold);
         background: rgba(250, 204, 21, 0.1);
       }
+      .list-empty {
+        padding: 8px 8px 14px;
+        color: var(--steel);
+        font-size: 0.78rem;
+      }
       .list-empty.in-res {
         padding: 10px;
       }
@@ -559,7 +539,10 @@
         color: var(--accent2);
         border: 1px solid var(--wire);
       }
-
+      a.btn {
+        display: inline-block;
+        text-decoration: none;
+      }
       .v-act {
         display: flex;
         gap: 8px;
@@ -567,73 +550,12 @@
         flex-wrap: wrap;
       }
 
-      .mut {
-        color: var(--lead);
-        font-size: 0.82rem;
-      }
-      .tiles {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 9px;
-        margin-top: 10px;
-      }
-      .tile {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-        padding: 13px 6px;
-        border-radius: 14px;
-        background: var(--lift);
-        border: 1px solid var(--wire);
-        cursor: pointer;
-        transition: 0.25s;
-        font-size: 0.8rem;
-        font-weight: 500;
-      }
-      .tile span {
-        font-size: 1.5rem;
-        transition: 0.25s;
-      }
-      .tile:hover {
-        transform: translateY(-3px);
-        border-color: var(--accent2);
-      }
-      .tile:hover span {
-        transform: scale(1.2) rotate(-6deg);
-      }
-      .tile:active {
-        transform: scale(0.94);
-      }
-      a.tile {
-        text-decoration: none;
-        color: inherit;
-        text-align: center;
-      }
-      .tile img {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        transition: 0.25s;
-      }
-      .tile:hover img {
-        transform: scale(1.12) rotate(-4deg);
-      }
-
-      /* rows */
-      .list-section-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        color: var(--steel);
-        padding: 12px 6px 6px;
-      }
+      /* rows (reused as tray cards) */
       .chat-row {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 10px 12px;
+        padding: 9px 12px;
         cursor: pointer;
         width: 100%;
         text-align: left;
@@ -642,36 +564,23 @@
         background: rgba(15, 23, 42, 0.6);
         border: 1px solid var(--wire);
         border-radius: 14px;
-        margin-bottom: 8px;
         transition: 0.22s;
-        animation: up 0.5s both;
-        animation-delay: calc(var(--i, 0) * 55ms);
       }
       .chat-row:hover {
         background: var(--lift);
-        transform: translateX(4px);
         border-color: rgba(96, 165, 250, 0.4);
       }
       .chat-row:active {
-        transform: scale(0.98);
+        transform: scale(0.96);
       }
       .row-avatar {
-        width: 48px;
-        height: 48px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         object-fit: cover;
         background: var(--lift);
         border: 2px solid rgba(96, 165, 250, 0.18);
         flex-shrink: 0;
-      }
-      .row-map-thumb {
-        width: 64px;
-        aspect-ratio: 16/9;
-        border-radius: 8px;
-        object-fit: cover;
-        flex-shrink: 0;
-        border: 1px solid var(--wire);
-        background: var(--lift);
       }
       .row-content {
         flex: 1;
@@ -695,6 +604,9 @@
         font-size: 0.65rem;
         color: var(--steel);
         flex-shrink: 0;
+      }
+      .row-time:empty {
+        display: none;
       }
       .row-sub-line {
         margin-top: 2px;
@@ -731,10 +643,431 @@
         background: rgba(100, 116, 139, 0.18);
         color: var(--steel);
       }
-      .list-empty {
-        padding: 8px 8px 14px;
+      .launch-item {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 2px 8px;
+        border-radius: 14px;
+        background: var(--lift);
+        border: 1px solid var(--wire);
+        color: inherit;
+        text-decoration: none;
+        text-align: center;
+        transition: 0.2s;
+      }
+      .launch-item:hover {
+        border-color: var(--accent2);
+      }
+      .launch-item:active {
+        transform: scale(0.95);
+      }
+      .launch-item img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .launch-item .lb {
+        max-width: 100%;
+        font-size: 0.66rem;
+        font-weight: 500;
+        line-height: 1.2;
+        word-break: break-word;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .launch-item .row-badge {
+        position: absolute;
+        top: 3px;
+        right: 5px;
+      }
+
+      /* ═════ BOTTOM DOCK: nav + slide-up trays ═════ */
+      #dock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 850;
+      }
+      #botnav {
+        display: flex;
+        gap: 2px;
+        padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + var(--bot))
+          max(8px, env(safe-area-inset-right));
+        background: rgba(10, 15, 30, 0.97);
+        border-top: 1px solid var(--wire);
+      }
+      .nb {
+        position: relative;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        padding: 7px 2px 5px;
+        border: 0;
+        background: none;
+        border-radius: 14px;
+        color: var(--lead);
+        font-size: 0.68rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.25s;
+      }
+      .nb svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.35s cubic-bezier(0.34, 1.46, 0.64, 1);
+      }
+      .nb b {
+        margin-left: 3px;
+        opacity: 0.7;
+        font-weight: 700;
+      }
+      .nb.on {
+        color: var(--accent2);
+        background: rgba(59, 130, 246, 0.14);
+      }
+      .nb.on svg {
+        transform: translateY(-2px) scale(1.15);
+      }
+      .nb:active {
+        transform: scale(0.94);
+      }
+      #tray {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 100%;
+        padding: 14px max(12px, env(safe-area-inset-left)) 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(20, 30, 54, 0.98),
+          rgba(10, 15, 30, 0.98)
+        );
+        border-top: 1px solid var(--wire);
+        border-radius: 22px 22px 0 0;
+        box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.5);
+        transform: translateY(30px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1),
+          opacity 0.25s,
+          visibility 0.25s;
+      }
+      #tray.show {
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+      }
+      #tray .grab {
+        margin: -6px auto 10px;
+      }
+      .grab {
+        width: 42px;
+        height: 4px;
+        border-radius: 9px;
+        background: var(--steel);
+        margin: 9px auto 4px;
+        opacity: 0.5;
+      }
+      .panel {
+        display: none;
+      }
+      .panel.on {
+        display: block;
+      }
+      #tray .hs,
+      #tray #channels-slot,
+      #tray #qna-slot,
+      #tray #p-more.on {
+        display: flex;
+        flex-direction: row;
+        gap: 9px;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        padding: 2px 2px 8px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+      }
+      #tray .hs::-webkit-scrollbar,
+      #tray #channels-slot::-webkit-scrollbar,
+      #tray #qna-slot::-webkit-scrollbar,
+      #tray #p-more::-webkit-scrollbar {
+        display: none;
+      }
+      #tray .chat-row {
+        flex: 0 0 112px;
+        width: auto;
+        flex-direction: column;
+        text-align: center;
+        padding: 12px 6px 10px;
+        gap: 7px;
+        scroll-snap-align: start;
+      }
+      #tray .row-avatar {
+        width: 46px;
+        height: 46px;
+      }
+      #tray .row-content {
+        width: 100%;
+      }
+      #tray .row-title-line,
+      #tray .row-sub-line {
+        justify-content: center;
+      }
+      #tray .row-title {
+        font-size: 0.8rem;
+      }
+      #tray .row-time {
+        display: none;
+      }
+      #tray .row-subtitle {
+        font-size: 0.66rem;
+        max-width: 100%;
+      }
+      #tray .launch-item {
+        flex: 0 0 96px;
+        scroll-snap-align: start;
+        padding: 12px 4px 10px;
+      }
+      #tray .launch-item img {
+        width: 42px;
+        height: 42px;
+      }
+      #tray.show .panel.on .chat-row,
+      #tray.show .panel.on .launch-item {
+        animation: slideup 0.5s cubic-bezier(0.2, 0.9, 0.25, 1) backwards !important;
+        animation-delay: calc(var(--i, 0) * 50ms) !important;
+      }
+      #tray .tray-fade {
+        pointer-events: none;
+      }
+      .tray-hint {
+        text-align: center;
+        font-size: 0.62rem;
+        letter-spacing: 0.12em;
         color: var(--steel);
-        font-size: 0.78rem;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+
+      /* ═════ CHANNEL POST FEED — own fixed-height viewport, vertical swipe, lazy ═════ */
+      #feed {
+        margin: 6px 0 4px;
+      }
+      .fd-h {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 4px 4px 8px;
+      }
+      .fd-lbl {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--accent2);
+      }
+      #fd-n {
+        font-size: 0.7rem;
+        color: var(--steel);
+        font-weight: 700;
+      }
+      #fd-track {
+        height: clamp(380px, 66dvh, 620px);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scroll-snap-type: y mandatory;
+        overscroll-behavior-y: contain;
+        touch-action: pan-y;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--wire);
+        border-radius: 22px;
+        background: #05070d;
+      }
+      #fd-track::-webkit-scrollbar {
+        display: none;
+      }
+      #fd-track.empty {
+        height: auto;
+        border: 0;
+        background: none;
+      }
+      .fp {
+        flex: 0 0 100%;
+        min-height: 0;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--wire);
+        background: linear-gradient(160deg, #0b1220, #04060b);
+      }
+      .fp:last-child {
+        border-bottom: 0;
+      }
+      /* header: author + channel */
+      .fp-top {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .fp-top img {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: var(--lift);
+      }
+      .fp-top .au {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .fp-top .au small {
+        font-weight: 400;
+        color: var(--steel);
+      }
+      .fp-ch {
+        flex: none;
+        max-width: 42%;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--accent2);
+        padding: 4px 10px;
+        border-radius: 99px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* media block — separate from text */
+      .fp-media {
+        flex: 0 0 52%;
+        min-height: 0;
+        display: grid;
+        grid-auto-rows: 1fr;
+        gap: 6px;
+      }
+      .fp.nt .fp-media {
+        flex: 1 1 0;
+      }
+      .fp-media.m2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .th {
+        position: relative;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        background: #0b1220;
+        border: 1px solid var(--wire);
+        border-radius: 12px;
+      }
+      .th img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.25s;
+      }
+      .th img.ld {
+        opacity: 1;
+      }
+      .fp-play {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 54px;
+        height: 54px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: rgba(59, 130, 246, 0.92);
+        display: grid;
+        place-items: center;
+      }
+      .fp-play svg {
+        width: 24px;
+        height: 24px;
+        fill: #fff;
+        margin-left: 3px;
+      }
+      /* text block — separate from media */
+      .fp-text {
+        flex: 1 1 0;
+        min-height: 0;
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 0.98rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 8;
+      }
+      .fp.no-m .fp-text {
+        font-size: 1.3rem;
+        font-weight: 500;
+        -webkit-line-clamp: 12;
+      }
+      .fp.no-m.long .fp-text {
+        font-size: 1.05rem;
+        -webkit-line-clamp: 16;
+      }
+      .fp-foot {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 0.7rem;
+        color: var(--lead);
+      }
+      .fp-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 700;
+      }
+      .fp-stat svg {
+        width: 14px;
+        height: 14px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       /* sheet */
@@ -768,14 +1101,6 @@
       }
       #sheet.show {
         transform: translate(-50%, 0);
-      }
-      .grab {
-        width: 42px;
-        height: 4px;
-        border-radius: 9px;
-        background: var(--steel);
-        margin: 9px auto 4px;
-        opacity: 0.5;
       }
       .sh-h {
         display: flex;
@@ -832,6 +1157,36 @@
         line-height: 1.55;
         font-size: 0.9rem;
       }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        margin: 4px 0 10px;
+        padding: 4px;
+        background: var(--surface);
+        border: 1px solid var(--wire);
+        border-radius: 99px;
+      }
+      .tab {
+        flex: 1;
+        padding: 8px 6px;
+        border: 0;
+        background: none;
+        border-radius: 99px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--lead);
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .tab.on {
+        background: var(--accent);
+        color: #fff;
+      }
+      .tab b {
+        font-weight: 700;
+        opacity: 0.7;
+        margin-left: 3px;
+      }
 
       /* toast, install, pending */
       #toast-area {
@@ -869,10 +1224,10 @@
       }
       #install-bar {
         position: fixed;
-        bottom: 0;
+        bottom: calc(var(--nav) + var(--bot));
         left: 0;
         right: 0;
-        padding: 10px 16px calc(10px + var(--bot));
+        padding: 8px 16px;
         background: rgba(10, 15, 30, 0.96);
         border-top: 1px solid var(--wire);
         z-index: 700;
@@ -935,214 +1290,13 @@
         letter-spacing: 0.1em;
         border-radius: 99px;
       }
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 0.01ms !important;
-        }
-      }
 
-      /* ═════ layout v2: launchers + tabs + slim lists ═════ */
-      .wrap {
-        max-width: 720px;
-        padding-top: 4px;
-      }
-      #net {
-        padding: 6px;
-        background: none;
-      }
-      #net #net-t {
-        display: none;
-      }
-      body.offline #net {
-        padding: 4px 10px;
-        background: rgba(250, 204, 21, 0.14);
-      }
-      body.offline #net #net-t {
-        display: inline;
-      }
-
-      /* search pinned while scrolling */
-      .searchwrap {
-        position: sticky;
-        top: 0;
-        z-index: 30;
-        padding: 8px 0 10px;
-        background: linear-gradient(var(--paper) 78%, transparent);
-      }
-      #results {
-        top: calc(100% - 4px);
-      }
-      .res-h {
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--steel);
-        padding: 4px 8px 2px;
-      }
-
-      /* launchers */
-      .launch {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 8px;
-        margin-top: 2px;
-      }
-      @media (min-width: 560px) {
-        .launch {
-          grid-template-columns: repeat(5, minmax(0, 1fr));
-        }
-      }
-      .launch-item {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 2px 8px;
-        border-radius: 14px;
-        background: var(--lift);
-        border: 1px solid var(--wire);
-        color: inherit;
-        text-decoration: none;
-        text-align: center;
-        transition: 0.2s;
-        animation: up 0.5s both;
-        animation-delay: calc(var(--i, 0) * 60ms);
-      }
-      .launch-item:hover {
-        border-color: var(--accent2);
-        transform: translateY(-2px);
-      }
-      .launch-item:active {
-        transform: scale(0.95);
-      }
-      .launch-item img {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-      .launch-item .lb {
-        max-width: 100%;
-        font-size: 0.66rem;
-        font-weight: 500;
-        line-height: 1.2;
-        word-break: break-word;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-      .launch-item .row-badge {
-        position: absolute;
-        top: 3px;
-        right: 5px;
-      }
-
-      /* tabs */
-      .tabs {
-        display: flex;
-        gap: 4px;
-        margin: 16px 0 10px;
-        padding: 4px;
-        background: var(--surface);
-        border: 1px solid var(--wire);
-        border-radius: 99px;
-      }
-      .tab {
-        flex: 1;
-        padding: 8px 6px;
-        border: 0;
-        background: none;
-        border-radius: 99px;
-        font-weight: 700;
-        font-size: 0.8rem;
-        color: var(--lead);
-        cursor: pointer;
-        transition: 0.2s;
-      }
-      .tab.on {
-        background: var(--accent);
-        color: #fff;
-      }
-      .tab b {
-        font-weight: 700;
-        opacity: 0.7;
-        margin-left: 3px;
-      }
-      .panel {
-        display: none;
-      }
-      .panel.on {
-        display: block;
-      }
-      #channels-slot,
-      #qna-slot,
-      #p-more {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      #p-more.panel:not(.on) {
-        display: none;
-      }
-
-      /* slim list rows */
-      .chat-row {
-        margin-bottom: 0;
-        padding: 9px 12px;
-      }
-      .chat-row:hover {
-        transform: translateX(3px);
-      }
-      .row-avatar {
-        width: 40px;
-        height: 40px;
-      }
-      .row-time:empty {
-        display: none;
-      }
-      .chat-row.x {
-        display: none;
-      }
-      .more-btn {
-        display: none;
-        width: 100%;
-        margin-top: 8px;
-        padding: 10px;
-        border-radius: 12px;
-        border: 1px dashed var(--wire);
-        background: none;
-        color: var(--accent2);
-        font-weight: 700;
-        font-size: 0.8rem;
-        cursor: pointer;
-      }
-      .more-btn.show {
-        display: block;
-      }
-      body.has-install #chat-list {
-        padding-bottom: calc(84px + var(--bot));
-      }
-
-      /* returning visits: no fly-in */
-      .calm .in,
-      .calm .chat-row,
-      .calm .launch-item {
-        animation: none !important;
-      }
-
-      /* ═════ events countdown ═════ */
+      /* events countdown */
       .evc {
         display: block;
         width: 100%;
         text-align: left;
-        margin: 2px 0 8px;
+        margin: 2px 0 12px;
         padding: 14px;
         border-radius: 18px;
         background: linear-gradient(
@@ -1260,7 +1414,6 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
-      /* sheet slider */
       .ev-track {
         display: flex;
         gap: 10px;
@@ -1335,12 +1488,20 @@
         font-size: 0.78rem;
         color: var(--steel);
       }
-      a.btn {
-        display: inline-block;
-        text-decoration: none;
+
+      .calm .in,
+      .calm .chat-row,
+      .calm .launch-item {
+        animation: none !important;
       }
-      #sheet .tabs {
-        margin-top: 4px;
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
       }
     </style>
   </head>
@@ -1395,116 +1556,123 @@
           <span class="evc-title">Loading events…</span>
         </button>
 
-        <!-- Shortcuts: add any new page here as another <a class="launch-item"> -->
-        <nav class="launch" data-tag="Page" aria-label="Shortcuts">
-          <a
-            href="home.html"
-            class="launch-item"
-            style="--i: 0"
-            data-title="Chat"
-            data-sub="Direct chats"
-          >
-            <img
-              src="maskable_icon_x192.png"
-              alt="Chat"
-              onerror="
-                this.onerror = null;
-                this.src = fb(this.alt);
-              "
-            /><span class="lb">Chat</span>
-          </a>
-          <a
-            href="announce.html"
-            class="launch-item"
-            id="ann-row"
-            style="--i: 1"
-            data-title="Announcements"
-            data-sub="Updates and news"
-          >
-            <img
-              src="announce.png"
-              alt="Announcements"
-              onerror="
-                this.onerror = null;
-                this.src = fb(this.alt);
-              "
-            /><span class="lb">Announcements</span
-            ><span class="row-badge" id="ann-row-badge"></span>
-          </a>
-          <a
-            href="geo.html"
-            class="launch-item"
-            style="--i: 2"
-            data-title="Riverside Mapping"
-            data-sub="Find fellowships &amp; locations near you"
-          >
-            <img
-              src="RM.png"
-              alt="Mapping"
-              onerror="
-                this.onerror = null;
-                this.src = fb(this.alt);
-              "
-            /><span class="lb">Mapping</span>
-          </a>
-          <a
-            href="songs.html"
-            class="launch-item"
-            style="--i: 3"
-            data-title="Songs"
-            data-sub="Church songs"
-          >
-            <img
-              src="songs-icon.png"
-              alt="Songs"
-              onerror="
-                this.onerror = null;
-                this.src = fb(this.alt);
-              "
-            /><span class="lb">Songs</span>
-          </a>
-          <a
-            href="pledges.html"
-            class="launch-item"
-            style="--i: 4"
-            data-title="Pledge handler"
-            data-sub="Pledges"
-          >
-            <img
-              src="pledge.png"
-              alt="Pledges"
-              onerror="
-                this.onerror = null;
-                this.src = fb(this.alt);
-              "
-            /><span class="lb">Pledges</span>
-          </a>
-        </nav>
+        <!-- Channel posts: own viewport, vertical swipe, lazy -->
+        <section id="feed" aria-label="Latest channel posts">
+          <div class="fd-h">
+            <span class="fd-lbl">LATEST POSTS</span><span id="fd-n"></span>
+          </div>
+          <div id="fd-track" class="empty">
+            <div class="list-empty">Loading posts…</div>
+          </div>
+        </section>
+      </div>
+    </main>
 
-        <div class="tabs" role="tablist">
-          <button class="tab on" data-t="channels" role="tab" type="button">
-            Channels<b id="cnt-ch"></b>
-          </button>
-          <button class="tab" data-t="qna" role="tab" type="button">
-            Q&amp;A<b id="cnt-qa"></b>
-          </button>
-          <button class="tab" data-t="more" role="tab" type="button">
-            More
-          </button>
-        </div>
+    <!-- ═════ BOTTOM DOCK ═════ -->
+    <div id="dock">
+      <div id="tray">
+        <div class="grab"></div>
 
-        <section class="panel on" id="p-channels" data-tag="Channel">
+        <section class="panel" id="p-channels" data-tag="Channel">
           <div id="channels-slot">
             <div class="list-empty">Loading channels…</div>
           </div>
-          <button class="more-btn" id="ch-more" type="button"></button>
+          <button class="more-btn" id="ch-more" type="button" hidden></button>
         </section>
 
         <section class="panel" id="p-qna" data-tag="Q&amp;A">
           <div id="qna-slot">
             <div class="list-empty">Loading Q&amp;A…</div>
           </div>
-          <button class="more-btn" id="qa-more" type="button"></button>
+          <button class="more-btn" id="qa-more" type="button" hidden></button>
+        </section>
+
+        <!-- Resources: add any new page here as another <a class="launch-item"> -->
+        <section class="panel" id="p-res" data-tag="Resources">
+          <div class="hs">
+            <a
+              href="home.html"
+              class="launch-item"
+              style="--i: 0"
+              data-title="Chat"
+              data-sub="Direct chats"
+            >
+              <img
+                src="maskable_icon_x192.png"
+                alt="Chat"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              /><span class="lb">Chat</span>
+            </a>
+            <a
+              href="announce.html"
+              class="launch-item"
+              id="ann-row"
+              style="--i: 1"
+              data-title="Announcements"
+              data-sub="Updates and news"
+            >
+              <img
+                src="announce.png"
+                alt="Announcements"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              /><span class="lb">Announcements</span
+              ><span class="row-badge" id="ann-row-badge"></span>
+            </a>
+            <a
+              href="geo.html"
+              class="launch-item"
+              style="--i: 2"
+              data-title="Riverside Mapping"
+              data-sub="Find fellowships &amp; locations near you"
+            >
+              <img
+                src="RM.png"
+                alt="Mapping"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              /><span class="lb">Mapping</span>
+            </a>
+            <a
+              href="songs.html"
+              class="launch-item"
+              style="--i: 3"
+              data-title="Songs"
+              data-sub="Church songs"
+            >
+              <img
+                src="songs-icon.png"
+                alt="Songs"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              /><span class="lb">Songs</span>
+            </a>
+            <a
+              href="pledges.html"
+              class="launch-item"
+              style="--i: 4"
+              data-title="Pledge handler"
+              data-sub="Pledges"
+            >
+              <img
+                src="pledge.png"
+                alt="Pledges"
+                onerror="
+                  this.onerror = null;
+                  this.src = fb(this.alt);
+                "
+              /><span class="lb">Pledges</span>
+            </a>
+          </div>
         </section>
 
         <section class="panel" id="p-more" data-tag="Page">
@@ -1573,7 +1741,36 @@
           </button>
         </section>
       </div>
-    </main>
+
+      <nav id="botnav" aria-label="Main navigation">
+        <button class="nb" data-t="channels" type="button">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" /></svg
+          ><span>Channels<b id="cnt-ch"></b></span>
+        </button>
+        <button class="nb" data-t="qna" type="button">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path
+              d="M9.5 9.2a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"
+            /></svg
+          ><span>Q&amp;A<b id="cnt-qa"></b></span>
+        </button>
+        <button class="nb" data-t="res" type="button">
+          <svg viewBox="0 0 24 24">
+            <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+            <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+            <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+            <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" /></svg
+          ><span>Resources</span><span class="tb-badge" id="res-badge"></span>
+        </button>
+        <button class="nb" data-t="more" type="button">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3" /></svg
+          ><span>More</span>
+        </button>
+      </nav>
+    </div>
 
     <div id="scrim"></div>
     <div id="sheet" role="dialog" aria-modal="true">
@@ -1651,10 +1848,13 @@
           )
         );
       }
-      const lh3 = (u) => {
+      /* w = optional pixel width so Google serves a small image instead of the full original */
+      const lh3 = (u, w) => {
         if (!u) return "";
         const m = u.match(/[-\w]{25,}/);
-        return m ? `https://lh3.googleusercontent.com/d/${m[0]}` : u;
+        return m
+          ? `https://lh3.googleusercontent.com/d/${m[0]}${w ? "=w" + w : ""}`
+          : u;
       };
       const esc = (s) =>
         (s || "").replace(
@@ -1941,14 +2141,16 @@
       }
       $("#scrim").onclick = $("#sh-x").onclick = closeSheet;
       addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeSheet();
+        if (e.key === "Escape") {
+          closeSheet();
+          setTab(null);
+        }
       });
 
       /* ══════════ SMART SEARCH ══════════
-         Indexes every link/tile/row on the page automatically, so any new
-         page you add is searchable with no code change. Optional extras on
-         any element:  data-keywords="word1 word2"  data-title="Name"
-         data-tag="Label"  (and data-search on non-link elements). */
+         Indexes every link/tile/row on the page and in the bottom dock automatically, so any new
+         page you add is searchable with no code change. Optional extras on any element:
+         data-keywords="word1 word2"  data-title="Name"  data-tag="Label"  (and data-search on non-link elements). */
       const input = $("#msg"),
         box = $("#results"),
         clr = $("#s-clear");
@@ -2047,7 +2249,7 @@
           out = [];
         [
           ...document.querySelectorAll(
-            "#chat-list a[href], #chat-list button.chat-row, #chat-list [data-search]",
+            "#chat-list a[href], #chat-list button.chat-row, #chat-list [data-search], #dock a[href], #dock button.chat-row",
           ),
           ...document.querySelectorAll("#topbar a[href]"),
         ].forEach((el) => {
@@ -2226,7 +2428,6 @@
         hits = [];
         active = -1;
         if (!q) {
-          /* empty + focused: show the last few pages opened */
           const rec = LS.get(RKEY, []);
           if (!rec.length || document.activeElement !== input) {
             box.classList.remove("show");
@@ -2270,8 +2471,6 @@
         resetInput();
         h.help ? helpSheet() : topicSheet(h.k);
       }
-
-      /* ── Enter: open a page when it's clear, otherwise guide / help ── */
       function submit() {
         const t = input.value.trim();
         if (!t) return;
@@ -2311,19 +2510,17 @@
           e.preventDefault();
           if (active >= 0 && hits[active]) activate(hits[active]);
           else submit();
-        } else if (e.key === "Escape") {
-          resetInput();
-        }
+        } else if (e.key === "Escape") resetInput();
       });
       clr.onclick = () => {
         resetInput();
         input.focus();
       };
       document.addEventListener("click", (e) => {
-        /* remember pages opened by tapping tiles/rows directly */
-        const a = e.target.closest("#chat-list a[href]");
+        const a = e.target.closest("#chat-list a[href], #dock a[href]");
         if (a && !a.closest(".searchwrap")) remember(describe(a));
         if (!e.target.closest(".searchwrap")) box.classList.remove("show");
+        if (!e.target.closest("#dock")) setTab(null);
       });
 
       /* ══════════ NOTIFICATIONS ══════════ */
@@ -2458,15 +2655,14 @@
         const rb = $("#ann-row-badge");
         rb.textContent = n > 99 ? "99+" : n;
         rb.classList.toggle("visible", n > 0);
+        /* same unread count on the Resources button of the bottom nav */
+        const nb = $("#res-badge");
+        nb.textContent = n > 99 ? "99+" : n;
+        nb.classList.toggle("visible", n > 0);
       }
       function previewText(p) {
         if (!p) return "No posts yet";
-        const t = (p.content || "")
-          .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, "")
-          .replace(/\/view\b\S*/gi, "")
-          .replace(/usp=\S+/gi, "")
-          .replace(/\s{2,}/g, " ")
-          .trim();
+        const t = cleanTxt(p.content);
         return t || (p.media?.link ? "📎 Attachment" : "New post");
       }
       function setPreview(id, p) {
@@ -2479,30 +2675,23 @@
         }
       }
 
-      /* show only the first few rows, with "See all (N)" */
-      const LIMIT = 5,
+      /* tray lists show every row (they scroll sideways), only the counts are kept */
+      const LIMIT = 999,
         expanded = {};
       function applyCollapse(slotSel, btnSel, cntSel) {
-        const rows = [...$(slotSel).querySelectorAll(".chat-row")],
-          btn = $(btnSel);
-        rows.forEach((r, i) =>
-          r.classList.toggle("x", !expanded[slotSel] && i >= LIMIT),
-        );
-        btn.classList.toggle("show", rows.length > LIMIT);
-        btn.textContent = expanded[slotSel]
-          ? "Show less"
-          : `See all (${rows.length})`;
+        const rows = [...$(slotSel).querySelectorAll(".chat-row")];
         $(cntSel).textContent = rows.length ? rows.length : "";
       }
-      [
-        ["#channels-slot", "#ch-more", "#cnt-ch"],
-        ["#qna-slot", "#qa-more", "#cnt-qa"],
-      ].forEach(([slot, btn, cnt]) => {
-        $(btn).onclick = () => {
-          expanded[slot] = !expanded[slot];
-          applyCollapse(slot, btn, cnt);
-        };
-      });
+
+      /* small concurrency pool: a few channels at a time, results show up as they arrive */
+      async function pool(items, n, fn) {
+        let i = 0;
+        await Promise.all(
+          Array.from({ length: Math.min(n, items.length) }, async () => {
+            while (i < items.length) await fn(items[i++]);
+          }),
+        );
+      }
 
       async function loadList(
         slot,
@@ -2525,7 +2714,13 @@
           const { channels = [] } = await api({ operation: op });
           if (!channels.length) {
             el.innerHTML = `<div class="list-empty">${emptyMsg}</div>`;
-            if (withPreview) setEvents([]);
+            if (withPreview) {
+              setEvents([]);
+              FEEDRAW = [];
+              LS.set(FKEY, []);
+              FLOADED = true;
+              paintFeed(true);
+            }
             LS.set(key, null);
             applyCollapse(slot, btn, cnt);
             return;
@@ -2546,45 +2741,7 @@
           applyCollapse(slot, btn, cnt);
           LS.set(key, el.innerHTML);
           if (withPreview) {
-            const evs = [],
-              failed = new Set();
-            await Promise.all(
-              channels.map(async (c) => {
-                try {
-                  const d = await api({
-                    operation: "getChannelPosts",
-                    channelId: c.id,
-                    username: userName,
-                  });
-                  const posts = d.posts || [];
-                  posts.forEach((p) =>
-                    (p.events || []).forEach((ev) =>
-                      evs.push({
-                        date: ev.date,
-                        title: ev.title,
-                        img: ev.imageUrl || "",
-                        ch: c.name,
-                        cid: c.id,
-                        pid: p.postId,
-                      }),
-                    ),
-                  );
-                  setPreview(
-                    c.id,
-                    posts
-                      .slice()
-                      .sort(
-                        (a, b) => new Date(b.created) - new Date(a.created),
-                      )[0] || null,
-                  );
-                } catch {
-                  failed.add(c.id);
-                  setPreview(c.id, null);
-                }
-              }),
-            );
-            /* if a channel failed to load, keep its last known events */
-            setEvents(evs.concat(EVRAW.filter((r) => failed.has(r.cid))));
+            await loadPosts(channels);
             /* most recently active channels first */
             [...el.querySelectorAll(".chat-row")]
               .sort((a, b) => (+b.dataset.ts || 0) - (+a.dataset.ts || 0))
@@ -2622,18 +2779,31 @@
           false,
         );
 
-      /* ── tabs ── */
-      const tabs = [...document.querySelectorAll(".tab")];
+      /* ── bottom nav: tap a button → its page buttons slide up in a swipeable row; tap again / outside to close ── */
+      const tabs = [...document.querySelectorAll(".nb")];
       function setTab(n) {
-        if (!tabs.some((t) => t.dataset.t === n)) n = "channels";
-        tabs.forEach((t) => t.classList.toggle("on", t.dataset.t === n));
+        const p = n && $("#p-" + n),
+          open = !!p && !p.classList.contains("on");
+        tabs.forEach((t) =>
+          t.classList.toggle("on", open && t.dataset.t === n),
+        );
         document
-          .querySelectorAll(".panel")
-          .forEach((p) => p.classList.toggle("on", p.id === "p-" + n));
-        LS.set("rc_tab", n);
+          .querySelectorAll("#tray .panel")
+          .forEach((x) => x.classList.toggle("on", open && x.id === "p-" + n));
+        $("#tray").classList.toggle("show", open);
+        if (open)
+          $("#tray")
+            .querySelector(".panel.on")
+            ?.querySelectorAll(".hs, #channels-slot, #qna-slot")
+            .forEach((s) => (s.scrollLeft = 0));
       }
-      tabs.forEach((t) => (t.onclick = () => setTab(t.dataset.t)));
-      setTab(LS.get("rc_tab", "channels"));
+      tabs.forEach(
+        (t) =>
+          (t.onclick = (e) => {
+            e.stopPropagation();
+            setTab(t.dataset.t);
+          }),
+      );
 
       /* ── refresh: automatic on return to the app + pull down at the top ── */
       let refreshing = false,
@@ -2667,7 +2837,11 @@
         sc.addEventListener(
           "touchstart",
           (e) => {
-            y0 = sc.scrollTop === 0 ? e.touches[0].clientY : null;
+            /* swiping inside the post viewport must never trigger pull-to-refresh */
+            y0 =
+              sc.scrollTop === 0 && !e.target.closest("#fd-track")
+                ? e.touches[0].clientY
+                : null;
             dy = 0;
           },
           { passive: true },
@@ -2966,6 +3140,317 @@
         }
       }, 10000);
       setInterval(tick, 1000);
+
+      /* ══════════ CHANNEL POST FEED ══════════
+         Fast path:
+         • cached posts paint instantly, before any network call
+         • channels are fetched 4 at a time and the feed updates as they arrive
+         • only the newest PER posts per channel are kept (events are read from ALL posts for the countdown)
+         • only PAGE cards are in the DOM; more are added as you swipe near the end
+         • images load only for the card on screen + the next one, and at a small size (=w640)
+         • view counts are fetched only for cards you actually see
+         Event-only posts (no text, no media) are skipped — they live in the countdown card above.
+         Swipe is vertical inside its own fixed-height viewport. Tap a card to open the post. */
+      const FKEY = "rc_feed2",
+        FMAX = 30,
+        PER = 6,
+        PAGE = 4;
+      let FEEDRAW = LS.get(FKEY, []),
+        VC = LS.get("rc_views", {}),
+        fSig = "",
+        FLOADED = false;
+      if (!Array.isArray(FEEDRAW)) FEEDRAW = [];
+      const RENDERED = new Set(),
+        VFETCHED = new Set();
+      const fileId = (u) =>
+        (String(u || "").match(/[-\w]{25,}/) || [])[0] || "";
+      function cleanTxt(t) {
+        return (t || "")
+          .replace(/https?:\/\/drive\.google\.com\/[^\s<>"']*/gi, "")
+          .replace(/\/view\b\S*/gi, "")
+          .replace(/usp=\S+/gi, "")
+          .replace(/[ \t]{2,}/g, " ")
+          .trim();
+      }
+      function feedItem(p, c) {
+        const m = []
+          .concat(p.media || [])
+          .filter((x) => x && x.link)
+          .map((x) => ({
+            l: x.link,
+            t: (x.type || "").startsWith("image") ? "i" : "v",
+          }))
+          .slice(0, 4);
+        const tx = cleanTxt(p.content);
+        if (!tx && !m.length) return null; /* events-only post → ignore */
+        return {
+          pid: p.postId,
+          cid: c.id,
+          ch: c.name,
+          au: p.author || "",
+          pic: p.picLink || "",
+          tx,
+          m,
+          t:
+            new Date(
+              p.modified || p.updated || p.edited || p.created,
+            ).getTime() || 0,
+          lk: p.likes || 0,
+        };
+      }
+      const ICO_EYE =
+        '<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+      const ICO_HEART =
+        '<svg viewBox="0 0 24 24"><path d="M12 20s-8-5-8-11a4.5 4.5 0 018-2.5A4.5 4.5 0 0120 9c0 6-8 11-8 11z"/></svg>';
+      /* media thumb: no src yet — the lazy observer sets it when the card is near */
+      function thumb(m) {
+        const id = fileId(m.l),
+          src =
+            m.t === "i"
+              ? lh3(m.l, 640)
+              : id
+                ? `https://drive.google.com/thumbnail?id=${id}&sz=w480`
+                : "";
+        return (
+          `<div class="th">` +
+          (src
+            ? `<img data-src="${esc(src)}" data-o="${esc(m.l)}" alt="" decoding="async">`
+            : "") +
+          (m.t === "v"
+            ? '<span class="fp-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>'
+            : "") +
+          `</div>`
+        );
+      }
+      function fpHtml(f) {
+        const hasM = f.m.length > 0,
+          cls =
+            "fp" +
+            (hasM ? "" : " no-m") +
+            (f.tx ? "" : " nt") +
+            (!hasM && f.tx.length > 200 ? " long" : "");
+        return (
+          `<div class="${cls}" data-pid="${esc(f.pid)}" data-cid="${esc(f.cid)}" role="link" tabindex="0">` +
+          `<div class="fp-top"><img src="${esc(f.pic ? lh3(f.pic, 80) : fb(f.au))}" alt="${esc(f.au)}" loading="lazy" onerror="this.onerror=null;this.src=fb(this.alt)"><span class="au">${esc(f.au)} <small>· ${esc(fmtTime(f.t))}</small></span><span class="fp-ch">${esc(f.ch)}</span></div>` +
+          (hasM
+            ? `<div class="fp-media${f.m.length > 1 ? " m2" : ""}">${f.m.map(thumb).join("")}</div>`
+            : "") +
+          (f.tx ? `<div class="fp-text">${esc(f.tx)}</div>` : "") +
+          `<div class="fp-foot"><span class="fp-stat" title="Views">${ICO_EYE}<span class="fv">${VC[f.pid] || 0}</span></span><span class="fp-stat" title="Likes">${ICO_HEART}${f.lk}</span></div></div>`
+        );
+      }
+
+      const TR = $("#fd-track");
+      let feedOn = false; /* is the feed actually on screen inside the page scroller? */
+
+      function loadImg(img) {
+        img.onload = () => img.classList.add("ld");
+        img.onerror = () => {
+          if (!img.dataset.r) {
+            img.dataset.r = 1;
+            img.src = lh3(img.dataset.o); /* fall back to the full-size URL */
+          } else img.remove();
+        };
+        img.src = img.dataset.src;
+        img.removeAttribute("data-src");
+      }
+      /* media: only the current card + the next one */
+      const MOB = new IntersectionObserver(
+        (es) =>
+          es.forEach((en) => {
+            if (!en.isIntersecting) return;
+            MOB.unobserve(en.target);
+            en.target.querySelectorAll("img[data-src]").forEach(loadImg);
+          }),
+        { root: TR, rootMargin: "100% 0px" },
+      );
+      /* views: one per post per session when a card is ≥60% visible AND the feed is on screen */
+      const SEEN = new Set(LS.get("rc_seenp", []));
+      const FOB = new IntersectionObserver(
+        (es) =>
+          es.forEach((en) => {
+            if (!en.isIntersecting || !feedOn) return;
+            const c = en.target,
+              pid = c.dataset.pid;
+            if (!pid) return;
+            if (SEEN.has(pid)) {
+              if (!VFETCHED.has(pid)) viewCount(pid);
+              return;
+            }
+            SEEN.add(pid);
+            LS.set("rc_seenp", [...SEEN].slice(-200));
+            api(null, {
+              operation: "recordChannelPostView",
+              postId: pid,
+              username: userName,
+              channelId: c.dataset.cid,
+            })
+              .then(() => viewCount(pid))
+              .catch(() => SEEN.delete(pid));
+          }),
+        { root: TR, threshold: 0.6 },
+      );
+      new IntersectionObserver(
+        (es) => {
+          const on = es[0].isIntersecting;
+          if (on && !feedOn) {
+            feedOn = true;
+            TR.querySelectorAll(".fp").forEach((c) => {
+              FOB.unobserve(c);
+              FOB.observe(c); /* re-check cards now that the feed is visible */
+            });
+          }
+          feedOn = on;
+        },
+        { root: $("#chat-list"), threshold: 0.25 },
+      ).observe(TR);
+
+      function addCards(list) {
+        if (!list.length) return;
+        TR.insertAdjacentHTML("beforeend", list.map(fpHtml).join(""));
+        const cs = [...TR.querySelectorAll(".fp")].slice(-list.length);
+        cs.forEach((c) => {
+          MOB.observe(c);
+          FOB.observe(c);
+        });
+        list.forEach((f) => RENDERED.add(f.pid));
+      }
+      function moreCards() {
+        addCards(FEEDRAW.filter((f) => !RENDERED.has(f.pid)).slice(0, PAGE));
+      }
+      function paintFeed(force) {
+        const L = FEEDRAW,
+          sig = L.map((f) => f.pid + f.lk + f.tx.length).join();
+        if (sig === fSig && !force) return;
+        if (!L.length) {
+          fSig = sig;
+          MOB.disconnect();
+          FOB.disconnect();
+          RENDERED.clear();
+          TR.classList.add("empty");
+          TR.innerHTML = `<div class="list-empty">${FLOADED ? "No posts yet" : "Loading posts…"}</div>`;
+          $("#fd-n").textContent = "";
+          return;
+        }
+        /* user is reading further down: don't yank the view; new posts join as they swipe on */
+        if (TR.scrollTop > 10 && TR.querySelector(".fp")) {
+          fSig = sig;
+          fdScroll();
+          return;
+        }
+        fSig = sig;
+        MOB.disconnect();
+        FOB.disconnect();
+        RENDERED.clear();
+        TR.classList.remove("empty");
+        TR.innerHTML = "";
+        addCards(L.slice(0, PAGE));
+        TR.scrollTop = 0;
+        fdScroll();
+      }
+      function fdScroll() {
+        if (!TR.querySelector(".fp")) return;
+        const h = TR.clientHeight || 1,
+          n = TR.querySelectorAll(".fp").length,
+          i = Math.max(0, Math.min(n - 1, Math.round(TR.scrollTop / h)));
+        $("#fd-n").textContent = `${i + 1} / ${FEEDRAW.length}`;
+        if (i >= n - 2) moreCards();
+      }
+      TR.addEventListener("scroll", fdScroll, { passive: true });
+      const openPost = (c) =>
+        (location.href = `channel.html?channelId=${encodeURIComponent(c.dataset.cid)}&postId=${encodeURIComponent(c.dataset.pid)}`);
+      TR.addEventListener("click", (e) => {
+        const c = e.target.closest(".fp");
+        if (c) openPost(c);
+      });
+      TR.addEventListener("keydown", (e) => {
+        const c = e.target.closest(".fp");
+        if (c && e.key === "Enter") openPost(c);
+      });
+
+      function setViews(pid, n) {
+        VC[pid] = n;
+        TR.querySelectorAll(".fp").forEach((c) => {
+          if (c.dataset.pid === pid) c.querySelector(".fv").textContent = n;
+        });
+      }
+      async function viewCount(pid) {
+        VFETCHED.add(pid);
+        try {
+          const d = await api({
+            operation: "getChannelPostViewCount",
+            postId: pid,
+          });
+          if (d.status === "success") {
+            setViews(pid, d.count || 0);
+            LS.set("rc_views", VC);
+          }
+        } catch {
+          VFETCHED.delete(pid);
+        }
+      }
+
+      /* fetch channels a few at a time; feed + events + previews fill in as each one returns */
+      async function loadPosts(channels) {
+        const base = FEEDRAW,
+          evs = [],
+          failed = new Set(),
+          done = new Set(),
+          fresh = [];
+        let timer = 0;
+        const compose = () =>
+          fresh
+            .concat(base.filter((p) => !done.has(p.cid)))
+            .sort((a, b) => b.t - a.t)
+            .slice(0, FMAX);
+        const flush = () => {
+          timer = 0;
+          FEEDRAW = compose();
+          paintFeed();
+        };
+        await pool(channels, 4, async (c) => {
+          try {
+            const d = await api({
+              operation: "getChannelPosts",
+              channelId: c.id,
+              username: userName,
+            });
+            const posts = (d.posts || [])
+              .slice()
+              .sort((a, b) => new Date(b.created) - new Date(a.created));
+            posts.forEach((p) =>
+              (p.events || []).forEach((ev) =>
+                evs.push({
+                  date: ev.date,
+                  title: ev.title,
+                  img: ev.imageUrl || "",
+                  ch: c.name,
+                  cid: c.id,
+                  pid: p.postId,
+                }),
+              ),
+            );
+            posts.slice(0, PER).forEach((p) => {
+              const f = feedItem(p, c);
+              if (f) fresh.push(f);
+            });
+            setPreview(c.id, posts[0] || null);
+            done.add(c.id);
+            if (!timer) timer = setTimeout(flush, 350);
+          } catch {
+            failed.add(c.id);
+            setPreview(c.id, null);
+          }
+        });
+        clearTimeout(timer);
+        FEEDRAW = compose();
+        LS.set(FKEY, FEEDRAW);
+        FLOADED = true;
+        paintFeed(!FEEDRAW.length);
+        /* a channel that failed keeps its last known events */
+        setEvents(evs.concat(EVRAW.filter((r) => failed.has(r.cid))));
+      }
+      paintFeed(); /* instant paint from cache */
 
       /* ══════════ INIT ══════════ */
       addEventListener("DOMContentLoaded", () => {
