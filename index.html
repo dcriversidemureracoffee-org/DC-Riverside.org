@@ -96,8 +96,16 @@
         position: fixed;
         inset: 0;
         background:
-          radial-gradient(60vmax 60vmax at 0% 0%, rgba(59, 130, 246, 0.16), transparent 70%),
-          radial-gradient(60vmax 60vmax at 100% 100%, rgba(99, 102, 241, 0.16), transparent 70%);
+          radial-gradient(
+            60vmax 60vmax at 0% 0%,
+            rgba(59, 130, 246, 0.16),
+            transparent 70%
+          ),
+          radial-gradient(
+            60vmax 60vmax at 100% 100%,
+            rgba(99, 102, 241, 0.16),
+            transparent 70%
+          );
         pointer-events: none;
         z-index: 0;
       }
@@ -1128,6 +1136,212 @@
       .calm .launch-item {
         animation: none !important;
       }
+
+      /* ═════ events countdown ═════ */
+      .evc {
+        display: block;
+        width: 100%;
+        text-align: left;
+        margin: 2px 0 8px;
+        padding: 14px;
+        border-radius: 18px;
+        background: linear-gradient(
+          160deg,
+          rgba(26, 37, 64, 0.85),
+          rgba(15, 23, 42, 0.9)
+        );
+        border: 1px solid var(--wire);
+        border-left: 3px solid var(--gold);
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .evc:hover {
+        border-color: rgba(96, 165, 250, 0.4);
+        border-left-color: var(--gold);
+      }
+      .evc:active {
+        transform: scale(0.985);
+      }
+      .evc.none {
+        cursor: default;
+      }
+      .evc > span {
+        display: block;
+      }
+      .evc-top {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .evc-lbl {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--gold);
+      }
+      .evc-more {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--accent2);
+      }
+      .evc-title {
+        font-family: var(--head);
+        font-size: 1.55rem;
+        letter-spacing: 0.05em;
+        line-height: 1.1;
+        margin: 6px 0 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .cd {
+        display: flex !important;
+        gap: 6px;
+      }
+      .cd-u {
+        flex: 1;
+        text-align: center;
+        padding: 8px 0 6px;
+        border-radius: 12px;
+        background: var(--paper);
+        border: 1px solid var(--wire);
+      }
+      .cd-u b {
+        display: block;
+        font-family: var(--head);
+        font-size: 1.7rem;
+        font-weight: 400;
+        line-height: 1;
+        color: var(--accent2);
+        letter-spacing: 0.04em;
+      }
+      .cd-u span {
+        font-size: 0.55rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--steel);
+        text-transform: uppercase;
+      }
+      .cd-w {
+        flex: 1;
+        text-align: center;
+        padding: 12px 8px;
+        border-radius: 12px;
+        background: var(--paper);
+        border: 1px solid var(--wire);
+        font-family: var(--head);
+        font-size: 1.25rem;
+        letter-spacing: 0.08em;
+        color: var(--lead);
+      }
+      .cd-w.live {
+        color: var(--green);
+        border-color: rgba(16, 185, 129, 0.4);
+      }
+      .evc-when {
+        margin-top: 10px;
+        font-size: 0.84rem;
+        color: var(--lead);
+      }
+      .evc-when b {
+        color: var(--gold);
+      }
+      .evc-when em {
+        font-style: normal;
+        color: var(--steel);
+        font-size: 0.76rem;
+      }
+      .evc-desc {
+        margin-top: 4px;
+        font-size: 0.8rem;
+        color: var(--steel);
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      /* sheet slider */
+      .ev-track {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+      }
+      .ev-track::-webkit-scrollbar {
+        display: none;
+      }
+      .ev-slide {
+        flex: 0 0 100%;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        background: var(--lift);
+        border: 1px solid var(--wire);
+        border-radius: 16px;
+        padding: 14px;
+        min-width: 0;
+      }
+      .ev-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+      }
+      .ev-lbl {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--gold);
+      }
+      .ev-ch {
+        font-size: 0.68rem;
+        color: var(--accent2);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .ev-t {
+        font-family: var(--head);
+        font-weight: 400;
+        font-size: 1.45rem;
+        letter-spacing: 0.05em;
+        margin: 6px 0 10px;
+        word-break: break-word;
+      }
+      .ev-d {
+        margin-top: 8px;
+        font-size: 0.88rem;
+        line-height: 1.55;
+        color: var(--lead);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .ev-img {
+        display: block;
+        width: 100%;
+        max-height: 180px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-top: 10px;
+        border: 1px solid var(--wire);
+      }
+      .ev-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        margin-top: 10px;
+        font-size: 0.78rem;
+        color: var(--steel);
+      }
+      a.btn {
+        display: inline-block;
+        text-decoration: none;
+      }
+      #sheet .tabs {
+        margin-top: 4px;
+      }
     </style>
   </head>
   <body>
@@ -1166,61 +1380,195 @@
           <div id="results" role="listbox" aria-label="Search results"></div>
         </div>
 
+        <!-- Events: nearest countdown (tap for upcoming / previous slider) -->
+        <button
+          class="evc"
+          id="evc"
+          type="button"
+          data-search
+          data-tag="Events"
+          data-title="Events"
+          data-sub="Countdown &amp; upcoming events"
+          data-keywords="event events countdown calendar upcoming schedule"
+        >
+          <span class="evc-top"><span class="evc-lbl">EVENTS</span></span>
+          <span class="evc-title">Loading events…</span>
+        </button>
+
         <!-- Shortcuts: add any new page here as another <a class="launch-item"> -->
         <nav class="launch" data-tag="Page" aria-label="Shortcuts">
-          <a href="home.html" class="launch-item" style="--i: 0" data-title="Chat" data-sub="Direct chats">
-            <img src="maskable_icon_x192.png" alt="Chat" onerror="this.onerror=null;this.src=fb(this.alt)" /><span class="lb">Chat</span>
+          <a
+            href="home.html"
+            class="launch-item"
+            style="--i: 0"
+            data-title="Chat"
+            data-sub="Direct chats"
+          >
+            <img
+              src="maskable_icon_x192.png"
+              alt="Chat"
+              onerror="
+                this.onerror = null;
+                this.src = fb(this.alt);
+              "
+            /><span class="lb">Chat</span>
           </a>
-          <a href="announce.html" class="launch-item" id="ann-row" style="--i: 1" data-title="Announcements" data-sub="Updates and news">
-            <img src="announce.png" alt="Announcements" onerror="this.onerror=null;this.src=fb(this.alt)" /><span class="lb">Announcements</span><span class="row-badge" id="ann-row-badge"></span>
+          <a
+            href="announce.html"
+            class="launch-item"
+            id="ann-row"
+            style="--i: 1"
+            data-title="Announcements"
+            data-sub="Updates and news"
+          >
+            <img
+              src="announce.png"
+              alt="Announcements"
+              onerror="
+                this.onerror = null;
+                this.src = fb(this.alt);
+              "
+            /><span class="lb">Announcements</span
+            ><span class="row-badge" id="ann-row-badge"></span>
           </a>
-          <a href="geo.html" class="launch-item" style="--i: 2" data-title="Riverside Mapping" data-sub="Find fellowships &amp; locations near you">
-            <img src="RM.png" alt="Mapping" onerror="this.onerror=null;this.src=fb(this.alt)" /><span class="lb">Mapping</span>
+          <a
+            href="geo.html"
+            class="launch-item"
+            style="--i: 2"
+            data-title="Riverside Mapping"
+            data-sub="Find fellowships &amp; locations near you"
+          >
+            <img
+              src="RM.png"
+              alt="Mapping"
+              onerror="
+                this.onerror = null;
+                this.src = fb(this.alt);
+              "
+            /><span class="lb">Mapping</span>
           </a>
-          <a href="songs.html" class="launch-item" style="--i: 3" data-title="Songs" data-sub="Church songs">
-            <img src="songs-icon.png" alt="Songs" onerror="this.onerror=null;this.src=fb(this.alt)" /><span class="lb">Songs</span>
+          <a
+            href="songs.html"
+            class="launch-item"
+            style="--i: 3"
+            data-title="Songs"
+            data-sub="Church songs"
+          >
+            <img
+              src="songs-icon.png"
+              alt="Songs"
+              onerror="
+                this.onerror = null;
+                this.src = fb(this.alt);
+              "
+            /><span class="lb">Songs</span>
           </a>
-          <a href="pledges.html" class="launch-item" style="--i: 4" data-title="Pledge handler" data-sub="Pledges">
-            <img src="pledge.png" alt="Pledges" onerror="this.onerror=null;this.src=fb(this.alt)" /><span class="lb">Pledges</span>
+          <a
+            href="pledges.html"
+            class="launch-item"
+            style="--i: 4"
+            data-title="Pledge handler"
+            data-sub="Pledges"
+          >
+            <img
+              src="pledge.png"
+              alt="Pledges"
+              onerror="
+                this.onerror = null;
+                this.src = fb(this.alt);
+              "
+            /><span class="lb">Pledges</span>
           </a>
         </nav>
 
         <div class="tabs" role="tablist">
-          <button class="tab on" data-t="channels" role="tab" type="button">Channels<b id="cnt-ch"></b></button>
-          <button class="tab" data-t="qna" role="tab" type="button">Q&amp;A<b id="cnt-qa"></b></button>
-          <button class="tab" data-t="more" role="tab" type="button">More</button>
+          <button class="tab on" data-t="channels" role="tab" type="button">
+            Channels<b id="cnt-ch"></b>
+          </button>
+          <button class="tab" data-t="qna" role="tab" type="button">
+            Q&amp;A<b id="cnt-qa"></b>
+          </button>
+          <button class="tab" data-t="more" role="tab" type="button">
+            More
+          </button>
         </div>
 
         <section class="panel on" id="p-channels" data-tag="Channel">
-          <div id="channels-slot"><div class="list-empty">Loading channels…</div></div>
+          <div id="channels-slot">
+            <div class="list-empty">Loading channels…</div>
+          </div>
           <button class="more-btn" id="ch-more" type="button"></button>
         </section>
 
         <section class="panel" id="p-qna" data-tag="Q&amp;A">
-          <div id="qna-slot"><div class="list-empty">Loading Q&amp;A…</div></div>
+          <div id="qna-slot">
+            <div class="list-empty">Loading Q&amp;A…</div>
+          </div>
           <button class="more-btn" id="qa-more" type="button"></button>
         </section>
 
         <section class="panel" id="p-more" data-tag="Page">
           <a href="split.html" class="chat-row" style="--i: 0">
-            <img class="row-avatar" src="maskable_icon_x192.png" alt="Split" onerror="this.onerror=null;this.src=fb(this.alt)" />
+            <img
+              class="row-avatar"
+              src="maskable_icon_x192.png"
+              alt="Split"
+              onerror="
+                this.onerror = null;
+                this.src = fb(this.alt);
+              "
+            />
             <div class="row-content">
-              <div class="row-title-line"><span class="row-title">Split</span><span class="row-time"></span></div>
-              <div class="row-sub-line"><span class="row-subtitle">Track &amp; split cash</span><span class="row-badge"></span></div>
+              <div class="row-title-line">
+                <span class="row-title">Split</span
+                ><span class="row-time"></span>
+              </div>
+              <div class="row-sub-line">
+                <span class="row-subtitle">Track &amp; split cash</span
+                ><span class="row-badge"></span>
+              </div>
             </div>
           </a>
           <a href="user.html" class="chat-row" style="--i: 1">
-            <img class="row-avatar" src="maskable_icon_x192.png" alt="Contributions" onerror="this.onerror=null;this.src=fb(this.alt)" />
+            <img
+              class="row-avatar"
+              src="maskable_icon_x192.png"
+              alt="Contributions"
+              onerror="
+                this.onerror = null;
+                this.src = fb(this.alt);
+              "
+            />
             <div class="row-content">
-              <div class="row-title-line"><span class="row-title">Contributions</span><span class="row-time"></span></div>
-              <div class="row-sub-line"><span class="row-subtitle">Groups &amp; contributions</span><span class="row-badge"></span></div>
+              <div class="row-title-line">
+                <span class="row-title">Contributions</span
+                ><span class="row-time"></span>
+              </div>
+              <div class="row-sub-line">
+                <span class="row-subtitle">Groups &amp; contributions</span
+                ><span class="row-badge"></span>
+              </div>
             </div>
           </a>
           <button class="chat-row" id="notif-row" style="--i: 2" type="button">
-            <img class="row-avatar" src="maskable_icon_x192.png" alt="Notifications" onerror="this.onerror=null;this.src=fb(this.alt)" />
+            <img
+              class="row-avatar"
+              src="maskable_icon_x192.png"
+              alt="Notifications"
+              onerror="
+                this.onerror = null;
+                this.src = fb(this.alt);
+              "
+            />
             <div class="row-content">
-              <div class="row-title-line"><span class="row-title">Notifications</span><span class="row-time"></span></div>
-              <div class="row-sub-line"><span class="row-subtitle">Push alerts for this device</span><span class="row-badge" id="notif-row-badge"></span></div>
+              <div class="row-title-line">
+                <span class="row-title">Notifications</span
+                ><span class="row-time"></span>
+              </div>
+              <div class="row-sub-line">
+                <span class="row-subtitle">Push alerts for this device</span
+                ><span class="row-badge" id="notif-row-badge"></span>
+              </div>
             </div>
           </button>
         </section>
@@ -1625,7 +1973,8 @@
           .replace(/[^a-z0-9&\s]/g, " ")
           .replace(/\s+/g, " ")
           .trim();
-      const stem = (t) => (t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t);
+      const stem = (t) =>
+        t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t;
       function lev1(a, b) {
         if (Math.abs(a.length - b.length) > 1) return false;
         let i = 0,
@@ -2058,11 +2407,19 @@
         if (deferred) {
           deferred.prompt();
           const { outcome } = await deferred.userChoice;
-          if (outcome === "accepted") (bar.classList.remove("show"), document.body.classList.remove("has-install"));
+          if (outcome === "accepted")
+            (bar.classList.remove("show"),
+              document.body.classList.remove("has-install"));
           deferred = null;
         }
       };
-      addEventListener("appinstalled", () => (bar.classList.remove("show"), document.body.classList.remove("has-install")));
+      addEventListener(
+        "appinstalled",
+        () => (
+          bar.classList.remove("show"),
+          document.body.classList.remove("has-install")
+        ),
+      );
 
       /* ══════════ DATA (cached for offline) ══════════ */
       function buildRow({ id, href, avatarSrc, name, subtitle, i }) {
@@ -2168,6 +2525,7 @@
           const { channels = [] } = await api({ operation: op });
           if (!channels.length) {
             el.innerHTML = `<div class="list-empty">${emptyMsg}</div>`;
+            if (withPreview) setEvents([]);
             LS.set(key, null);
             applyCollapse(slot, btn, cnt);
             return;
@@ -2188,6 +2546,8 @@
           applyCollapse(slot, btn, cnt);
           LS.set(key, el.innerHTML);
           if (withPreview) {
+            const evs = [],
+              failed = new Set();
             await Promise.all(
               channels.map(async (c) => {
                 try {
@@ -2196,19 +2556,35 @@
                     channelId: c.id,
                     username: userName,
                   });
+                  const posts = d.posts || [];
+                  posts.forEach((p) =>
+                    (p.events || []).forEach((ev) =>
+                      evs.push({
+                        date: ev.date,
+                        title: ev.title,
+                        img: ev.imageUrl || "",
+                        ch: c.name,
+                        cid: c.id,
+                        pid: p.postId,
+                      }),
+                    ),
+                  );
                   setPreview(
                     c.id,
-                    (d.posts || [])
+                    posts
                       .slice()
                       .sort(
                         (a, b) => new Date(b.created) - new Date(a.created),
                       )[0] || null,
                   );
                 } catch {
+                  failed.add(c.id);
                   setPreview(c.id, null);
                 }
               }),
             );
+            /* if a channel failed to load, keep its last known events */
+            setEvents(evs.concat(EVRAW.filter((r) => failed.has(r.cid))));
             /* most recently active channels first */
             [...el.querySelectorAll(".chat-row")]
               .sort((a, b) => (+b.dataset.ts || 0) - (+a.dataset.ts || 0))
@@ -2312,6 +2688,284 @@
           dy = 0;
         });
       })();
+
+      /* ══════════ EVENTS: countdown card + slider ══════════ */
+      const EKEY = "rc_events",
+        DAY = 864e5,
+        LIVE = 3 * 36e5; /* a timed event counts as "live" for 3 hours */
+      let EVRAW = LS.get(EKEY, []),
+        EV = [],
+        EVK = new Map(),
+        evSeg = "up";
+      if (!Array.isArray(EVRAW)) EVRAW = [];
+      let evLoaded = EVRAW.length > 0;
+      const sod = (t) => {
+        const d = new Date(t);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      };
+      function evSplit(raw) {
+        raw = (raw || "").trim();
+        const i = raw.indexOf("/");
+        return i < 0
+          ? [raw, ""]
+          : [raw.slice(0, i).trim() || raw, raw.slice(i + 1).trim()];
+      }
+      /* finds "5pm", "5:30 PM", "17:00", "noon", "midnight" in the title / description */
+      function evTime(txt) {
+        let m = txt.match(/\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*([ap])\.?m\b/i);
+        if (m) {
+          let h = +m[1] % 12;
+          if (m[3].toLowerCase() === "p") h += 12;
+          return [h, +(m[2] || 0)];
+        }
+        m = txt.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+        if (m) return [+m[1], +m[2]];
+        if (/\bnoon\b/i.test(txt)) return [12, 0];
+        if (/\bmidnight\b/i.test(txt)) return [0, 0];
+        return null;
+      }
+      function evBuild(r) {
+        const m = String(r.date || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (!m) return null;
+        const raw = String(r.title || ""),
+          [t, d] = evSplit(raw),
+          tm = evTime(raw),
+          y = +m[1],
+          mo = +m[2] - 1,
+          da = +m[3];
+        const start = new Date(
+          y,
+          mo,
+          da,
+          tm ? tm[0] : 0,
+          tm ? tm[1] : 0,
+        ).getTime();
+        return {
+          k: `${r.date}|${t}|${r.cid}`,
+          t: t || "Untitled",
+          d,
+          img: r.img || "",
+          ch: r.ch || "",
+          cid: r.cid,
+          pid: r.pid,
+          timed: !!tm,
+          start,
+          /* no time given → 12:00 AM, and the event lasts the whole day */
+          end: tm ? start + LIVE : new Date(y, mo, da + 1).getTime(),
+        };
+      }
+      function evRebuild() {
+        const seen = new Set();
+        EV = [];
+        EVK = new Map();
+        EVRAW.forEach((r) => {
+          const e = evBuild(r);
+          if (e && !seen.has(e.k)) {
+            seen.add(e.k);
+            EV.push(e);
+            EVK.set(e.k, e);
+          }
+        });
+      }
+      /* future | live (timed, in progress) | today (all-day, today) | past */
+      function evState(e, now = Date.now()) {
+        if (now < e.start) return "future";
+        if (now < e.end) return e.timed ? "live" : "today";
+        return "past";
+      }
+      function evLists() {
+        const now = Date.now();
+        return {
+          up: EV.filter((e) => evState(e, now) !== "past").sort(
+            (a, b) => a.start - b.start,
+          ),
+          past: EV.filter((e) => evState(e, now) === "past").sort(
+            (a, b) => b.end - a.end,
+          ),
+        };
+      }
+      function dayWord(e) {
+        const n = Math.round((sod(e.start) - sod(Date.now())) / DAY);
+        return n === 0
+          ? "Today"
+          : n === 1
+            ? "Tomorrow"
+            : n === -1
+              ? "Yesterday"
+              : "";
+      }
+      function ago(e) {
+        const n = -Math.round((sod(e.end - 1) - sod(Date.now())) / DAY);
+        if (n <= 0) return "earlier today";
+        if (n === 1) return "yesterday";
+        if (n < 60) return n + " days ago";
+        return Math.round(n / 30) + " months ago";
+      }
+      function cdInner(e) {
+        const s = evState(e);
+        if (s === "future") {
+          const r = Math.max(0, Math.floor((e.start - Date.now()) / 1000));
+          return [
+            [Math.floor(r / 86400), "days"],
+            [Math.floor((r % 86400) / 3600), "hrs"],
+            [Math.floor((r % 3600) / 60), "min"],
+            [r % 60, "sec"],
+          ]
+            .map(
+              ([v, l]) =>
+                `<div class="cd-u"><b>${String(v).padStart(2, "0")}</b><span>${l}</span></div>`,
+            )
+            .join("");
+        }
+        if (s === "live") return '<div class="cd-w live">Happening now</div>';
+        if (s === "today")
+          return '<div class="cd-w live">Today · all day</div>';
+        return `<div class="cd-w">Ended ${ago(e)}</div>`;
+      }
+      function whenTxt(e) {
+        const dw = dayWord(e),
+          d = new Date(e.start);
+        const ds = d.toLocaleDateString([], {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+        const ts = d.toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        });
+        return (
+          (dw ? `<b>${dw}</b> · ` : "") +
+          `${esc(ds)} · ${esc(ts)}` +
+          (e.timed ? "" : " <em>(no time set · all day)</em>")
+        );
+      }
+      function renderHero() {
+        const el = $("#evc"),
+          { up, past } = evLists(),
+          e = up[0] || past[0];
+        if (!e) {
+          el.classList.add("none");
+          el.dataset.st = "none";
+          el.innerHTML =
+            `<span class="evc-top"><span class="evc-lbl">EVENTS</span></span><span class="evc-title">${evLoaded ? "No events yet" : "Loading events…"}</span>` +
+            (evLoaded
+              ? '<span class="evc-desc">When an event is added to a channel post, its countdown shows here.</span>'
+              : "");
+          return;
+        }
+        el.classList.remove("none");
+        const st = evState(e),
+          isUp = !!up[0];
+        el.dataset.st = e.k + st;
+        el.innerHTML =
+          `<span class="evc-top"><span class="evc-lbl">${isUp ? (st === "future" ? "NEXT EVENT" : st === "live" ? "HAPPENING NOW" : "TODAY") : "LAST EVENT"}</span><span class="evc-more">All events ›</span></span>` +
+          `<span class="evc-title">${esc(e.t)}</span>` +
+          `<span class="cd" data-k="${esc(e.k)}">${cdInner(e)}</span>` +
+          `<span class="evc-when">${whenTxt(e)}</span>` +
+          (e.d ? `<span class="evc-desc">${esc(e.d)}</span>` : "");
+      }
+      function slide(e) {
+        const st = evState(e),
+          lbl =
+            st === "past"
+              ? "PREVIOUS"
+              : st === "live"
+                ? "HAPPENING NOW"
+                : st === "today"
+                  ? "TODAY"
+                  : "UPCOMING";
+        return (
+          `<article class="ev-slide"><div class="ev-meta"><span class="ev-lbl">${lbl}</span><span class="ev-ch">${esc(e.ch)}</span></div>` +
+          `<h4 class="ev-t">${esc(e.t)}</h4><div class="cd" data-k="${esc(e.k)}">${cdInner(e)}</div>` +
+          `<div class="evc-when">${whenTxt(e)}</div>` +
+          (e.d ? `<p class="ev-d">${esc(e.d)}</p>` : "") +
+          (e.img
+            ? `<img class="ev-img" src="${esc(lh3(e.img))}" alt="" loading="lazy" onerror="this.remove()">`
+            : "") +
+          (e.cid && e.pid
+            ? `<div class="v-act"><a class="btn ghost" href="channel.html?channelId=${encodeURIComponent(e.cid)}&postId=${encodeURIComponent(e.pid)}">Open post</a></div>`
+            : "") +
+          `</article>`
+        );
+      }
+      function paintSlides() {
+        const { up, past } = evLists(),
+          list = evSeg === "up" ? up : past,
+          host = $("#ev-slides");
+        if (!list.length) {
+          host.innerHTML = `<div class="list-empty">${evSeg === "up" ? "No upcoming events" : "No previous events"}</div>`;
+          return;
+        }
+        host.innerHTML =
+          `<div class="ev-track" id="ev-track">${list.map(slide).join("")}</div>` +
+          `<div class="ev-nav"><button class="ib" id="ev-p" type="button" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>` +
+          `<span id="ev-n">1 / ${list.length}</span>` +
+          `<button class="ib" id="ev-x" type="button" aria-label="Next"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button></div>`;
+        const tr = $("#ev-track"),
+          step = () => tr.clientWidth + 10;
+        tr.onscroll = () => {
+          $("#ev-n").textContent =
+            `${Math.round(tr.scrollLeft / step()) + 1} / ${list.length}`;
+        };
+        $("#ev-p").onclick = () =>
+          tr.scrollBy({ left: -step(), behavior: "smooth" });
+        $("#ev-x").onclick = () =>
+          tr.scrollBy({ left: step(), behavior: "smooth" });
+      }
+      function evSheet() {
+        const { up, past } = evLists();
+        evSeg = up.length || !past.length ? "up" : "past";
+        openSheet(
+          "📅 Events",
+          `<div class="tabs"><button class="tab ${evSeg === "up" ? "on" : ""}" data-s="up" type="button">Upcoming<b>${up.length}</b></button>` +
+            `<button class="tab ${evSeg === "past" ? "on" : ""}" data-s="past" type="button">Previous<b>${past.length}</b></button></div><div id="ev-slides"></div>`,
+        );
+        $("#sh-b")
+          .querySelectorAll("[data-s]")
+          .forEach(
+            (b) =>
+              (b.onclick = () => {
+                evSeg = b.dataset.s;
+                $("#sh-b")
+                  .querySelectorAll("[data-s]")
+                  .forEach((x) => x.classList.toggle("on", x === b));
+                paintSlides();
+              }),
+          );
+        paintSlides();
+      }
+      function setEvents(raw) {
+        evLoaded = true;
+        EVRAW = raw;
+        LS.set(EKEY, raw);
+        evRebuild();
+        renderHero();
+      }
+      function tick() {
+        if (document.hidden || !EV.length) return;
+        const { up, past } = evLists(),
+          e = up[0] || past[0],
+          el = $("#evc");
+        if (e && el.dataset.st !== e.k + evState(e)) renderHero();
+        document.querySelectorAll(".cd[data-k]").forEach((c) => {
+          const x = EVK.get(c.dataset.k);
+          if (x) c.innerHTML = cdInner(x);
+        });
+      }
+      $("#evc").addEventListener("click", () => {
+        if (EV.length) evSheet();
+      });
+      evRebuild();
+      renderHero();
+      setTimeout(() => {
+        if (!evLoaded) {
+          evLoaded = true;
+          renderHero();
+        }
+      }, 10000);
+      setInterval(tick, 1000);
 
       /* ══════════ INIT ══════════ */
       addEventListener("DOMContentLoaded", () => {
