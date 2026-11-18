@@ -188,9 +188,58 @@
         letter-spacing: 0.08em;
         color: var(--accent2);
         white-space: nowrap;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .sp {
         flex: 1;
+      }
+      /* Events toggle button (top navbar) */
+      .evtog {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        height: 34px;
+        padding: 0 12px 0 9px;
+        flex-shrink: 0;
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid var(--wire);
+        border-radius: 99px;
+        color: var(--lead);
+        font-size: 0.74rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .evtog svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .evtog:hover {
+        color: var(--accent2);
+        background: var(--lift);
+      }
+      .evtog:active {
+        transform: scale(0.94);
+      }
+      .evtog.on {
+        color: var(--accent2);
+        background: rgba(59, 130, 246, 0.2);
+        border-color: rgba(96, 165, 250, 0.5);
+      }
+      @media (max-width: 350px) {
+        .evtog span {
+          display: none;
+        }
+        .evtog {
+          padding: 0 9px;
+        }
       }
       #net {
         display: flex;
@@ -697,15 +746,19 @@
       }
       #botnav {
         display: flex;
-        gap: 2px;
-        padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + var(--bot))
-          max(8px, env(safe-area-inset-right));
+        gap: 6px;
+        padding: 6px max(12px, env(safe-area-inset-left)) calc(6px + var(--bot))
+          max(12px, env(safe-area-inset-right));
         background: rgba(10, 15, 30, 0.97);
         border-top: 1px solid var(--wire);
       }
       .nb {
         position: relative;
-        flex: 1;
+        flex: 1 1 0;
+        width: 0;
+        min-width: 0;
+        max-width: 25%;
+        overflow: hidden; /* nav items cannot grow with their contents */
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -723,12 +776,21 @@
       .nb svg {
         width: 22px;
         height: 22px;
+        flex-shrink: 0;
         fill: none;
         stroke: currentColor;
         stroke-width: 2;
         stroke-linecap: round;
         stroke-linejoin: round;
         transition: transform 0.35s cubic-bezier(0.34, 1.46, 0.64, 1);
+      }
+      /* label: one line, long text ends with … */
+      .nb .nl {
+        display: block;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .nb b {
         margin-left: 3px;
@@ -811,12 +873,21 @@
       }
       #tray .chat-row {
         flex: 0 0 112px;
-        width: auto;
+        width: 112px;
+        min-width: 0;
+        max-width: 112px;
+        overflow: hidden; /* long channel names/previews stay inside each card */
         flex-direction: column;
         text-align: center;
         padding: 12px 6px 10px;
         gap: 7px;
         scroll-snap-align: start;
+      }
+      #tray #channels-slot > .chat-row {
+        flex: 0 0 112px;
+        width: 112px;
+        min-width: 0;
+        max-width: 112px;
       }
       #tray .row-avatar {
         width: 46px;
@@ -865,26 +936,10 @@
         margin-top: 2px;
       }
 
-      /* ═════ CHANNEL POST FEED — own fixed-height viewport, vertical swipe, lazy ═════ */
+      /* ═════ CHANNEL POST FEED — padded, own fixed-height viewport, vertical swipe, lazy ═════ */
       #feed {
         margin: 6px 0 4px;
-      }
-      .fd-h {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 4px 4px 8px;
-      }
-      .fd-lbl {
-        font-size: 0.68rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        color: var(--accent2);
-      }
-      #fd-n {
-        font-size: 0.7rem;
-        color: var(--steel);
-        font-weight: 700;
+        min-width: 0;
       }
       #fd-track {
         height: clamp(380px, 66dvh, 620px);
@@ -897,8 +952,9 @@
         touch-action: pan-y;
         scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
-        border: 1px solid var(--wire);
-        border-radius: 22px;
+        border-top: 1px solid var(--wire);
+        border-bottom: 1px solid var(--wire);
+        border-radius: 14px;
         background: #05070d;
       }
       #fd-track::-webkit-scrollbar {
@@ -909,6 +965,9 @@
         border: 0;
         background: none;
       }
+      #fd-track .list-empty {
+        padding: 8px 14px 14px;
+      }
       .fp {
         flex: 0 0 100%;
         min-height: 0;
@@ -917,7 +976,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        padding: 12px;
+        padding: 12px 0;
         cursor: pointer;
         border-bottom: 1px solid var(--wire);
         background: linear-gradient(160deg, #0b1220, #04060b);
@@ -925,13 +984,14 @@
       .fp:last-child {
         border-bottom: 0;
       }
-      /* header: author + channel */
+      /* header: author + NEW + channel */
       .fp-top {
         flex: none;
         display: flex;
         align-items: center;
         gap: 8px;
         min-width: 0;
+        padding: 0;
       }
       .fp-top img {
         width: 26px;
@@ -970,13 +1030,31 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      /* NEW label — shown until the post has been viewed */
+      .nw {
+        flex: none;
+        font-size: 0.58rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        color: #04130d;
+        background: var(--green);
+        padding: 4px 9px;
+        border-radius: 99px;
+        transition:
+          opacity 0.4s,
+          transform 0.4s;
+      }
+      .nw.gone {
+        opacity: 0;
+        transform: scale(0.7);
+      }
       /* media block — separate from text */
       .fp-media {
         flex: 0 0 52%;
         min-height: 0;
         display: grid;
         grid-auto-rows: 1fr;
-        gap: 6px;
+        gap: 2px;
       }
       .fp.nt .fp-media {
         flex: 1 1 0;
@@ -990,8 +1068,8 @@
         min-height: 0;
         overflow: hidden;
         background: #0b1220;
-        border: 1px solid var(--wire);
-        border-radius: 12px;
+        border: 0;
+        border-radius: 10px;
       }
       .th img {
         position: absolute;
@@ -1028,6 +1106,7 @@
         flex: 1 1 0;
         min-height: 0;
         overflow: hidden;
+        padding: 0;
         color: var(--ink);
         font-size: 0.98rem;
         line-height: 1.5;
@@ -1051,6 +1130,7 @@
         display: flex;
         align-items: center;
         gap: 14px;
+        padding: 0;
         font-size: 0.7rem;
         color: var(--lead);
       }
@@ -1291,9 +1371,9 @@
         border-radius: 99px;
       }
 
-      /* events countdown */
+      /* events countdown — hidden until the Events button in the top bar is tapped */
       .evc {
-        display: block;
+        display: none;
         width: 100%;
         text-align: left;
         margin: 2px 0 12px;
@@ -1308,6 +1388,10 @@
         border-left: 3px solid var(--gold);
         cursor: pointer;
         transition: 0.2s;
+      }
+      body.ev-open .evc {
+        display: block;
+        animation: up 0.35s both;
       }
       .evc:hover {
         border-color: rgba(96, 165, 250, 0.4);
@@ -1509,6 +1593,19 @@
     <header id="topbar">
       <div class="logo">RIVERSIDE CONNECT</div>
       <div class="sp"></div>
+      <button
+        class="evtog"
+        id="ev-toggle"
+        type="button"
+        aria-pressed="false"
+        aria-controls="evc"
+        title="Show or hide the event countdown"
+      >
+        <svg viewBox="0 0 24 24">
+          <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+          <path d="M8 3v4M16 3v4M3.5 10h17" /></svg
+        ><span>Events</span>
+      </button>
       <div id="net" title="Connection"><i></i><span id="net-t">Live</span></div>
       <a href="profile.html" class="ib av" title="Profile"
         ><img id="user-avatar" src="" alt="Profile"
@@ -1541,7 +1638,8 @@
           <div id="results" role="listbox" aria-label="Search results"></div>
         </div>
 
-        <!-- Events: nearest countdown (tap for upcoming / previous slider) -->
+        <!-- Events: nearest countdown. Hidden by default; the Events button in the top bar shows/hides it.
+             Tap the card for the upcoming / previous slider. -->
         <button
           class="evc"
           id="evc"
@@ -1556,11 +1654,8 @@
           <span class="evc-title">Loading events…</span>
         </button>
 
-        <!-- Channel posts: own viewport, vertical swipe, lazy -->
-        <section id="feed" aria-label="Latest channel posts">
-          <div class="fd-h">
-            <span class="fd-lbl">LATEST POSTS</span><span id="fd-n"></span>
-          </div>
+        <!-- Channel posts: edge-to-edge, own viewport, vertical swipe, lazy -->
+        <section id="feed" aria-label="Channel posts">
           <div id="fd-track" class="empty">
             <div class="list-empty">Loading posts…</div>
           </div>
@@ -1746,7 +1841,7 @@
         <button class="nb" data-t="channels" type="button">
           <svg viewBox="0 0 24 24">
             <path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" /></svg
-          ><span>Channels<b id="cnt-ch"></b></span>
+          ><span class="nl">Channels<b id="cnt-ch"></b></span>
         </button>
         <button class="nb" data-t="qna" type="button">
           <svg viewBox="0 0 24 24">
@@ -1754,7 +1849,7 @@
             <path
               d="M9.5 9.2a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"
             /></svg
-          ><span>Q&amp;A<b id="cnt-qa"></b></span>
+          ><span class="nl">Q&amp;A<b id="cnt-qa"></b></span>
         </button>
         <button class="nb" data-t="res" type="button">
           <svg viewBox="0 0 24 24">
@@ -1762,12 +1857,13 @@
             <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
             <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
             <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" /></svg
-          ><span>Resources</span><span class="tb-badge" id="res-badge"></span>
+          ><span class="nl">Resources</span
+          ><span class="tb-badge" id="res-badge"></span>
         </button>
         <button class="nb" data-t="more" type="button">
           <svg viewBox="0 0 24 24">
             <path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3" /></svg
-          ><span>More</span>
+          ><span class="nl">More</span>
         </button>
       </nav>
     </div>
@@ -3131,6 +3227,19 @@
       $("#evc").addEventListener("click", () => {
         if (EV.length) evSheet();
       });
+
+      /* ── Events button (top bar): show / hide the countdown card ── */
+      const evBtn = $("#ev-toggle");
+      function setEvOpen(on) {
+        document.body.classList.toggle("ev-open", on);
+        evBtn.classList.toggle("on", on);
+        evBtn.setAttribute("aria-pressed", on ? "true" : "false");
+        if (on) $("#chat-list").scrollTo({ top: 0, behavior: "smooth" });
+      }
+      evBtn.addEventListener("click", () =>
+        setEvOpen(!document.body.classList.contains("ev-open")),
+      );
+
       evRebuild();
       renderHero();
       setTimeout(() => {
@@ -3149,7 +3258,8 @@
          • only PAGE cards are in the DOM; more are added as you swipe near the end
          • images load only for the card on screen + the next one, and at a small size (=w640)
          • view counts are fetched only for cards you actually see
-         Event-only posts (no text, no media) are skipped — they live in the countdown card above.
+         • every post you haven't viewed yet carries a green NEW label
+         Event-only posts (no text, no media) are skipped — they live in the countdown card (Events button).
          Swipe is vertical inside its own fixed-height viewport. Tap a card to open the post. */
       const FKEY = "rc_feed2",
         FMAX = 30,
@@ -3222,6 +3332,9 @@
           `</div>`
         );
       }
+      /* posts the user has already viewed (remembered on this device) */
+      const SEEN = new Set(LS.get("rc_seenp", []));
+      const saveSeen = () => LS.set("rc_seenp", [...SEEN].slice(-500));
       function fpHtml(f) {
         const hasM = f.m.length > 0,
           cls =
@@ -3231,13 +3344,23 @@
             (!hasM && f.tx.length > 200 ? " long" : "");
         return (
           `<div class="${cls}" data-pid="${esc(f.pid)}" data-cid="${esc(f.cid)}" role="link" tabindex="0">` +
-          `<div class="fp-top"><img src="${esc(f.pic ? lh3(f.pic, 80) : fb(f.au))}" alt="${esc(f.au)}" loading="lazy" onerror="this.onerror=null;this.src=fb(this.alt)"><span class="au">${esc(f.au)} <small>· ${esc(fmtTime(f.t))}</small></span><span class="fp-ch">${esc(f.ch)}</span></div>` +
+          `<div class="fp-top"><img src="${esc(f.pic ? lh3(f.pic, 80) : fb(f.au))}" alt="${esc(f.au)}" loading="lazy" onerror="this.onerror=null;this.src=fb(this.alt)"><span class="au">${esc(f.au)} <small>· ${esc(fmtTime(f.t))}</small></span>${SEEN.has(f.pid) ? "" : '<span class="nw">NEW</span>'}<span class="fp-ch">${esc(f.ch)}</span></div>` +
           (hasM
             ? `<div class="fp-media${f.m.length > 1 ? " m2" : ""}">${f.m.map(thumb).join("")}</div>`
             : "") +
           (f.tx ? `<div class="fp-text">${esc(f.tx)}</div>` : "") +
           `<div class="fp-foot"><span class="fp-stat" title="Views">${ICO_EYE}<span class="fv">${VC[f.pid] || 0}</span></span><span class="fp-stat" title="Likes">${ICO_HEART}${f.lk}</span></div></div>`
         );
+      }
+      /* once a post has been viewed its NEW label fades away */
+      function markSeen(card) {
+        const b = card.querySelector(".nw");
+        if (!b || b.dataset.g) return;
+        b.dataset.g = 1;
+        setTimeout(() => {
+          b.classList.add("gone");
+          setTimeout(() => b.remove(), 450);
+        }, 1800);
       }
 
       const TR = $("#fd-track");
@@ -3265,7 +3388,6 @@
         { root: TR, rootMargin: "100% 0px" },
       );
       /* views: one per post per session when a card is ≥60% visible AND the feed is on screen */
-      const SEEN = new Set(LS.get("rc_seenp", []));
       const FOB = new IntersectionObserver(
         (es) =>
           es.forEach((en) => {
@@ -3274,11 +3396,13 @@
               pid = c.dataset.pid;
             if (!pid) return;
             if (SEEN.has(pid)) {
+              markSeen(c);
               if (!VFETCHED.has(pid)) viewCount(pid);
               return;
             }
             SEEN.add(pid);
-            LS.set("rc_seenp", [...SEEN].slice(-200));
+            saveSeen();
+            markSeen(c);
             api(null, {
               operation: "recordChannelPostView",
               postId: pid,
@@ -3329,7 +3453,6 @@
           RENDERED.clear();
           TR.classList.add("empty");
           TR.innerHTML = `<div class="list-empty">${FLOADED ? "No posts yet" : "Loading posts…"}</div>`;
-          $("#fd-n").textContent = "";
           return;
         }
         /* user is reading further down: don't yank the view; new posts join as they swipe on */
@@ -3348,17 +3471,23 @@
         TR.scrollTop = 0;
         fdScroll();
       }
+      /* swiping near the last rendered card loads the next page of posts */
       function fdScroll() {
         if (!TR.querySelector(".fp")) return;
         const h = TR.clientHeight || 1,
           n = TR.querySelectorAll(".fp").length,
           i = Math.max(0, Math.min(n - 1, Math.round(TR.scrollTop / h)));
-        $("#fd-n").textContent = `${i + 1} / ${FEEDRAW.length}`;
         if (i >= n - 2) moreCards();
       }
       TR.addEventListener("scroll", fdScroll, { passive: true });
-      const openPost = (c) =>
-        (location.href = `channel.html?channelId=${encodeURIComponent(c.dataset.cid)}&postId=${encodeURIComponent(c.dataset.pid)}`);
+      function openPost(c) {
+        const pid = c.dataset.pid;
+        if (pid && !SEEN.has(pid)) {
+          SEEN.add(pid);
+          saveSeen();
+        }
+        location.href = `channel.html?channelId=${encodeURIComponent(c.dataset.cid)}&postId=${encodeURIComponent(pid)}`;
+      }
       TR.addEventListener("click", (e) => {
         const c = e.target.closest(".fp");
         if (c) openPost(c);
