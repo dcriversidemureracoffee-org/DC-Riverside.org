@@ -350,140 +350,180 @@
         margin: 6px 4px;
       }
 
-      /* guide */
-      .g-head {
+      /* smart search */
+      .searchwrap {
+        position: relative;
+        z-index: 20;
+      }
+      .searchbox {
+        position: relative;
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
       }
-      .g-head {
-        cursor: pointer;
-        user-select: none;
-      }
-      .g-head .chev {
-        color: var(--lead);
-        transition: transform 0.25s;
-        flex-shrink: 0;
-      }
-      #grace.collapsed .chev {
-        transform: rotate(-90deg);
-      }
-      #grace.collapsed #g-body {
-        display: none;
-      }
-      #grace.collapsed .g-head {
-        margin-bottom: 0;
-      }
-      .g-av {
-        position: relative;
-        width: 46px;
-        height: 46px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--accent), #6366f1);
-        display: grid;
-        place-items: center;
-        font-size: 1.4rem;
-        flex-shrink: 0;
-      }
-      .g-av i {
+      .searchbox > svg {
         position: absolute;
-        right: 0;
-        bottom: 0;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--green);
-        border: 2px solid var(--surface);
-        animation: pulse 2s infinite;
+        left: 14px;
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: var(--steel);
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        pointer-events: none;
       }
-      .g-name {
-        font-weight: 700;
-      }
-      #g-sub {
-        font-size: 0.76rem;
-        color: #34d399;
+      .searchbox input {
+        width: 100%;
+        min-width: 0;
+        height: 44px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--surface);
+        border: 1px solid var(--wire);
+        border-radius: 99px;
+        padding: 0 44px 0 42px;
+        font-size: 0.95rem;
         transition: 0.2s;
       }
-      .streak {
-        margin-left: auto;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--gold);
-        background: rgba(250, 204, 21, 0.1);
-        padding: 4px 10px;
-        border-radius: 99px;
-        white-space: nowrap;
-      }
-      #log {
-        height: min(300px, 38vh);
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-        padding: 4px 2px;
-        scroll-behavior: smooth;
-      }
-      .b {
-        max-width: 86%;
-        padding: 9px 13px;
-        border-radius: 16px;
-        font-size: 0.9rem;
-        line-height: 1.45;
-        animation: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
-      }
-      .b.bot {
-        align-self: flex-start;
-        background: var(--lift);
-        border-bottom-left-radius: 5px;
-      }
-      .b.me {
-        align-self: flex-end;
-        background: var(--accent);
-        color: #fff;
-        border-bottom-right-radius: 5px;
-      }
-      .b .ref {
-        display: block;
-        font-weight: 700;
-        color: var(--gold);
-        font-size: 0.78rem;
-        margin-bottom: 2px;
-      }
-      .b.pr {
-        font-style: italic;
-        color: var(--lead);
-      }
-      .dots {
-        display: flex;
-        gap: 4px;
-        padding: 12px 14px;
-      }
-      .dots span {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--accent2);
-        animation: bounce 1.1s infinite;
-      }
-      .dots span:nth-child(2) {
-        animation-delay: 0.15s;
-      }
-      .dots span:nth-child(3) {
-        animation-delay: 0.3s;
-      }
-      .chips {
-        display: flex;
-        gap: 7px;
-        overflow-x: auto;
-        padding: 10px 0 4px;
-        scrollbar-width: none;
-      }
-      .chips::-webkit-scrollbar {
+      .searchbox input::-webkit-search-cancel-button,
+      .searchbox input::-webkit-search-decoration {
+        -webkit-appearance: none;
         display: none;
       }
-      .chip {
+      .searchbox input:focus {
+        border-color: var(--accent2);
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+      }
+      #s-clear {
+        position: absolute;
+        right: 6px;
+        width: 32px;
+        height: 32px;
+        display: none;
+        place-items: center;
+        background: none;
+        border: 0;
+        border-radius: 50%;
+        color: var(--lead);
+        cursor: pointer;
+      }
+      #s-clear.show {
+        display: grid;
+      }
+      #s-clear:hover {
+        background: var(--lift);
+        color: var(--accent2);
+      }
+      #s-clear svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+      }
+      #results {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 6px);
+        flex-direction: column;
+        gap: 4px;
+        padding: 6px;
+        max-height: min(60vh, 420px);
+        overflow-y: auto;
+        background: var(--surface);
+        border: 1px solid var(--wire);
+        border-radius: 16px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+      }
+      #results.show {
+        display: flex;
+      }
+      .hit {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 7px 9px;
+        text-align: left;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.15s;
+      }
+      .hit:hover,
+      .hit.act {
+        border-color: var(--accent2);
+        background: rgba(59, 130, 246, 0.14);
+      }
+      .hit:active {
+        transform: scale(0.98);
+      }
+      .hit img,
+      .hit .ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
         flex-shrink: 0;
+        background: var(--lift);
+      }
+      .hit .ico {
+        display: grid;
+        place-items: center;
+        font-size: 1.05rem;
+      }
+      .hit .tx {
+        flex: 1;
+        min-width: 0;
+      }
+      .hit .t {
+        font-weight: 700;
+        font-size: 0.88rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .hit .s {
+        font-size: 0.74rem;
+        color: var(--lead);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .hit .tag {
+        max-width: 96px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--accent2);
+        background: rgba(59, 130, 246, 0.12);
+        padding: 3px 9px;
+        border-radius: 99px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .hit .tag.gr {
+        color: var(--gold);
+        background: rgba(250, 204, 21, 0.1);
+      }
+      .list-empty.in-res {
+        padding: 10px;
+      }
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 8px;
+      }
+      .chip {
         padding: 7px 13px;
         border-radius: 99px;
         background: rgba(59, 130, 246, 0.1);
@@ -496,35 +536,6 @@
       }
       .chip:hover {
         background: rgba(59, 130, 246, 0.22);
-        transform: translateY(-2px);
-      }
-      .chip:active {
-        transform: scale(0.94);
-      }
-      .chip.hl {
-        border-color: var(--gold);
-        color: var(--gold);
-        background: rgba(250, 204, 21, 0.08);
-      }
-      .send {
-        display: flex;
-        gap: 8px;
-        margin-top: 8px;
-      }
-      .send input {
-        flex: 1;
-        min-width: 0;
-        background: var(--paper);
-        border: 1px solid var(--wire);
-        border-radius: 99px;
-        padding: 10px 16px;
-        font-size: 0.9rem;
-        transition: 0.2s;
-      }
-      .send input:focus {
-        border-color: var(--accent2);
-        outline: 0;
-        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
       }
       .btn {
         background: var(--accent);
@@ -934,71 +945,124 @@
           transition-duration: 0.01ms !important;
         }
       }
-      
+
       /* ── Grid: 2 columns on small screens, +1 as the screen grows ── */
-:root { --n: 2; }
-@media (min-width: 480px)  { :root { --n: 3; } }
-@media (min-width: 680px)  { :root { --n: 4; } }
-/* at 900px the page splits into two halves, so each half goes back to 2 */
-@media (min-width: 900px)  { :root { --n: 2; } }
-@media (min-width: 1000px) { :root { --n: 3; } }
-@media (min-width: 1300px) { :root { --n: 4; } }
+      :root {
+        --n: 2;
+      }
+      @media (min-width: 480px) {
+        :root {
+          --n: 3;
+        }
+      }
+      @media (min-width: 680px) {
+        :root {
+          --n: 4;
+        }
+      }
+      /* at 900px the page splits into two halves, so each half goes back to 2 */
+      @media (min-width: 900px) {
+        :root {
+          --n: 2;
+        }
+      }
+      @media (min-width: 1000px) {
+        :root {
+          --n: 3;
+        }
+      }
+      @media (min-width: 1300px) {
+        :root {
+          --n: 4;
+        }
+      }
 
-.wrap { max-width: 1400px; }
+      .wrap {
+        max-width: 1400px;
+      }
 
-/* Church resources tiles */
-.tiles {
-  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-}
-.tile { text-align: center; }
+      /* Church resources tiles */
+      .tiles {
+        grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+      }
+      .tile {
+        text-align: center;
+      }
 
-/* Right column becomes a grid; Channels/Q&A slots feed into it directly */
-.col-r {
-  display: grid;
-  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-  gap: 10px;
-  align-items: stretch;
-}
-#channels-slot,
-#qna-slot { display: contents; }
+      /* Right column becomes a grid; Channels/Q&A slots feed into it directly */
+      .col-r {
+        display: grid;
+        grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+        gap: 10px;
+        align-items: stretch;
+      }
+      #channels-slot,
+      #qna-slot {
+        display: contents;
+      }
 
-.list-section-label,
-.list-empty { grid-column: 1 / -1; }
-.list-section-label { padding: 10px 4px 0; }
+      .list-section-label,
+      .list-empty {
+        grid-column: 1 / -1;
+      }
+      .list-section-label {
+        padding: 10px 4px 0;
+      }
 
-/* Rows become compact tiles */
-.chat-row {
-  position: relative;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  gap: 8px;
-  padding: 14px 8px;
-  margin-bottom: 0;
-  min-width: 0;
-}
-.chat-row:hover { transform: translateY(-3px); }
-.chat-row:active { transform: scale(0.97); }
+      /* Rows become compact tiles */
+      .chat-row {
+        position: relative;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        gap: 8px;
+        padding: 14px 8px;
+        margin-bottom: 0;
+        min-width: 0;
+      }
+      .chat-row:hover {
+        transform: translateY(-3px);
+      }
+      .chat-row:active {
+        transform: scale(0.97);
+      }
 
-.row-map-thumb { width: 100%; max-width: 110px; }
-.row-content { flex: none; width: 100%; }
-.row-title-line,
-.row-sub-line { justify-content: center; flex-wrap: wrap; }
-.row-time:empty { display: none; }
-.row-subtitle {
-  white-space: normal;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: 0.74rem;
-  line-height: 1.35;
-}
-.row-title { max-width: 100%; font-size: 0.88rem; }
+      .row-map-thumb {
+        width: 100%;
+        max-width: 110px;
+      }
+      .row-content {
+        flex: none;
+        width: 100%;
+      }
+      .row-title-line,
+      .row-sub-line {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .row-time:empty {
+        display: none;
+      }
+      .row-subtitle {
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 0.74rem;
+        line-height: 1.35;
+      }
+      .row-title {
+        max-width: 100%;
+        font-size: 0.88rem;
+      }
 
-/* badges sit in the card corner instead of taking a row */
-.row-badge { position: absolute; top: 8px; right: 8px; }
-      
+      /* badges sit in the card corner instead of taking a row */
+      .row-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+      }
     </style>
   </head>
   <body>
@@ -1031,59 +1095,40 @@
       <div class="wrap">
         <div class="cols">
           <div class="col col-l">
-            <section class="card in collapsed" id="grace" style="--i: 0">
-              <div
-                class="g-head"
-                id="g-toggle"
-                role="button"
-                tabindex="0"
-                aria-expanded="false"
-                aria-controls="g-body"
-              >
-                <div class="g-av">🕊️<i></i></div>
-                <div>
-                  <div class="g-name">Grace · Riverside Guide</div>
-                  <div id="g-sub">online · here for you</div>
-                </div>
-                <div class="streak" id="streak"></div>
-                <svg
-                  class="chev"
-                  viewBox="0 0 24 24"
-                  width="20"
-                  height="20"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="m6 9 6 6 6-6" />
+            <div class="searchwrap in" style="--i: 0">
+              <div class="searchbox">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
                 </svg>
+                <input
+                  id="msg"
+                  type="search"
+                  placeholder="Search…"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  maxlength="200"
+                  enterkeyhint="go"
+                  aria-label="Search"
+                />
+                <button id="s-clear" type="button" aria-label="Clear search">
+                  <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                </button>
               </div>
-              <div id="g-body">
-                <div id="log" aria-live="polite"></div>
-                <div class="chips" id="chips"></div>
-                <div class="send">
-                  <input
-                    id="msg"
-                    placeholder="Tell Grace how you feel…"
-                    autocomplete="off"
-                    maxlength="200"
-                    aria-label="Message"
-                  /><button class="btn" id="send">Send</button>
-                </div>
+              <div id="results" role="listbox" aria-label="Search results"></div>
+            </div>
+
+            <section class="in" style="--i: 3">
+              <div class="lbl">CHURCH RESOURCES</div>
+              <div class="tiles" id="resources">
+                <a href="songs.html" class="tile"
+                  ><img src="songs-icon.png" alt="" />Songs</a
+                >
+                <a href="pledges.html" class="tile"
+                  ><img src="pledge.png" alt="" />Pledge handler</a
+                >
               </div>
-            </section>
-
-           <section class="in" style="--i: 3">
-  <div class="lbl">CHURCH RESOURCES</div>
-  <div class="tiles" id="resources">
-    <a href="songs.html" class="tile"><img src="songs-icon.png" alt="" />Songs</a>
-    <a href="pledges.html" class="tile"><img src="pledge.png" alt="" />Pledge handler</a>
-  </div>
-</section>
-
-
             </section>
           </div>
 
@@ -1287,7 +1332,6 @@
       const $ = (s) => document.querySelector(s);
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       const rnd = (a) => a[Math.floor(Math.random() * a.length)];
-      const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
       const LS = {
         get(k, d) {
           try {
@@ -1607,154 +1651,183 @@
         if (e.key === "Escape") closeSheet();
       });
 
-      /* ══════════ GUIDE (Grace) ══════════ */
-      const log = $("#log");
-      let lastTopic = null,
-        queue = Promise.resolve();
-      const enqueue = (f) => (queue = queue.then(f).catch(() => {}));
-      const scroll = () => {
-        log.scrollTop = log.scrollHeight;
-      };
-      const grace = $("#grace"),
-        gt = $("#g-toggle");
-      function setGrace(open) {
-        grace.classList.toggle("collapsed", !open);
-        gt.setAttribute("aria-expanded", open);
-        LS.set("rc_grace_open", open);
-        if (open) setTimeout(scroll, 50);
-      }
-      gt.onclick = () => setGrace(grace.classList.contains("collapsed"));
-      gt.onkeydown = (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          gt.click();
-        }
-      };
-      setGrace(LS.get("rc_grace_open", false));
-      function greet() {
-        const h = new Date().getHours();
-        return h < 12
-          ? "Good morning"
-          : h < 17
-            ? "Good afternoon"
-            : "Good evening";
-      }
-      async function say(text, o = {}) {
-        const sub = $("#g-sub");
-        sub.textContent = "typing…";
-        const d = document.createElement("div");
-        d.className = "b bot";
-        d.innerHTML =
-          '<div class="dots"><span></span><span></span><span></span></div>';
-        d.style.padding = "0";
-        log.appendChild(d);
-        scroll();
-        await sleep(reduce ? 50 : 500 + Math.min(text.length * 10, 1000));
-        d.style.padding = "";
-        d.innerHTML = "";
-        if (o.pr) d.classList.add("pr");
-        if (o.ref) {
-          const r = document.createElement("span");
-          r.className = "ref";
-          r.textContent = o.ref;
-          d.appendChild(r);
-        }
-        const s = document.createElement("span");
-        d.appendChild(s);
-        if (reduce) s.textContent = text;
-        else
-          for (let i = 0; i < text.length; i += 2) {
-            s.textContent = text.slice(0, i + 2);
-            scroll();
-            await sleep(14);
+      /* ══════════ SMART SEARCH ══════════
+         Indexes every link/tile/row on the page automatically, so any new
+         page you add is searchable with no code change. Optional extras on
+         any element:  data-keywords="word1 word2"  data-title="Name"
+         data-tag="Label"  (and data-search on non-link elements). */
+      const input = $("#msg"),
+        box = $("#results"),
+        clr = $("#s-clear");
+      const SYN = [
+        "song songs hymn hymns worship lyrics music sing singing praise choir",
+        "pledge pledges give giving offering tithe contribute contribution contributions money",
+        "map maps mapping location locations fellowship fellowships directions near nearby",
+        "chat chats message messages dm inbox talk",
+        "announcement announcements news update updates notice notices",
+        "notification notifications alert alerts push reminder reminders",
+        "profile account settings",
+        "split cash expenses bill share",
+      ].map((s) => s.split(" "));
+      const STOP = new Set(
+        "go to open the me take find show my a an i want please on in for of and with page tab section is are can you".split(
+          " ",
+        ),
+      );
+      const norm = (s) =>
+        (s || "")
+          .toLowerCase()
+          .replace(/[^a-z0-9&\s]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      const stem = (t) => (t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t);
+      function lev1(a, b) {
+        if (Math.abs(a.length - b.length) > 1) return false;
+        let i = 0,
+          j = 0,
+          e = 0;
+        while (i < a.length && j < b.length) {
+          if (a[i] === b[j]) {
+            i++;
+            j++;
+            continue;
           }
-        scroll();
-        sub.textContent = "online · here for you";
-        while (log.children.length > 14) log.firstChild.remove();
+          if (++e > 1) return false;
+          if (a.length > b.length) i++;
+          else if (a.length < b.length) j++;
+          else {
+            i++;
+            j++;
+          }
+        }
+        return e + (a.length - i) + (b.length - j) <= 1;
       }
-      function me(t) {
-        const d = document.createElement("div");
-        d.className = "b me";
-        d.textContent = t;
-        log.appendChild(d);
-        scroll();
+      function sectionLabel(el) {
+        if (el.dataset.tag) return el.dataset.tag;
+        if (el.closest("#topbar")) return "Page";
+        const sec = el.closest("section");
+        const l = sec && sec.querySelector(".lbl");
+        if (l) return l.textContent.trim();
+        let n = el.closest("[id$='-slot']") || el;
+        while ((n = n.previousElementSibling))
+          if (n.classList && n.classList.contains("list-section-label")) {
+            const t = n.textContent.trim();
+            return /^more$/i.test(t) ? "Page" : t;
+          }
+        return "Page";
       }
-      function chips() {
-        const c = $("#chips");
-        c.innerHTML = "";
-        const add = (l, f, hl) => {
-          const b = document.createElement("button");
-          b.className = "chip" + (hl ? " hl" : "");
-          b.textContent = l;
-          b.onclick = f;
-          c.appendChild(b);
-        };
-        if (lastTopic) {
-          add(
-            "📖 Another verse",
-            () => {
-              me("Another verse");
-              respond(lastTopic);
+      function buildIndex() {
+        const seen = new Set(),
+          out = [],
+          els = [
+            ...document.querySelectorAll(
+              "#chat-list a[href], #chat-list button.chat-row, #chat-list [data-search]",
+            ),
+            ...document.querySelectorAll("#topbar a[href]"),
+          ];
+        els.forEach((el) => {
+          if (el.closest(".searchwrap") || el.closest("[hidden]")) return;
+          const href = el.getAttribute("href") || "";
+          if (/^(#|javascript:)/i.test(href)) return;
+          const img = el.querySelector("img");
+          const title = (
+            el.dataset.title ||
+            el.querySelector(".row-title")?.textContent ||
+            el.getAttribute("aria-label") ||
+            el.getAttribute("title") ||
+            el.textContent ||
+            (img && img.alt) ||
+            ""
+          )
+            .replace(/\s+/g, " ")
+            .trim();
+          if (!title) return;
+          const key = href || el.id || title;
+          if (seen.has(key)) return;
+          seen.add(key);
+          const file = href
+            .split("?")[0]
+            .split("/")
+            .pop()
+            .replace(/\.\w+$/, "")
+            .replace(/[-_]+/g, " ");
+          out.push({
+            title,
+            sub: el.querySelector(".row-subtitle")?.textContent.trim() || "",
+            img: img ? img.getAttribute("src") || "" : "",
+            tag: sectionLabel(el),
+            kw: `${el.dataset.keywords || ""} ${file} ${(img && img.alt) || ""}`,
+            go: () => {
+              if (el.tagName === "A")
+                el.target === "_blank"
+                  ? window.open(el.href, "_blank")
+                  : (location.href = el.href);
+              else el.click();
             },
-            1,
+          });
+        });
+        return out;
+      }
+      function tokScore(t, tw, kw, sw, title) {
+        if (tw.includes(t)) return 45;
+        if (tw.some((w) => w.startsWith(t))) return 38;
+        if (kw.includes(t)) return 34;
+        if (kw.some((w) => w.startsWith(t))) return 28;
+        if (sw.some((w) => w.startsWith(t))) return 12;
+        if (t.length >= 4 && tw.concat(kw).some((w) => lev1(w, t))) return 20;
+        if (t.length >= 3 && title.includes(t)) return 15;
+        return 0;
+      }
+      function score(item, q) {
+        const toks = norm(q)
+          .split(" ")
+          .filter((t) => t && !STOP.has(t));
+        if (!toks.length) return 0;
+        const joined = toks.join(" "),
+          title = norm(item.title),
+          tw = title.split(" "),
+          kw = norm(item.kw).split(" "),
+          sw = norm(item.sub).split(" ");
+        let s = 0,
+          hit = 0;
+        if (title === joined) s += 100;
+        else if (title.startsWith(joined)) s += 80;
+        for (const t of toks) {
+          const st = stem(t);
+          let p = Math.max(
+            tokScore(t, tw, kw, sw, title),
+            tokScore(st, tw, kw, sw, title),
           );
-          add("📚 Full guide", () => topicSheet(lastTopic), 1);
+          SYN.forEach((g) => {
+            if (g.includes(t) || g.includes(st))
+              g.forEach((w) => {
+                if (w !== t && w !== st)
+                  p = Math.max(
+                    p,
+                    Math.round(tokScore(w, tw, kw, sw, title) * 0.8),
+                  );
+              });
+          });
+          if (p) {
+            hit++;
+            s += p;
+          }
         }
-        Object.entries(T).forEach(([k, t]) =>
-          add(t.e + " " + t.n, () => {
-            me("I feel " + t.n.toLowerCase());
-            respond(k);
-          }),
+        return hit ? s + (hit === toks.length ? 10 : 0) : 0;
+      }
+      const search = (q) =>
+        buildIndex()
+          .map((item) => ({ item, s: score(item, q) }))
+          .filter((r) => r.s > 0)
+          .sort((a, b) => b.s - a.s);
+      const topicOf = (txt) =>
+        Object.keys(T).find((k) =>
+          new RegExp(T[k].k, "i").test(txt.toLowerCase()),
         );
-      }
-      function respond(k) {
-        const t = T[k],
-          v = rnd(t.v);
-        lastTopic = k;
-        enqueue(async () => {
-          await say(t.i.replace("{n}", first));
-          await say(v[1], { ref: v[0] });
-          await say("🙏 " + t.p, { pr: 1 });
-          chips();
-        });
-      }
-      function reply(txt) {
-        const x = txt.toLowerCase();
-        const k = Object.keys(T).find((k) => new RegExp(T[k].k, "i").test(x));
-        if (k) return respond(k);
-        if (/^(hi|hello|hey|hola|jambo)\b/.test(x))
-          return enqueue(async () =>
-            say(`${greet()}, ${first}! 😊 How is your heart today?`),
-          );
-        if (/pray/.test(x)) {
-          const t = rnd(Object.values(T));
-          return enqueue(async () => say("Let's pray together:")).then(() =>
-            enqueue(async () => say(t.p, { pr: 1 })),
-          );
-        }
-        if (/verse|word|scripture|bible/.test(x)) {
-          const v = rnd(Object.values(T).flatMap((t) => t.v));
-          return enqueue(async () => say(v[1], { ref: v[0] }));
-        }
-        enqueue(async () => {
-          await say(`Thank you for sharing, ${first}. I'm listening. 💙`);
-          await say(
-            "Tap what feels closest below, and I'll find a word for you.",
-          );
-        });
-      }
-      function send() {
-        const i = $("#msg"),
-          t = i.value.trim();
-        if (!t) return;
-        i.value = "";
-        me(t);
-        reply(t);
-      }
-      $("#send").onclick = send;
-      $("#msg").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") send();
-      });
+      const HELP_RE = /^\?$|\bhelp\b|what can|how (do|can|to)/i,
+        VERSE_RE = /\b(verse|scripture|bible|pray|prayer)\b/i;
+
+      /* ── Bible guide + help open in the bottom sheet ── */
       function topicSheet(k) {
         const t = T[k];
         openSheet(
@@ -1764,32 +1837,164 @@
               (v, i) =>
                 `<div class="vc" style="--i:${i}"><p>${esc(v[1])}</p><div class="ref"><span>${esc(v[0])} · KJV</span><button data-c="${esc(v[0] + " — " + v[1])}">Copy</button></div></div>`,
             )
-            .join("") +
-            `<div class="pray">${esc(t.p)}</div><button class="btn" id="ask-g">Talk to Grace</button>`,
+            .join("") + `<div class="pray">${esc(t.p)}</div>`,
         );
         $("#sh-b")
           .querySelectorAll("[data-c]")
           .forEach((b) => (b.onclick = () => copy(b.dataset.c)));
-        $("#ask-g").onclick = () => {
-          closeSheet();
-          setGrace(true);
-          me("I feel " + t.n.toLowerCase());
-          respond(k);
-        };
+      }
+      function helpSheet() {
+        const idx = buildIndex();
+        openSheet(
+          "Help",
+          `<div class="pray" style="font-style:normal">Type the name of any page, channel or Q&amp;A to open it. Or type how you feel — anxious, sad, grateful — for a verse and prayer. You can also type “verse” or “pray”.</div><div class="lbl">OPEN</div><div class="pills">${idx.map((it, i) => `<button class="chip" data-i="${i}">${esc(it.title)}</button>`).join("")}</div>`,
+        );
+        $("#sh-b")
+          .querySelectorAll("[data-i]")
+          .forEach(
+            (b) =>
+              (b.onclick = () => {
+                closeSheet();
+                idx[b.dataset.i].go();
+              }),
+          );
       }
 
-      /* ══════════ STREAK ══════════ */
-      (() => {
-        const s = LS.get("rc_streak", { d: "", n: 0 }),
-          today = new Date().toDateString(),
-          y = new Date(Date.now() - 864e5).toDateString();
-        if (s.d !== today) {
-          s.n = s.d === y ? s.n + 1 : 1;
-          s.d = today;
-          LS.set("rc_streak", s);
+      /* ── live results (floating, takes no layout space) ── */
+      let hits = [],
+        active = -1;
+      function setActive(i) {
+        active = i;
+        [...box.querySelectorAll(".hit")].forEach((b, n) =>
+          b.classList.toggle("act", n === i),
+        );
+        box.querySelectorAll(".hit")[i]?.scrollIntoView({ block: "nearest" });
+      }
+      function renderHits() {
+        const q = input.value.trim();
+        clr.classList.toggle("show", !!input.value);
+        box.innerHTML = "";
+        hits = [];
+        active = -1;
+        if (!q) {
+          box.classList.remove("show");
+          return;
         }
-        $("#streak").textContent = "🔥 " + s.n + (s.n > 1 ? " days" : " day");
-      })();
+        const nav = search(q).slice(0, 6),
+          extras = [],
+          k = topicOf(q);
+        if (HELP_RE.test(q)) extras.push({ help: 1 });
+        if (k) extras.push({ k });
+        else if (VERSE_RE.test(q))
+          extras.push({ k: rnd(Object.keys(T)), rand: 1 });
+        hits =
+          nav[0] && nav[0].s >= 60 ? [...nav, ...extras] : [...extras, ...nav];
+        box.classList.add("show");
+        if (!hits.length) {
+          box.innerHTML = '<div class="list-empty in-res">No match</div>';
+          return;
+        }
+        hits.forEach((h) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "hit";
+          b.setAttribute("role", "option");
+          const tx = document.createElement("div");
+          tx.className = "tx";
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          let lead;
+          if (h.item) {
+            lead = document.createElement("img");
+            lead.alt = "";
+            lead.src = h.item.img || fb(h.item.title);
+            lead.onerror = () => {
+              lead.onerror = null;
+              lead.src = fb(h.item.title);
+            };
+            tx.innerHTML = `<div class="t">${esc(h.item.title)}</div><div class="s">${esc(h.item.sub)}</div>`;
+            tag.textContent = h.item.tag;
+          } else {
+            lead = document.createElement("div");
+            lead.className = "ico";
+            tag.classList.add("gr");
+            if (h.help) {
+              lead.textContent = "💡";
+              tx.innerHTML =
+                '<div class="t">What can I search?</div><div class="s">Tips and everything you can open</div>';
+              tag.textContent = "Help";
+            } else {
+              lead.textContent = T[h.k].e;
+              tx.innerHTML = `<div class="t">${h.rand ? "A verse &amp; prayer for you" : "A word for feeling " + esc(T[h.k].n.toLowerCase())}</div><div class="s">Verse &amp; prayer</div>`;
+              tag.textContent = "Verse";
+            }
+          }
+          b.append(lead, tx, tag);
+          b.onclick = () => activate(h);
+          box.appendChild(b);
+        });
+      }
+      function resetInput() {
+        input.value = "";
+        renderHits();
+      }
+      function activate(h) {
+        if (h.item) return h.item.go();
+        resetInput();
+        h.help ? helpSheet() : topicSheet(h.k);
+      }
+
+      /* ── Enter: open a page when it's clear, otherwise guide / help ── */
+      function submit() {
+        const t = input.value.trim();
+        if (!t) return;
+        const res = search(t),
+          top = res[0],
+          nxt = res[1],
+          clear = top && (!nxt || top.s >= nxt.s * 1.25),
+          k = topicOf(t),
+          help = HELP_RE.test(t),
+          verse = VERSE_RE.test(t);
+        if (clear && (top.s >= 60 || (top.s >= 34 && !k && !help && !verse)))
+          return top.item.go();
+        if (help) {
+          resetInput();
+          return helpSheet();
+        }
+        if (k || verse) {
+          resetInput();
+          return topicSheet(k || rnd(Object.keys(T)));
+        }
+        toast(
+          res.length ? "A few matches — tap one to open it" : "Nothing found",
+          "inf",
+          2200,
+        );
+      }
+      input.addEventListener("input", renderHits);
+      input.addEventListener("focus", renderHits);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown" && hits.length) {
+          e.preventDefault();
+          setActive((active + 1) % hits.length);
+        } else if (e.key === "ArrowUp" && hits.length) {
+          e.preventDefault();
+          setActive((active - 1 + hits.length) % hits.length);
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          if (active >= 0 && hits[active]) activate(hits[active]);
+          else submit();
+        } else if (e.key === "Escape") {
+          resetInput();
+        }
+      });
+      clr.onclick = () => {
+        resetInput();
+        input.focus();
+      };
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".searchwrap")) box.classList.remove("show");
+      });
 
       /* ══════════ NOTIFICATIONS ══════════ */
       function updateNotifRowUI() {
@@ -2044,17 +2249,6 @@
 
       /* ══════════ INIT ══════════ */
       addEventListener("DOMContentLoaded", () => {
-        chips();
-        const fresh = !LS.get("rc_seen", 0);
-        LS.set("rc_seen", 1);
-        enqueue(async () => {
-          await say(`${greet()}, ${first}! 👋`);
-          await say(
-            fresh
-              ? "I'm Grace, your guide here. I work even without internet — tell me how you feel, or tap a topic."
-              : "Good to see you again. How is your heart today?",
-          );
-        });
         loadStatus();
         loadChannels();
         loadQnA();
