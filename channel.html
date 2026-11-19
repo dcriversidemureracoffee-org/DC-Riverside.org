@@ -2071,7 +2071,7 @@
       "use strict";
       /* ═══ CONFIG & STATE ═══ */
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbwdt4glYcp4zY3mFunF_xNn4v4JnJXkCnonCDzLkQKo6k3UxX1sCo3dLsQ2fenHVeJm/exec";
+        "https://script.google.com/macros/s/AKfycbxDrnPyHD8HwEOD4PeVcJBkxK6en22ZBWmPVkyxXozM6KUfz8Ci_L41VQVJUzV9mBGr/exec";
       const FIREBASE_CONFIG = {
         apiKey: "AIzaSyDBKHrHJ8Kz7W-4ztMCOeMf8Oakv-WZcws",
         authDomain: "dc-riverside-murera-coffee.firebaseapp.com",
@@ -2086,8 +2086,11 @@
       if (!currentUser) location.href = "index.html";
       let allChannels = [],
         currentChannel = null,
-        channelSwitchToken = 0,
         currentPosts = [],
+        renderedPostCount = 0,
+        channelSwitchToken = 0,
+        postViewObserver = null,
+        postMediaObserver = null,
         isAuthorised = false,
         isAdmin = false,
         channelPolling = null,
@@ -2198,9 +2201,19 @@
         } catch {}
       }
       async function api(params) {
-        return (
-          await fetch(`${SCRIPT_URL}?${new URLSearchParams(params)}`)
-        ).json();
+        if (!navigator.onLine) throw new Error("offline");
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 15000);
+        try {
+          const response = await fetch(
+            `${SCRIPT_URL}?${new URLSearchParams(params)}`,
+            { signal: controller.signal },
+          );
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return await response.json();
+        } finally {
+          clearTimeout(timer);
+        }
       }
       async function post(body) {
         return (
@@ -2312,12 +2325,16 @@
       $("drawer-close").onclick = closeDrawer;
 
       async function openChannel(ch, scrollToPostId = null) {
-        const switchToken = ++channelSwitchToken;
+        const token = ++channelSwitchToken;
         if (channelPolling) {
           clearInterval(channelPolling);
           channelPolling = null;
         }
+        if (postViewObserver) postViewObserver.disconnect();
+        if (postMediaObserver) postMediaObserver.disconnect();
         currentChannel = ch;
+        currentPosts = [];
+        renderedPostCount = 0;
         localStorage.setItem("rv_last_ch", ch.id);
         $("mh-av").innerHTML = av(
           ch.name,
@@ -2339,13 +2356,12 @@
             block: "nearest",
             inline: "center",
           });
-
-        await checkAuth(ch.id, switchToken);
-        if (switchToken !== channelSwitchToken) return;
-
-        await renderPosts(ch.id, scrollToPostId, switchToken);
-        if (switchToken !== channelSwitchToken) return;
-
+        await checkAuth(ch.id, token);
+        if (token !== channelSwitchToken || currentChannel?.id !== ch.id)
+          return;
+        await renderPosts(ch.id, scrollToPostId, token);
+        if (token !== channelSwitchToken || currentChannel?.id !== ch.id)
+          return;
         startPolling();
         if (scrollToPostId) {
           const p = currentPosts.find((x) => x.postId === scrollToPostId);
@@ -2355,7 +2371,7 @@
             );
         }
       }
-      async function checkAuth(channelId, switchToken = channelSwitchToken) {
+      async function checkAuth(channelId, token = channelSwitchToken) {
         let authorised = false;
         try {
           const d = await api({
@@ -2367,7 +2383,8 @@
         } catch {
           authorised = false;
         }
-        if (switchToken !== channelSwitchToken || currentChannel?.id !== channelId) return;
+        if (token !== channelSwitchToken || currentChannel?.id !== channelId)
+          return;
         isAuthorised = authorised;
         $("btn-write").style.display = isAuthorised ? "grid" : "none";
         updateRole();
@@ -2387,9 +2404,14 @@
       }
 
       /* ═══ POSTS ═══ */
-      async function renderPosts(channelId, scrollToPostId = null, switchToken = channelSwitchToken) {
+      const POST_PAGE_SIZE = 3;
+
+      async function renderPosts(
+        channelId,
+        scrollToPostId = null,
+        token = channelSwitchToken,
+      ) {
         const rail = $("post-rail");
-        if (currentChannel?.id !== channelId || switchToken !== channelSwitchToken) return;
         rail.innerHTML =
           '<div class="state-view"><div class="ld-line"></div><div class="empty-sub">FETCHING POSTS…</div></div>';
         try {
@@ -2398,45 +2420,51 @@
             channelId,
             username: currentUser,
           });
-
-          // Ignore responses from a channel the user has already left.
-          if (switchToken !== channelSwitchToken || currentChannel?.id !== channelId) return;
-
-          const posts = d.posts || [];
-          currentPosts = posts;
-          if (!posts.length) {
+          if (token !== channelSwitchToken || currentChannel?.id !== channelId)
+            return;
+          currentPosts = Array.isArray(d.posts) ? d.posts : [];
+          if (!currentPosts.length) {
             rail.innerHTML = `<div class="state-view"><div class="empty-label">NO POSTS YET</div><div class="empty-sub">${isAuthorised ? "PRESS THE EDIT BUTTON TO POST" : "NOTHING HERE YET"}</div></div>`;
             updateProgress(0, 0);
             updateNavInfo(0, 0);
             return;
           }
           rail.innerHTML = "";
-          posts.forEach((p, i) =>
-            rail.appendChild(buildPostView(p, i, posts.length)),
-          );
-          updateProgress(0, posts.length);
-          updateNavInfo(1, posts.length);
+          rail.scrollLeft = 0;
+          renderedPostCount = 0;
           setupViewTracking();
-          if (scrollToPostId)
-            setTimeout(() => {
-              if (switchToken === channelSwitchToken && currentChannel?.id === channelId)
-                scrollToPost(scrollToPostId);
-            }, 300);
-          else if (posts.length > 1)
-            setTimeout(
-              () => {
-                if (switchToken === channelSwitchToken && currentChannel?.id === channelId)
-                  whisper(
-                    "Swipe sideways to read more. Tap me for a quick demo.",
-                    "swipe",
-                    () => topic("swipe"),
-                  );
-              },
-              1500,
+          appendPostPage();
+          if (scrollToPostId) {
+            const targetIndex = currentPosts.findIndex(
+              (p) => p.postId === scrollToPostId,
             );
+            if (targetIndex >= 0) {
+              while (renderedPostCount <= targetIndex) appendPostPage();
+              setTimeout(() => {
+                if (
+                  token === channelSwitchToken &&
+                  currentChannel?.id === channelId
+                )
+                  scrollToPost(scrollToPostId);
+              }, 300);
+            }
+          } else if (currentPosts.length > 1) {
+            setTimeout(() => {
+              if (
+                token === channelSwitchToken &&
+                currentChannel?.id === channelId
+              )
+                whisper(
+                  "Swipe sideways to read more. Tap me for a quick demo.",
+                  "swipe",
+                  () => topic("swipe"),
+                );
+            }, 1500);
+          }
         } catch (err) {
-          if (switchToken !== channelSwitchToken || currentChannel?.id !== channelId) return;
-          console.error(err);
+          if (token !== channelSwitchToken || currentChannel?.id !== channelId)
+            return;
+          console.error("Channel posts failed:", err);
           rail.innerHTML =
             '<div class="state-view"><div class="empty-label">LOAD FAILED</div><div class="empty-sub">CHECK CONNECTION AND REFRESH</div></div>';
         }
@@ -2444,12 +2472,15 @@
       const mediaList = (m) => [].concat(m || []).filter((x) => x && x.link);
       function thumbHtml(m, cls = "") {
         const img = (m.type || "").startsWith("image"),
-          id = fileId(m.link);
-        const pic = img
-          ? `<img src="${esc(lh3(m.link))}" loading="lazy" alt="" onerror="this.parentNode.classList.add('bad');this.remove()">`
-          : id
-            ? `<img src="https://drive.google.com/thumbnail?id=${id}&sz=w640" loading="lazy" alt="" onerror="this.remove()">`
-            : "";
+          id = fileId(m.link),
+          src = img
+            ? lh3(m.link)
+            : id
+              ? `https://drive.google.com/thumbnail?id=${id}&sz=w640`
+              : "";
+        const pic = src
+          ? `<img data-src="${esc(src)}" loading="lazy" decoding="async" alt="" onerror="this.parentNode.classList.add('bad');this.removeAttribute('src')">`
+          : "";
         return `<button class="thumb ${cls}" data-m="${esc(m.link)}" data-t="${img ? "image" : "video"}" aria-label="${img ? "Open image" : "Play video"}">${pic}${img ? "" : `<span class="play">${ic("play")}</span>`}<span class="tfail">COULDN'T LOAD</span></button>`;
       }
       function buildPostView(p, idx, total) {
@@ -2509,8 +2540,44 @@
           }
         });
         if (hasEv) initCal(w.querySelector(".cal"), p.events);
-        loadCommentCount(p.postId, w.querySelector(".comment-count-label"));
         return w;
+      }
+
+      function loadPostImage(img) {
+        if (!img || !img.dataset.src || img.dataset.loading) return;
+        img.dataset.loading = "1";
+        img.onload = () => img.classList.add("loaded");
+        img.onerror = () => {
+          img.closest(".thumb")?.classList.add("bad");
+          img.remove();
+        };
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+      }
+
+      function observePostCard(card) {
+        card.querySelectorAll("img[data-src]").forEach((img) => {
+          if (postMediaObserver) postMediaObserver.observe(img);
+          else loadPostImage(img);
+        });
+        if (postViewObserver) postViewObserver.observe(card);
+      }
+
+      function appendPostPage() {
+        if (renderedPostCount >= currentPosts.length) return;
+        const rail = $("post-rail"),
+          from = renderedPostCount,
+          to = Math.min(from + POST_PAGE_SIZE, currentPosts.length);
+        for (let i = from; i < to; i++) {
+          const card = buildPostView(currentPosts[i], i, currentPosts.length);
+          rail.appendChild(card);
+          observePostCard(card);
+        }
+        renderedPostCount = to;
+        if (from === 0) {
+          updateProgress(0, currentPosts.length);
+          updateNavInfo(1, currentPosts.length);
+        }
       }
 
       /* ═══ CALENDAR — one month grid; swipe lives on the header only so the rail swipe is never hijacked ═══ */
@@ -2875,9 +2942,17 @@
           const r = $("post-rail"),
             vw = r.querySelector(".post-view")?.clientWidth || r.clientWidth;
           if (!vw) return;
-          const i = Math.round(r.scrollLeft / vw);
+          const i = Math.max(0, Math.round(r.scrollLeft / vw));
           updateProgress(i, currentPosts.length);
-          updateNavInfo(i + 1, currentPosts.length);
+          updateNavInfo(
+            Math.min(i + 1, currentPosts.length),
+            currentPosts.length,
+          );
+          if (
+            i >= renderedPostCount - 2 &&
+            renderedPostCount < currentPosts.length
+          )
+            appendPostPage();
         },
         { passive: true },
       );
@@ -2887,20 +2962,36 @@
       const updateNavInfo = (c, t) =>
         ($("post-nav-info").textContent = t ? `${c} / ${t}` : "");
       function setupViewTracking() {
-        const ob = new IntersectionObserver(
-          (es) =>
-            es.forEach((en) => {
-              if (!en.isIntersecting) return;
-              const id = en.target.dataset.postId;
+        if (postViewObserver) postViewObserver.disconnect();
+        if (postMediaObserver) postMediaObserver.disconnect();
+        const rail = $("post-rail");
+        postMediaObserver = new IntersectionObserver(
+          (entries, observer) =>
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              observer.unobserve(entry.target);
+              loadPostImage(entry.target);
+            }),
+          { root: rail, rootMargin: "100% 100%", threshold: 0 },
+        );
+        postViewObserver = new IntersectionObserver(
+          (entries) =>
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              const card = entry.target,
+                id = card.dataset.postId,
+                countLabel = card.querySelector(".comment-count-label");
+              if (countLabel && !countLabel.dataset.loaded) {
+                countLabel.dataset.loaded = "1";
+                loadCommentCount(id, countLabel);
+              }
               if (!id || viewedPosts.has(id)) return;
               viewedPosts.add(id);
               recordView(id);
             }),
-          { threshold: 0.6 },
+          { root: rail, threshold: 0.6 },
         );
-        document
-          .querySelectorAll(".post-view[data-post-id]")
-          .forEach((el) => ob.observe(el));
+        rail.querySelectorAll(".post-view").forEach(observePostCard);
       }
       async function recordView(postId) {
         try {
@@ -2931,7 +3022,12 @@
       $("nav-prev").onclick = () => railBy(-1);
       $("nav-next").onclick = () => railBy(1);
       function scrollToPost(postId) {
-        const el = document.querySelector(
+        while (
+          renderedPostCount < currentPosts.length &&
+          !$("post-rail").querySelector(`.post-view[data-post-id="${postId}"]`)
+        )
+          appendPostPage();
+        const el = $("post-rail").querySelector(
           `.post-view[data-post-id="${postId}"]`,
         );
         if (!el) return;
@@ -4144,4 +4240,3 @@
     </script>
   </body>
 </html>
-
