@@ -942,7 +942,14 @@
         min-width: 0;
       }
       #fd-track {
-        height: clamp(380px, 66dvh, 620px);
+        height: max(
+          0px,
+          min(
+            620px,
+            calc(100dvh - var(--nav) - var(--top) - var(--bot) - 150px)
+          )
+        );
+        min-height: 0;
         display: flex;
         flex-direction: column;
         overflow-y: auto;
@@ -970,14 +977,14 @@
       }
       .fp {
         flex: 0 0 100%;
+        height: 100%;
         min-height: 0;
         scroll-snap-align: start;
         scroll-snap-stop: always;
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        padding: 12px 0;
-        cursor: pointer;
+        gap: 8px;
+        padding: 10px;
         border-bottom: 1px solid var(--wire);
         background: linear-gradient(160deg, #0b1220, #04060b);
       }
@@ -1024,11 +1031,14 @@
         text-transform: uppercase;
         background: rgba(59, 130, 246, 0.12);
         color: var(--accent2);
+        border: 1px solid transparent;
         padding: 4px 10px;
         border-radius: 99px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        cursor: pointer;
+        font-family: inherit;
       }
       /* NEW label — shown until the post has been viewed */
       .nw {
@@ -1048,28 +1058,47 @@
         opacity: 0;
         transform: scale(0.7);
       }
-      /* media block — separate from text */
+      /* horizontal media gallery — one full-width item per swipe */
       .fp-media {
-        flex: 0 0 52%;
-        min-height: 0;
-        display: grid;
-        grid-auto-rows: 1fr;
-        gap: 2px;
+        flex: 0 0 38%;
+        min-height: 90px;
+        min-width: 0;
+        display: flex;
+        gap: 7px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .fp-media::-webkit-scrollbar {
+        display: none;
       }
       .fp.nt .fp-media {
         flex: 1 1 0;
       }
-      .fp-media.m2 {
-        grid-template-columns: 1fr 1fr;
-      }
       .th {
         position: relative;
+        flex: 0 0 100%;
+        width: 100%;
         min-width: 0;
         min-height: 0;
         overflow: hidden;
+        scroll-snap-align: start;
         background: #0b1220;
         border: 0;
         border-radius: 10px;
+        padding: 0;
+        cursor: zoom-in;
+        appearance: none;
+      }
+      .fp-media-fallback {
+        display: grid;
+        place-items: center;
+        height: 100%;
+        color: var(--lead);
+        font-size: 0.8rem;
       }
       .th img {
         position: absolute;
@@ -1101,53 +1130,288 @@
         fill: #fff;
         margin-left: 3px;
       }
-      /* text block — separate from media */
+      /* text area scrolls vertically inside the card; no content clamp */
       .fp-text {
         flex: 1 1 0;
         min-height: 0;
-        overflow: hidden;
-        padding: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+        padding: 2px 1px;
         color: var(--ink);
-        font-size: 0.98rem;
+        font-size: 0.94rem;
         line-height: 1.5;
         white-space: pre-wrap;
         word-break: break-word;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 8;
+        scrollbar-width: thin;
       }
       .fp.no-m .fp-text {
-        font-size: 1.3rem;
+        font-size: 1.08rem;
         font-weight: 500;
-        -webkit-line-clamp: 12;
       }
       .fp.no-m.long .fp-text {
-        font-size: 1.05rem;
-        -webkit-line-clamp: 16;
+        font-size: 0.98rem;
       }
       .fp-foot {
         flex: none;
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 0;
+        gap: 8px;
+        padding: 5px 0 0;
         font-size: 0.7rem;
         color: var(--lead);
+        border-top: 1px solid var(--wire);
       }
-      .fp-stat {
+      .fp-foot button {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        font-weight: 700;
+        gap: 5px;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+        padding: 5px 8px;
+        border-radius: 20px;
       }
-      .fp-stat svg {
-        width: 14px;
-        height: 14px;
+      .fp-foot button:active {
+        transform: scale(0.94);
+      }
+      .fp-foot .fp-like.liked {
+        color: #fb7185;
+      }
+      .fp-foot .fp-like svg {
+        width: 16px;
+        height: 16px;
         fill: none;
         stroke: currentColor;
         stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+      }
+      .fp-foot .fp-like.liked svg {
+        fill: currentColor;
+      }
+      .fp-comments {
+        display: none;
+        flex: 0 1 40%;
+        min-height: 0;
+        max-height: 45%;
+        flex-direction: column;
+        border-top: 1px solid var(--wire);
+        background: rgba(5, 10, 20, 0.72);
+      }
+      .fp-comments.open {
+        display: flex;
+      }
+      .fp-comment-list {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 2px;
+        scrollbar-width: thin;
+      }
+      .fp-comment {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+        font-size: 0.76rem;
+      }
+      .fp-comment.own {
+        flex-direction: row-reverse;
+      }
+      .fp-c-avatar {
+        width: 25px;
+        height: 25px;
+        flex: none;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--lift);
+        color: var(--accent2);
+        font-size: 0.65rem;
+        font-weight: 800;
+      }
+      .fp-c-bubble {
+        min-width: 0;
+        max-width: 85%;
+        padding: 7px 9px;
+        border-radius: 10px;
+        background: var(--lift);
+        overflow-wrap: anywhere;
+      }
+      .fp-comment.own .fp-c-bubble {
+        background: rgba(59, 130, 246, 0.22);
+      }
+      .fp-c-name {
+        color: var(--accent2);
+        font-size: 0.62rem;
+        font-weight: 800;
+        margin-bottom: 3px;
+      }
+      .fp-c-text {
+        white-space: pre-wrap;
+        line-height: 1.4;
+      }
+      .fp-c-meta {
+        color: var(--steel);
+        font-size: 0.58rem;
+        margin-top: 3px;
+      }
+      .fp-c-actions {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 5px;
+        flex-wrap: wrap;
+      }
+      .fp-c-actions button {
+        border: 0;
+        background: transparent;
+        color: var(--lead);
+        cursor: pointer;
+        font-size: 0.7rem;
+        padding: 2px 4px;
+      }
+      .fp-c-actions button.active {
+        background: rgba(96, 165, 250, 0.18);
+        border-radius: 8px;
+      }
+      .fp-c-sendbar {
+        flex: none;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        border-top: 1px solid var(--wire);
+        padding: 5px 0 0;
+      }
+      .fp-c-sendbar input {
+        flex: 1;
+        min-width: 0;
+        height: 36px;
+        border: 1px solid var(--wire);
+        border-radius: 18px;
+        background: var(--surface);
+        padding: 0 12px;
+        font-size: 0.78rem;
+        color: var(--ink);
+      }
+      .fp-c-sendbar button {
+        flex: none;
+        border: 0;
+        border-radius: 18px;
+        background: var(--accent);
+        color: white;
+        padding: 8px 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .fp-c-empty {
+        text-align: center;
+        color: var(--steel);
+        font-size: 0.68rem;
+        padding: 12px;
+      }
+      #feed-media-viewer {
+        position: fixed;
+        inset: 0;
+        z-index: 3000;
+        display: none;
+        flex-direction: column;
+        background: rgba(0, 0, 0, 0.96);
+        padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+      }
+      #feed-media-viewer.open {
+        display: flex;
+      }
+      #feed-media-close {
+        position: absolute;
+        z-index: 2;
+        top: max(12px, env(safe-area-inset-top));
+        right: 14px;
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font-size: 1.5rem;
+      }
+      #feed-media-track {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+      .feed-media-slide {
+        flex: 0 0 100%;
+        min-width: 0;
+        display: grid;
+        place-items: center;
+        scroll-snap-align: center;
+        padding: 48px 8px 16px;
+      }
+      .feed-media-slide img,
+      .feed-media-slide video {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      #feed-media-count {
+        color: #cbd5e1;
+        text-align: center;
+        padding: 8px;
+        font-size: 0.75rem;
+      }
+
+      @media (max-height: 520px) {
+        #fd-track {
+          height: max(
+            0px,
+            calc(100dvh - var(--nav) - var(--top) - var(--bot) - 128px)
+          );
+        }
+        .fp {
+          gap: 5px;
+          padding: 6px;
+        }
+        .fp-media {
+          flex-basis: 32%;
+          min-height: 58px;
+        }
+        .fp-foot {
+          padding-top: 2px;
+        }
+      }
+      @media (max-width: 380px) {
+        .fp-top {
+          gap: 5px;
+        }
+        .fp-ch {
+          max-width: 38%;
+          padding: 4px 7px;
+          font-size: 0.55rem;
+        }
+        .fp-foot {
+          gap: 5px;
+        }
+        .fp-foot button {
+          padding: 4px 5px;
+          font-size: 0.64rem;
+        }
+        .fp-text {
+          font-size: 0.86rem;
+        }
       }
 
       /* sheet */
@@ -3260,7 +3524,7 @@
          • view counts are fetched only for cards you actually see
          • every post you haven't viewed yet carries a green NEW label
          Event-only posts (no text, no media) are skipped — they live in the countdown card (Events button).
-         Swipe is vertical inside its own fixed-height viewport. Tap a card to open the post. */
+         Swipe vertically through posts; media and channel names have their own controls. */
       const FKEY = "rc_feed2",
         FMAX = 30,
         PER = 6,
@@ -3289,8 +3553,7 @@
           .map((x) => ({
             l: x.link,
             t: (x.type || "").startsWith("image") ? "i" : "v",
-          }))
-          .slice(0, 4);
+          }));
         const tx = cleanTxt(p.content);
         if (!tx && !m.length) return null; /* events-only post → ignore */
         return {
@@ -3306,30 +3569,31 @@
               p.modified || p.updated || p.edited || p.created,
             ).getTime() || 0,
           lk: p.likes || 0,
+          liked: !!p.likedByCurrentUser,
         };
       }
       const ICO_EYE =
         '<svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
       const ICO_HEART =
         '<svg viewBox="0 0 24 24"><path d="M12 20s-8-5-8-11a4.5 4.5 0 018-2.5A4.5 4.5 0 0120 9c0 6-8 11-8 11z"/></svg>';
-      /* media thumb: no src yet — the lazy observer sets it when the card is near */
-      function thumb(m) {
+      /* media thumbs stay lazy; the gallery can hold up to four attachments */
+      function thumb(m, i) {
         const id = fileId(m.l),
           src =
             m.t === "i"
               ? lh3(m.l, 640)
               : id
-                ? `https://drive.google.com/thumbnail?id=${id}&sz=w480`
+                ? `https://drive.google.com/thumbnail?id=${id}&sz=w640`
                 : "";
         return (
-          `<div class="th">` +
+          `<button class="th" type="button" data-media-index="${i}" aria-label="Open media ${i + 1}">` +
           (src
             ? `<img data-src="${esc(src)}" data-o="${esc(m.l)}" alt="" decoding="async">`
-            : "") +
+            : '<span class="fp-media-fallback">Open attachment</span>') +
           (m.t === "v"
             ? '<span class="fp-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>'
             : "") +
-          `</div>`
+          `</button>`
         );
       }
       /* posts the user has already viewed (remembered on this device) */
@@ -3343,13 +3607,14 @@
             (f.tx ? "" : " nt") +
             (!hasM && f.tx.length > 200 ? " long" : "");
         return (
-          `<div class="${cls}" data-pid="${esc(f.pid)}" data-cid="${esc(f.cid)}" role="link" tabindex="0">` +
-          `<div class="fp-top"><img src="${esc(f.pic ? lh3(f.pic, 80) : fb(f.au))}" alt="${esc(f.au)}" loading="lazy" onerror="this.onerror=null;this.src=fb(this.alt)"><span class="au">${esc(f.au)} <small>· ${esc(fmtTime(f.t))}</small></span>${SEEN.has(f.pid) ? "" : '<span class="nw">NEW</span>'}<span class="fp-ch">${esc(f.ch)}</span></div>` +
+          `<article class="${cls}" data-pid="${esc(f.pid)}" data-cid="${esc(f.cid)}">` +
+          `<div class="fp-top"><img src="${esc(f.pic ? lh3(f.pic, 80) : fb(f.au))}" alt="${esc(f.au)}" loading="lazy" onerror="this.onerror=null;this.src=fb(this.alt)"><span class="au">${esc(f.au)} <small>· ${esc(fmtTime(f.t))}</small></span>${SEEN.has(f.pid) ? "" : '<span class="nw">NEW</span>'}<button class="fp-ch" type="button" data-open-channel>${esc(f.ch)}</button></div>` +
           (hasM
-            ? `<div class="fp-media${f.m.length > 1 ? " m2" : ""}">${f.m.map(thumb).join("")}</div>`
+            ? `<div class="fp-media" aria-label="Post media">${f.m.map((m, i) => thumb(m, i)).join("")}</div>`
             : "") +
-          (f.tx ? `<div class="fp-text">${esc(f.tx)}</div>` : "") +
-          `<div class="fp-foot"><span class="fp-stat" title="Views">${ICO_EYE}<span class="fv">${VC[f.pid] || 0}</span></span><span class="fp-stat" title="Likes">${ICO_HEART}${f.lk}</span></div></div>`
+          (f.tx ? `<div class="fp-text" tabindex="0">${esc(f.tx)}</div>` : "") +
+          `<div class="fp-foot"><span class="fp-stat" title="Views">${ICO_EYE}<span class="fv">${VC[f.pid] || 0}</span></span><button class="fp-like ${f.liked ? "liked" : ""}" type="button" data-liked="${f.liked ? 1 : 0}" aria-label="Like post">${ICO_HEART}<span class="fp-like-count">${f.lk || 0}</span></button><button class="fp-comment-toggle" type="button" aria-expanded="false">💬 <span class="fp-comment-count">—</span> Comments</button></div>` +
+          `<section class="fp-comments" aria-label="Post comments"><div class="fp-comment-list"><div class="fp-c-empty">Open comments to load</div></div><form class="fp-c-sendbar"><input type="text" maxlength="1000" placeholder="Write a comment…" aria-label="Write a comment"><button type="submit">Send</button></form></section></article>`
         );
       }
       /* once a post has been viewed its NEW label fades away */
@@ -3377,13 +3642,23 @@
         img.src = img.dataset.src;
         img.removeAttribute("data-src");
       }
-      /* media: only the current card + the next one */
+      /* First detect cards near the viewport, then load only nearby horizontal media slides. */
+      const MIB = new IntersectionObserver(
+        (es) =>
+          es.forEach((en) => {
+            if (!en.isIntersecting) return;
+            MIB.unobserve(en.target);
+            const img = en.target.querySelector("img[data-src]");
+            if (img) loadImg(img);
+          }),
+        { root: TR, rootMargin: "100% 100%" },
+      );
       const MOB = new IntersectionObserver(
         (es) =>
           es.forEach((en) => {
             if (!en.isIntersecting) return;
             MOB.unobserve(en.target);
-            en.target.querySelectorAll("img[data-src]").forEach(loadImg);
+            en.target.querySelectorAll(".th").forEach(MIB.observe.bind(MIB));
           }),
         { root: TR, rootMargin: "100% 0px" },
       );
@@ -3395,6 +3670,7 @@
             const c = en.target,
               pid = c.dataset.pid;
             if (!pid) return;
+            fetchCommentCount(c);
             if (SEEN.has(pid)) {
               markSeen(c);
               if (!VFETCHED.has(pid)) viewCount(pid);
@@ -3480,6 +3756,302 @@
         if (i >= n - 2) moreCards();
       }
       TR.addEventListener("scroll", fdScroll, { passive: true });
+
+      /* Media viewer: each attachment is a horizontal slide; swipe remains available after opening. */
+      const mediaViewer = document.createElement("div");
+      mediaViewer.id = "feed-media-viewer";
+      mediaViewer.innerHTML = `<button id="feed-media-close" type="button" aria-label="Close media">×</button><div id="feed-media-track"></div><div id="feed-media-count"></div>`;
+      document.body.appendChild(mediaViewer);
+      const mediaTrack = mediaViewer.querySelector("#feed-media-track"),
+        mediaCount = mediaViewer.querySelector("#feed-media-count");
+      function openMedia(card, startIndex) {
+        const f = FEEDRAW.find((x) => x.pid === card.dataset.pid);
+        if (!f || !f.m?.length) return;
+        mediaTrack.innerHTML = f.m
+          .map((m, i) => {
+            const id = fileId(m.l);
+            const url =
+              m.t === "i"
+                ? lh3(m.l)
+                : id
+                  ? `https://drive.google.com/uc?export=download&id=${id}`
+                  : m.l;
+            return `<div class="feed-media-slide">${
+              m.t === "i"
+                ? `<img src="${esc(url)}" alt="Post media ${i + 1}">`
+                : `<video src="${esc(url)}" controls playsinline preload="metadata"></video>`
+            }</div>`;
+          })
+          .join("");
+        mediaViewer.classList.add("open");
+        document.body.style.overflow = "hidden";
+        mediaTrack.scrollLeft = startIndex * mediaTrack.clientWidth;
+        updateMediaCount();
+      }
+      function closeMedia() {
+        mediaViewer.classList.remove("open");
+        document.body.style.overflow = "";
+        mediaTrack.querySelectorAll("video").forEach((v) => {
+          v.pause();
+          v.removeAttribute("src");
+          v.load();
+        });
+      }
+      function updateMediaCount() {
+        const n = mediaTrack.children.length;
+        const i = n
+          ? Math.round(mediaTrack.scrollLeft / (mediaTrack.clientWidth || 1)) +
+            1
+          : 0;
+        mediaCount.textContent =
+          n > 1 ? `${i} / ${n} · Swipe to view more` : "";
+      }
+      mediaViewer
+        .querySelector("#feed-media-close")
+        .addEventListener("click", closeMedia);
+      mediaViewer.addEventListener("click", (e) => {
+        if (e.target === mediaViewer) closeMedia();
+      });
+      mediaTrack.addEventListener("scroll", updateMediaCount, {
+        passive: true,
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeMedia();
+      });
+
+      const COMMENT_COUNT_FETCHED = new Set(),
+        COMMENT_LOADED = new Set(),
+        COMMENT_LOADING = new Set();
+
+      async function fetchCommentCount(card) {
+        const pid = card.dataset.pid,
+          label = card.querySelector(".fp-comment-count");
+        if (!pid || !label || COMMENT_COUNT_FETCHED.has(pid)) return;
+        COMMENT_COUNT_FETCHED.add(pid);
+        try {
+          const d = await api({
+            operation: "getChannelCommentCount",
+            postId: pid,
+          });
+          if (d.status === "success") label.textContent = d.count || 0;
+          else COMMENT_COUNT_FETCHED.delete(pid);
+        } catch {
+          label.textContent = "—";
+          COMMENT_COUNT_FETCHED.delete(pid);
+        }
+      }
+
+      async function toggleFeedLike(card, btn) {
+        const pid = card.dataset.pid,
+          liked = btn.dataset.liked === "1",
+          count = btn.querySelector(".fp-like-count"),
+          oldCount = parseInt(count.textContent, 10) || 0;
+        btn.dataset.liked = liked ? "0" : "1";
+        btn.classList.toggle("liked", !liked);
+        count.textContent = Math.max(0, oldCount + (liked ? -1 : 1));
+        const item = FEEDRAW.find((x) => x.pid === pid);
+        if (item) {
+          item.lk = Math.max(0, oldCount + (liked ? -1 : 1));
+          item.liked = !liked;
+          LS.set(FKEY, FEEDRAW);
+        }
+        btn.disabled = true;
+        try {
+          await api(null, {
+            operation: "toggleChannelPostLike",
+            postId: pid,
+            username: userName,
+          });
+        } catch {
+          btn.dataset.liked = liked ? "1" : "0";
+          btn.classList.toggle("liked", liked);
+          count.textContent = oldCount;
+          if (item) {
+            item.lk = oldCount;
+            item.liked = liked;
+            LS.set(FKEY, FEEDRAW);
+          }
+          toast("Like failed", "err");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      function renderFeedComment(card, c) {
+        const own = c.author === userName,
+          reactions = c.reactions || {},
+          counts = reactions.counts || reactions;
+        const el = document.createElement("div");
+        el.className = "fp-comment" + (own ? " own" : "");
+        el.dataset.commentId = c.id;
+        el.innerHTML = `<span class="fp-c-avatar">${esc((c.author || "?").slice(0, 1).toUpperCase())}</span><div class="fp-c-bubble"><div class="fp-c-name">${esc(c.author || "Member")}</div><div class="fp-c-text">${esc(c.content || "")}</div><div class="fp-c-meta">${esc(fmtTime(c.created))}</div><div class="fp-c-actions"><button type="button" data-react="fire" class="${reactions.myReaction === "fire" ? "active" : ""}">🔥 ${counts.fire || 0}</button><button type="button" data-react="love" class="${reactions.myReaction === "love" ? "active" : ""}">❤️ ${counts.love || 0}</button><button type="button" data-react="thanks" class="${reactions.myReaction === "thanks" ? "active" : ""}">🙏 ${counts.thanks || 0}</button>${own ? '<button type="button" data-delete-comment>Delete</button>' : ""}</div></div>`;
+        el.querySelectorAll("[data-react]").forEach((b) =>
+          b.addEventListener("click", () =>
+            toggleFeedCommentReaction(card, c.id, b.dataset.react, el),
+          ),
+        );
+        el.querySelector("[data-delete-comment]")?.addEventListener(
+          "click",
+          () => deleteFeedComment(card, c.id, el),
+        );
+        return el;
+      }
+
+      async function loadFeedComments(card, force = false) {
+        const pid = card.dataset.pid,
+          list = card.querySelector(".fp-comment-list");
+        if (
+          !pid ||
+          !list ||
+          COMMENT_LOADING.has(pid) ||
+          (COMMENT_LOADED.has(pid) && !force)
+        )
+          return;
+        COMMENT_LOADING.add(pid);
+        list.innerHTML = '<div class="fp-c-empty">Loading comments…</div>';
+        try {
+          const d = await api({
+            operation: "getChannelComments",
+            postId: pid,
+            username: userName,
+          });
+          const comments = (d.comments || []).slice().reverse();
+          list.innerHTML = "";
+          if (!comments.length)
+            list.innerHTML = '<div class="fp-c-empty">NO COMMENTS YET</div>';
+          else
+            comments.forEach((c) =>
+              list.appendChild(renderFeedComment(card, c)),
+            );
+          COMMENT_LOADED.add(pid);
+          const label = card.querySelector(".fp-comment-count");
+          if (label) label.textContent = comments.length;
+          COMMENT_COUNT_FETCHED.add(pid);
+        } catch {
+          list.innerHTML =
+            '<div class="fp-c-empty">Could not load comments. Tap comments to retry.</div>';
+        } finally {
+          COMMENT_LOADING.delete(pid);
+        }
+      }
+
+      async function toggleFeedCommentReaction(
+        card,
+        commentId,
+        reactionType,
+        el,
+      ) {
+        try {
+          const d = await api(null, {
+            operation: "toggleChannelCommentReaction",
+            commentId,
+            postId: card.dataset.pid,
+            channelId: card.dataset.cid,
+            username: userName,
+            reactionType,
+          });
+          if (d.status === "success") {
+            const counts = d.reactions?.counts || {},
+              mine = d.reactions?.myReaction;
+            el.querySelectorAll("[data-react]").forEach((b) => {
+              const k = b.dataset.react,
+                emoji = { fire: "🔥", love: "❤️", thanks: "🙏" }[k];
+              b.textContent = `${emoji} ${counts[k] || 0}`;
+              b.classList.toggle("active", mine === k);
+            });
+          }
+        } catch {
+          toast("Reaction failed", "err");
+        }
+      }
+
+      async function deleteFeedComment(card, commentId, el) {
+        if (!confirm("Delete this comment? It will disappear for everyone."))
+          return;
+        try {
+          const d = await api(null, {
+            operation: "deleteChannelComment",
+            commentId,
+            postId: card.dataset.pid,
+            username: userName,
+          });
+          if (d.status === "success") {
+            el.remove();
+            COMMENT_LOADED.delete(card.dataset.pid);
+            COMMENT_COUNT_FETCHED.delete(card.dataset.pid);
+            fetchCommentCount(card);
+          } else toast(d.message || "Delete failed", "err");
+        } catch {
+          toast("Delete failed", "err");
+        }
+      }
+
+      async function sendFeedComment(card, form) {
+        const input = form.querySelector("input"),
+          content = input.value.trim();
+        if (!content) return;
+        input.disabled = true;
+        try {
+          await api(null, {
+            operation: "createChannelComment",
+            postId: card.dataset.pid,
+            channelId: card.dataset.cid,
+            author: userName,
+            content,
+          });
+          input.value = "";
+          COMMENT_LOADED.delete(card.dataset.pid);
+          COMMENT_COUNT_FETCHED.delete(card.dataset.pid);
+          await loadFeedComments(card, true);
+        } catch {
+          toast("Comment failed", "err");
+        } finally {
+          input.disabled = false;
+        }
+      }
+
+      TR.addEventListener("click", (e) => {
+        const card = e.target.closest(".fp");
+        if (!card) return;
+        if (e.target.closest("[data-open-channel]")) {
+          location.href = `channel.html?channelId=${encodeURIComponent(card.dataset.cid)}`;
+          return;
+        }
+        const mediaBtn = e.target.closest("[data-media-index]");
+        if (mediaBtn) {
+          openMedia(card, Number(mediaBtn.dataset.mediaIndex) || 0);
+          return;
+        }
+        const likeBtn = e.target.closest(".fp-like");
+        if (likeBtn) {
+          toggleFeedLike(card, likeBtn);
+          return;
+        }
+        const commentBtn = e.target.closest(".fp-comment-toggle");
+        if (commentBtn) {
+          const panel = card.querySelector(".fp-comments"),
+            open = !panel.classList.contains("open");
+          panel.classList.toggle("open", open);
+          commentBtn.setAttribute("aria-expanded", open ? "true" : "false");
+          if (open) loadFeedComments(card);
+          return;
+        }
+      });
+      TR.addEventListener("submit", (e) => {
+        const form = e.target.closest(".fp-c-sendbar");
+        if (!form) return;
+        e.preventDefault();
+        sendFeedComment(form.closest(".fp"), form);
+      });
+      TR.addEventListener("click", (e) => {
+        if (
+          e.target.closest(
+            ".fp-text, .fp-comments, .fp-foot, .fp-media, .fp-top button",
+          )
+        )
+          e.stopPropagation();
+      });
+
       function openPost(c) {
         const pid = c.dataset.pid;
         if (pid && !SEEN.has(pid)) {
@@ -3488,14 +4060,7 @@
         }
         location.href = `channel.html?channelId=${encodeURIComponent(c.dataset.cid)}&postId=${encodeURIComponent(pid)}`;
       }
-      TR.addEventListener("click", (e) => {
-        const c = e.target.closest(".fp");
-        if (c) openPost(c);
-      });
-      TR.addEventListener("keydown", (e) => {
-        const c = e.target.closest(".fp");
-        if (c && e.key === "Enter") openPost(c);
-      });
+      /* Channel navigation is deliberately attached to the channel-name button only. */
 
       function setViews(pid, n) {
         VC[pid] = n;
@@ -3595,4 +4160,3 @@
     </script>
   </body>
 </html>
-
