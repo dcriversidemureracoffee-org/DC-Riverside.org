@@ -2086,6 +2086,7 @@
       if (!currentUser) location.href = "index.html";
       let allChannels = [],
         currentChannel = null,
+        channelSwitchToken = 0,
         currentPosts = [],
         isAuthorised = false,
         isAdmin = false,
@@ -2311,6 +2312,7 @@
       $("drawer-close").onclick = closeDrawer;
 
       async function openChannel(ch, scrollToPostId = null) {
+        const switchToken = ++channelSwitchToken;
         if (channelPolling) {
           clearInterval(channelPolling);
           channelPolling = null;
@@ -2337,8 +2339,13 @@
             block: "nearest",
             inline: "center",
           });
-        await checkAuth(ch.id);
-        await renderPosts(ch.id, scrollToPostId);
+
+        await checkAuth(ch.id, switchToken);
+        if (switchToken !== channelSwitchToken) return;
+
+        await renderPosts(ch.id, scrollToPostId, switchToken);
+        if (switchToken !== channelSwitchToken) return;
+
         startPolling();
         if (scrollToPostId) {
           const p = currentPosts.find((x) => x.postId === scrollToPostId);
@@ -2348,17 +2355,20 @@
             );
         }
       }
-      async function checkAuth(channelId) {
+      async function checkAuth(channelId, switchToken = channelSwitchToken) {
+        let authorised = false;
         try {
           const d = await api({
             operation: "isAuthorised",
             username: currentUser,
             channelId,
           });
-          isAuthorised = d.status === "success" && d.isAuthorised === true;
+          authorised = d.status === "success" && d.isAuthorised === true;
         } catch {
-          isAuthorised = false;
+          authorised = false;
         }
+        if (switchToken !== channelSwitchToken || currentChannel?.id !== channelId) return;
+        isAuthorised = authorised;
         $("btn-write").style.display = isAuthorised ? "grid" : "none";
         updateRole();
       }
@@ -2377,8 +2387,9 @@
       }
 
       /* ═══ POSTS ═══ */
-      async function renderPosts(channelId, scrollToPostId = null) {
+      async function renderPosts(channelId, scrollToPostId = null, switchToken = channelSwitchToken) {
         const rail = $("post-rail");
+        if (currentChannel?.id !== channelId || switchToken !== channelSwitchToken) return;
         rail.innerHTML =
           '<div class="state-view"><div class="ld-line"></div><div class="empty-sub">FETCHING POSTS…</div></div>';
         try {
@@ -2387,33 +2398,44 @@
             channelId,
             username: currentUser,
           });
-          currentPosts = d.posts || [];
-          if (!currentPosts.length) {
+
+          // Ignore responses from a channel the user has already left.
+          if (switchToken !== channelSwitchToken || currentChannel?.id !== channelId) return;
+
+          const posts = d.posts || [];
+          currentPosts = posts;
+          if (!posts.length) {
             rail.innerHTML = `<div class="state-view"><div class="empty-label">NO POSTS YET</div><div class="empty-sub">${isAuthorised ? "PRESS THE EDIT BUTTON TO POST" : "NOTHING HERE YET"}</div></div>`;
             updateProgress(0, 0);
             updateNavInfo(0, 0);
             return;
           }
           rail.innerHTML = "";
-          currentPosts.forEach((p, i) =>
-            rail.appendChild(buildPostView(p, i, currentPosts.length)),
+          posts.forEach((p, i) =>
+            rail.appendChild(buildPostView(p, i, posts.length)),
           );
-          updateProgress(0, currentPosts.length);
-          updateNavInfo(1, currentPosts.length);
+          updateProgress(0, posts.length);
+          updateNavInfo(1, posts.length);
           setupViewTracking();
           if (scrollToPostId)
-            setTimeout(() => scrollToPost(scrollToPostId), 300);
-          else if (currentPosts.length > 1)
+            setTimeout(() => {
+              if (switchToken === channelSwitchToken && currentChannel?.id === channelId)
+                scrollToPost(scrollToPostId);
+            }, 300);
+          else if (posts.length > 1)
             setTimeout(
-              () =>
-                whisper(
-                  "Swipe sideways to read more. Tap me for a quick demo.",
-                  "swipe",
-                  () => topic("swipe"),
-                ),
+              () => {
+                if (switchToken === channelSwitchToken && currentChannel?.id === channelId)
+                  whisper(
+                    "Swipe sideways to read more. Tap me for a quick demo.",
+                    "swipe",
+                    () => topic("swipe"),
+                  );
+              },
               1500,
             );
         } catch (err) {
+          if (switchToken !== channelSwitchToken || currentChannel?.id !== channelId) return;
           console.error(err);
           rail.innerHTML =
             '<div class="state-view"><div class="empty-label">LOAD FAILED</div><div class="empty-sub">CHECK CONNECTION AND REFRESH</div></div>';
@@ -4122,5 +4144,4 @@
     </script>
   </body>
 </html>
-
 
