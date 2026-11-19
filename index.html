@@ -737,10 +737,11 @@
         font-weight: 500;
         line-height: 1.2;
         word-break: break-word;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+       display: -webkit-box;
+-webkit-line-clamp: 2;
+line-clamp: 2;
+-webkit-box-orient: vertical;
+overflow: hidden;
       }
       .launch-item .row-badge {
         position: absolute;
@@ -1142,17 +1143,13 @@
         fill: #fff;
         margin-left: 3px;
       }
-      /* text area scrolls vertically inside the card; no content clamp */
+      /* Feed text is clipped until the reader explicitly expands it. */
       .fp-text {
         flex: 1 1 0%;
         height: 0;
         min-height: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        overscroll-behavior-y: auto;
-        overscroll-behavior-x: none;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-y pinch-zoom;
+        max-height: 6em;
+        overflow: hidden;
         position: relative;
         z-index: 1;
         padding: 2px 1px;
@@ -1161,7 +1158,34 @@
         line-height: 1.5;
         white-space: pre-wrap;
         word-break: break-word;
-        scrollbar-width: thin;
+        transition:
+          max-height 0.36s cubic-bezier(0.2, 0.8, 0.2, 1),
+          flex-basis 0.36s ease;
+      }
+      .fp.text-expanded .fp-text {
+        flex: 0 1 auto;
+        height: auto;
+        max-height: min(55vh, 420px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      .fp-more {
+        display: none;
+        align-self: flex-start;
+        flex: none;
+        border: 1px solid rgba(96, 165, 250, 0.28);
+        border-radius: 99px;
+        padding: 5px 12px;
+        margin-top: -3px;
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--accent2);
+        font-size: 0.7rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .fp-more.visible {
+        display: inline-flex;
       }
       .fp.no-m .fp-text {
         font-size: 1.08rem;
@@ -1777,7 +1801,8 @@
         font-size: 0.8rem;
         color: var(--steel);
         display: -webkit-box !important;
-        -webkit-line-clamp: 2;
+       -webkit-line-clamp: 2;
+line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
@@ -3638,7 +3663,9 @@
           (hasM
             ? `<div class="fp-media" aria-label="Post media">${f.m.map((m, i) => thumb(m, i)).join("")}</div>`
             : "") +
-          (f.tx ? `<div class="fp-text" tabindex="0">${esc(f.tx)}</div>` : "") +
+          (f.tx
+            ? `<div class="fp-text">${esc(f.tx)}</div><button class="fp-more" type="button" data-fp-more aria-expanded="false">See more</button>`
+            : "") +
           `<div class="fp-foot"><span class="fp-stat" title="Views">${ICO_EYE}<span class="fv">${VC[f.pid] || 0}</span></span><button class="fp-like ${f.liked ? "liked" : ""}" type="button" data-liked="${f.liked ? 1 : 0}" aria-label="Like post">${ICO_HEART}<span class="fp-like-count">${f.lk || 0}</span></button><button class="fp-comment-toggle" type="button" aria-expanded="false">💬 <span class="fp-comment-count">—</span> Comments</button></div>` +
           `<section class="fp-comments" aria-label="Post comments"><div class="fp-comment-list"><div class="fp-c-empty">Open comments to load</div></div><form class="fp-c-sendbar"><input type="text" maxlength="1000" placeholder="Write a comment…" aria-label="Write a comment"><button type="submit">Send</button></form></section></article>`
         );
@@ -3739,6 +3766,14 @@
           MOB.observe(c);
           FOB.observe(c);
         });
+        requestAnimationFrame(() => {
+          cs.forEach((c) => {
+            const tx = c.querySelector(".fp-text"),
+              more = c.querySelector(".fp-more");
+            if (tx && more && tx.scrollHeight > tx.clientHeight + 3)
+              more.classList.add("visible");
+          });
+        });
         list.forEach((f) => RENDERED.add(f.pid));
       }
       function moreCards() {
@@ -3782,46 +3817,6 @@
         if (i >= n - 2) moreCards();
       }
       TR.addEventListener("scroll", fdScroll, { passive: true });
-
-      /* Text keeps its own scroll when it overflows. At either text boundary,
-         the same vertical swipe is handed to the post feed instead of getting trapped. */
-      let feedTextTouch = null;
-      TR.addEventListener(
-        "touchstart",
-        (e) => {
-          const textArea = e.target.closest(".fp-text");
-          feedTextTouch =
-            textArea && e.touches.length === 1
-              ? { el: textArea, y: e.touches[0].clientY }
-              : null;
-        },
-        { passive: true },
-      );
-      TR.addEventListener(
-        "touchmove",
-        (e) => {
-          if (!feedTextTouch || e.touches.length !== 1) return;
-          const el = feedTextTouch.el,
-            y = e.touches[0].clientY,
-            delta = feedTextTouch.y - y;
-          if (Math.abs(delta) < 2) return;
-          const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight),
-            canScrollText =
-              maxScroll > 1 &&
-              (delta > 0 ? el.scrollTop < maxScroll - 1 : el.scrollTop > 1);
-          if (!canScrollText) {
-            e.preventDefault();
-            TR.scrollTop += delta;
-          }
-          feedTextTouch.y = y;
-        },
-        { passive: false },
-      );
-      const clearFeedTextTouch = () => {
-        feedTextTouch = null;
-      };
-      TR.addEventListener("touchend", clearFeedTextTouch, { passive: true });
-      TR.addEventListener("touchcancel", clearFeedTextTouch, { passive: true });
 
       /* Media viewer: each attachment is a horizontal slide; swipe remains available after opening. */
       const mediaViewer = document.createElement("div");
@@ -4115,6 +4110,19 @@
         sendFeedComment(form.closest(".fp"), form);
       });
       TR.addEventListener("click", (e) => {
+        const more = e.target.closest("[data-fp-more]");
+        if (more) {
+          const card = more.closest(".fp");
+          const expanded = card.classList.toggle("text-expanded");
+          more.textContent = expanded ? "See less" : "See more";
+          more.setAttribute("aria-expanded", expanded ? "true" : "false");
+          if (!expanded) {
+            const tx = card.querySelector(".fp-text");
+            if (tx) tx.scrollTop = 0;
+          }
+          e.stopPropagation();
+          return;
+        }
         if (
           e.target.closest(
             ".fp-text, .fp-comments, .fp-foot, .fp-media, .fp-top button",
