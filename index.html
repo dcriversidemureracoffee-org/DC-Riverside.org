@@ -1282,18 +1282,19 @@
       .fp.comments-open .fp-more {
         display: none !important;
       }
-      .fp.comments-open .fp-text {
-        flex: 0 1 30%;
-        height: auto;
-        max-height: 30%;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
+      /* When comments are open, remove the post text from the layout so
+         its length/expanded state cannot reduce the comments viewing area. */
+      .fp.comments-open .fp-text,
+      .fp.comments-open .fp-more {
+        display: none !important;
       }
       .fp.comments-open .fp-comments {
+        display: flex;
         flex: 1 1 0;
-        min-height: 80px;
+        min-height: 0;
         max-height: none;
+        height: auto;
+        overflow: hidden;
       }
       .fp-comment-list {
         flex: 1;
