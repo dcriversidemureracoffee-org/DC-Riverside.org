@@ -958,7 +958,7 @@
           0px,
           min(
             620px,
-            calc(100dvh - var(--nav) - var(--top) - var(--bot) - 150px)
+            calc(100dvh - var(--nav) - var(--top) - var(--bot) - 160px)
           )
         );
         min-height: 0;
@@ -1149,7 +1149,7 @@
         min-height: 0;
         overflow-y: auto;
         overflow-x: hidden;
-        overscroll-behavior-y: contain;
+        overscroll-behavior-y: auto;
         overscroll-behavior-x: none;
         -webkit-overflow-scrolling: touch;
         touch-action: pan-y pinch-zoom;
@@ -1171,7 +1171,10 @@
         font-size: 0.98rem;
       }
       .fp-foot {
-        flex: none;
+        flex: 0 0 auto;
+        position: relative;
+        z-index: 2;
+        background: rgba(5, 10, 20, 0.96);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -1394,7 +1397,7 @@
         #fd-track {
           height: max(
             0px,
-            calc(100dvh - var(--nav) - var(--top) - var(--bot) - 128px)
+            calc(100dvh - var(--nav) - var(--top) - var(--bot) - 160px)
           );
         }
         .fp {
@@ -3158,15 +3161,20 @@
       /* ── bottom nav: tap a button → its page buttons slide up in a swipeable row; tap again / outside to close ── */
       const tabs = [...document.querySelectorAll(".nb")];
       function setTab(n) {
-        const p = n && $("#p-" + n),
-          open = !!p && !p.classList.contains("on");
+        const tray = $("#tray"),
+          p = n && $("#p-" + n),
+          samePanelOpen =
+            !!p &&
+            tray.classList.contains("show") &&
+            p.classList.contains("on"),
+          open = !!p && !samePanelOpen;
         tabs.forEach((t) =>
           t.classList.toggle("on", open && t.dataset.t === n),
         );
         document
           .querySelectorAll("#tray .panel")
           .forEach((x) => x.classList.toggle("on", open && x.id === "p-" + n));
-        $("#tray").classList.toggle("show", open);
+        tray.classList.toggle("show", open);
         if (open)
           $("#tray")
             .querySelector(".panel.on")
@@ -3775,6 +3783,46 @@
       }
       TR.addEventListener("scroll", fdScroll, { passive: true });
 
+      /* Text keeps its own scroll when it overflows. At either text boundary,
+         the same vertical swipe is handed to the post feed instead of getting trapped. */
+      let feedTextTouch = null;
+      TR.addEventListener(
+        "touchstart",
+        (e) => {
+          const textArea = e.target.closest(".fp-text");
+          feedTextTouch =
+            textArea && e.touches.length === 1
+              ? { el: textArea, y: e.touches[0].clientY }
+              : null;
+        },
+        { passive: true },
+      );
+      TR.addEventListener(
+        "touchmove",
+        (e) => {
+          if (!feedTextTouch || e.touches.length !== 1) return;
+          const el = feedTextTouch.el,
+            y = e.touches[0].clientY,
+            delta = feedTextTouch.y - y;
+          if (Math.abs(delta) < 2) return;
+          const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight),
+            canScrollText =
+              maxScroll > 1 &&
+              (delta > 0 ? el.scrollTop < maxScroll - 1 : el.scrollTop > 1);
+          if (!canScrollText) {
+            e.preventDefault();
+            TR.scrollTop += delta;
+          }
+          feedTextTouch.y = y;
+        },
+        { passive: false },
+      );
+      const clearFeedTextTouch = () => {
+        feedTextTouch = null;
+      };
+      TR.addEventListener("touchend", clearFeedTextTouch, { passive: true });
+      TR.addEventListener("touchcancel", clearFeedTextTouch, { passive: true });
+
       /* Media viewer: each attachment is a horizontal slide; swipe remains available after opening. */
       const mediaViewer = document.createElement("div");
       mediaViewer.id = "feed-media-viewer";
@@ -3959,27 +4007,32 @@
         reactionType,
         el,
       ) {
+        const buttons = [...el.querySelectorAll("[data-react]")];
+        buttons.forEach((b) => (b.disabled = true));
         try {
+          /* Keep the exact payload used by channel.html so both views hit the same backend handler. */
           const d = await api(null, {
             operation: "toggleChannelCommentReaction",
             commentId,
             postId: card.dataset.pid,
             channelId: card.dataset.cid,
             username: userName,
-            reactionType,
+            reactionType: String(reactionType).toLowerCase(),
           });
-          if (d.status === "success") {
-            const counts = d.reactions?.counts || {},
-              mine = d.reactions?.myReaction;
-            el.querySelectorAll("[data-react]").forEach((b) => {
-              const k = b.dataset.react,
-                emoji = { fire: "🔥", love: "❤️", thanks: "🙏" }[k];
-              b.textContent = `${emoji} ${counts[k] || 0}`;
-              b.classList.toggle("active", mine === k);
-            });
-          }
-        } catch {
-          toast("Reaction failed", "err");
+          if (d?.status !== "success")
+            throw new Error(d?.message || "Backend rejected reaction");
+          const counts = d.reactions?.counts || {},
+            mine = d.reactions?.myReaction;
+          buttons.forEach((b) => {
+            const k = b.dataset.react,
+              emoji = { fire: "🔥", love: "❤️", thanks: "🙏" }[k];
+            b.textContent = `${emoji} ${counts[k] || 0}`;
+            b.classList.toggle("active", mine === k);
+          });
+        } catch (err) {
+          toast(err?.message || "Reaction failed", "err");
+        } finally {
+          buttons.forEach((b) => (b.disabled = false));
         }
       }
 
