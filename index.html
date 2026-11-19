@@ -737,11 +737,11 @@
         font-weight: 500;
         line-height: 1.2;
         word-break: break-word;
-       display: -webkit-box;
--webkit-line-clamp: 2;
-line-clamp: 2;
--webkit-box-orient: vertical;
-overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
       .launch-item .row-badge {
         position: absolute;
@@ -1145,7 +1145,6 @@ overflow: hidden;
       }
       /* Feed text is clipped until the reader explicitly expands it. */
       .fp-text {
-        order: 2;
         flex: 1 1 0%;
         height: 0;
         min-height: 0;
@@ -1203,7 +1202,6 @@ overflow: hidden;
         transform: none;
       }
       .fp-more {
-        order: 3;
         display: none;
         align-self: flex-start;
         flex: none;
@@ -1228,7 +1226,6 @@ overflow: hidden;
         font-size: 0.98rem;
       }
       .fp-foot {
-        order: 4;
         flex: 0 0 auto;
         position: relative;
         z-index: 2;
@@ -1270,32 +1267,33 @@ overflow: hidden;
         fill: currentColor;
       }
       .fp-comments {
-        order: 1;
         display: none;
-        flex: 0 0 40%;
+        flex: 0 1 40%;
         min-height: 0;
-        max-height: none;
+        max-height: 45%;
         flex-direction: column;
         border-top: 1px solid var(--wire);
         background: rgba(5, 10, 20, 0.72);
       }
       .fp-comments.open {
         display: flex;
-        min-height: 108px;
-        flex-basis: 40%;
       }
-      /* When comments are open they get their own space above the post text.
-         The expanded text scrolls in the remaining space instead of squeezing
-         the comments list or composer. */
-      .fp.text-expanded:has(.fp-comments.open) .fp-text {
-        flex: 1 1 0%;
-        height: 0;
-        max-height: min(24vh, 190px);
-        min-height: 0;
+      /* Comments take priority over the post's See more control. */
+      .fp.comments-open .fp-more {
+        display: none !important;
       }
-      .fp.text-expanded:has(.fp-comments.open) .fp-comments {
-        flex: 0 0 40%;
-        min-height: 108px;
+      .fp.comments-open .fp-text {
+        flex: 0 1 30%;
+        height: auto;
+        max-height: 30%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      .fp.comments-open .fp-comments {
+        flex: 1 1 0;
+        min-height: 80px;
+        max-height: none;
       }
       .fp-comment-list {
         flex: 1;
@@ -1851,8 +1849,8 @@ overflow: hidden;
         font-size: 0.8rem;
         color: var(--steel);
         display: -webkit-box !important;
-       -webkit-line-clamp: 2;
-line-clamp: 2;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
@@ -3653,7 +3651,9 @@ line-clamp: 2;
       function formatFeedText(value) {
         const lines = String(value || "").split("\n");
         const blocks = [];
-        let paragraph = [], list = [], listType = "";
+        let paragraph = [],
+          list = [],
+          listType = "";
         const flushParagraph = () => {
           if (paragraph.length) {
             blocks.push(`<p>${paragraph.map(esc).join("<br>")}</p>`);
@@ -3662,13 +3662,20 @@ line-clamp: 2;
         };
         const flushList = () => {
           if (list.length) {
-            blocks.push(`<${listType}>${list.map((item) => `<li>${esc(item)}</li>`).join("")}</${listType}>`);
-            list = []; listType = "";
+            blocks.push(
+              `<${listType}>${list.map((item) => `<li>${esc(item)}</li>`).join("")}</${listType}>`,
+            );
+            list = [];
+            listType = "";
           }
         };
         for (const raw of lines) {
           const line = raw.trim();
-          if (!line) { flushParagraph(); flushList(); continue; }
+          if (!line) {
+            flushParagraph();
+            flushList();
+            continue;
+          }
           const bullet = line.match(/^(?:[•●▪◦*-])\s+(.+)$/);
           const numbered = line.match(/^\d+[.)]\s+(.+)$/);
           if (bullet || numbered) {
@@ -3683,10 +3690,13 @@ line-clamp: 2;
           /* A short standalone line ending in a colon reads as a section heading. */
           if (!paragraph.length && line.length <= 70 && /:$/.test(line)) {
             flushParagraph();
-            blocks.push(`<strong class="fp-text-heading">${esc(line)}</strong>`);
+            blocks.push(
+              `<strong class="fp-text-heading">${esc(line)}</strong>`,
+            );
           } else paragraph.push(line);
         }
-        flushParagraph(); flushList();
+        flushParagraph();
+        flushList();
         return blocks.join("");
       }
       function feedItem(p, c) {
@@ -3850,6 +3860,20 @@ line-clamp: 2;
         { root: $("#chat-list"), threshold: 0.25 },
       ).observe(TR);
 
+      function updateFeedMore(card) {
+        if (!card) return;
+        const tx = card.querySelector(".fp-text"),
+          more = card.querySelector(".fp-more");
+        if (!tx || !more) return;
+        const commentsOpen = card.classList.contains("comments-open");
+        const expanded = card.classList.contains("text-expanded");
+        const reachesFooter = tx.scrollHeight > tx.clientHeight + 3;
+        more.classList.toggle(
+          "visible",
+          reachesFooter && !commentsOpen && !expanded,
+        );
+      }
+
       function addCards(list) {
         if (!list.length) return;
         TR.insertAdjacentHTML("beforeend", list.map(fpHtml).join(""));
@@ -3858,14 +3882,7 @@ line-clamp: 2;
           MOB.observe(c);
           FOB.observe(c);
         });
-        requestAnimationFrame(() => {
-          cs.forEach((c) => {
-            const tx = c.querySelector(".fp-text"),
-              more = c.querySelector(".fp-more");
-            if (tx && more && tx.scrollHeight > tx.clientHeight + 3)
-              more.classList.add("visible");
-          });
-        });
+        requestAnimationFrame(() => cs.forEach(updateFeedMore));
         list.forEach((f) => RENDERED.add(f.pid));
       }
       function moreCards() {
@@ -4190,8 +4207,10 @@ line-clamp: 2;
           const panel = card.querySelector(".fp-comments"),
             open = !panel.classList.contains("open");
           panel.classList.toggle("open", open);
+          card.classList.toggle("comments-open", open);
           commentBtn.setAttribute("aria-expanded", open ? "true" : "false");
           if (open) loadFeedComments(card);
+          else requestAnimationFrame(() => updateFeedMore(card));
           return;
         }
       });
@@ -4212,6 +4231,7 @@ line-clamp: 2;
             const tx = card.querySelector(".fp-text");
             if (tx) tx.scrollTop = 0;
           }
+          requestAnimationFrame(() => updateFeedMore(card));
           e.stopPropagation();
           return;
         }
