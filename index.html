@@ -1073,7 +1073,7 @@
       }
       /* horizontal media gallery — one full-width item per swipe */
       .fp-media {
-        flex: 0 0 38%;
+        flex: 1 1 38%;
         min-height: 90px;
         min-width: 0;
         display: flex;
@@ -1145,10 +1145,10 @@
       }
       /* Feed text is clipped until the reader explicitly expands it. */
       .fp-text {
-        flex: 1 1 0%;
-        height: 0;
+        flex: 0 1 auto;
+        height: auto;
         min-height: 0;
-        max-height: 6em;
+        max-height: var(--fp-text-limit, 6em);
         overflow: hidden;
         position: relative;
         z-index: 1;
@@ -1158,9 +1158,7 @@
         line-height: 1.5;
         white-space: pre-wrap;
         word-break: break-word;
-        transition:
-          max-height 0.36s cubic-bezier(0.2, 0.8, 0.2, 1),
-          flex-basis 0.36s ease;
+        transition: max-height 0.36s cubic-bezier(0.2, 0.8, 0.2, 1);
       }
       .fp.text-expanded .fp-text {
         flex: 0 1 auto;
@@ -1205,18 +1203,18 @@
         display: none;
         align-self: flex-start;
         flex: none;
-        border: 1px solid rgba(96, 165, 250, 0.28);
-        border-radius: 99px;
-        padding: 5px 12px;
+        border: 0;
+        padding: 0;
         margin-top: -3px;
-        background: rgba(59, 130, 246, 0.12);
+        background: transparent;
         color: var(--accent2);
-        font-size: 0.7rem;
+        font-size: 0.78rem;
         font-weight: 700;
         cursor: pointer;
+        line-height: 1.4;
       }
       .fp-more.visible {
-        display: inline-flex;
+        display: inline;
       }
       .fp.no-m .fp-text {
         font-size: 1.08rem;
@@ -3767,7 +3765,7 @@
             ? `<div class="fp-media" aria-label="Post media">${f.m.map((m, i) => thumb(m, i)).join("")}</div>`
             : "") +
           (f.tx
-            ? `<div class="fp-text">${formatFeedText(f.tx)}</div><button class="fp-more" type="button" data-fp-more aria-expanded="false">See more</button>`
+            ? `<div class="fp-text">${formatFeedText(f.tx)}</div><span class="fp-more" data-fp-more role="button" tabindex="0" aria-expanded="false">Read more...</span>`
             : "") +
           `<div class="fp-foot"><span class="fp-stat" title="Views">${ICO_EYE}<span class="fv">${VC[f.pid] || 0}</span></span><button class="fp-like ${f.liked ? "liked" : ""}" type="button" data-liked="${f.liked ? 1 : 0}" aria-label="Like post">${ICO_HEART}<span class="fp-like-count">${f.lk || 0}</span></button><button class="fp-comment-toggle" type="button" aria-expanded="false">💬 <span class="fp-comment-count">—</span> Comments</button></div>` +
           `<section class="fp-comments" aria-label="Post comments"><div class="fp-comment-list"><div class="fp-c-empty">Open comments to load</div></div><form class="fp-c-sendbar"><input type="text" maxlength="1000" placeholder="Write a comment…" aria-label="Write a comment"><button type="submit">Send</button></form></section></article>`
@@ -3866,13 +3864,57 @@
         const tx = card.querySelector(".fp-text"),
           more = card.querySelector(".fp-more");
         if (!tx || !more) return;
+
         const commentsOpen = card.classList.contains("comments-open");
-        const expanded = card.classList.contains("text-expanded");
-        const reachesFooter = tx.scrollHeight > tx.clientHeight + 3;
-        more.classList.toggle(
-          "visible",
-          reachesFooter && !commentsOpen && !expanded,
+        const top = card.querySelector(".fp-top");
+        const media = card.querySelector(".fp-media");
+        const foot = card.querySelector(".fp-foot");
+        if (!top || !foot) return;
+
+        // Work out the real text space on this card/device. The media keeps
+        // its minimum height, the footer stays anchored, and the media absorbs
+        // spare space when the post text is short.
+        const cardStyle = getComputedStyle(card);
+        const px = (v) => parseFloat(v) || 0;
+        const paddingY = px(cardStyle.paddingTop) + px(cardStyle.paddingBottom);
+        const gap = px(cardStyle.rowGap || cardStyle.gap);
+        const mediaMin = media ? px(getComputedStyle(media).minHeight) : 0;
+        const moreStyle = getComputedStyle(more);
+        const moreHeight = px(moreStyle.lineHeight) || px(moreStyle.fontSize) * 1.4;
+        const children = [...card.children].filter((el) =>
+          el !== card.querySelector(".fp-comments") &&
+          getComputedStyle(el).display !== "none"
         );
+        const gapCount = Math.max(0, children.length - 1) +
+          (more.classList.contains("visible") ? 0 : 1);
+        const available = Math.max(
+          0,
+          card.clientHeight - paddingY - top.getBoundingClientRect().height -
+          foot.getBoundingClientRect().height - mediaMin -
+          gap * gapCount - moreHeight
+        );
+
+        const textStyle = getComputedStyle(tx);
+        const fontSize = px(textStyle.fontSize) || 16;
+        const collapsedLimit = Math.min(fontSize * 6, available);
+        tx.style.setProperty("--fp-text-limit", collapsedLimit + "px");
+
+        // Measure the complete rendered text at its current responsive width,
+        // independent of the current expanded/collapsed state.
+        const probe = tx.cloneNode(true);
+        probe.style.cssText +=
+          ";position:fixed!important;left:-100000px!important;top:0!important;" +
+          "width:" + Math.max(1, tx.clientWidth) + "px!important;" +
+          "height:auto!important;max-height:none!important;min-height:0!important;" +
+          "overflow:visible!important;display:block!important;flex:none!important;" +
+          "visibility:hidden!important;transition:none!important;";
+        document.body.appendChild(probe);
+        const fullTextHeight = probe.getBoundingClientRect().height;
+        probe.remove();
+
+        const hasMore = fullTextHeight > collapsedLimit + 3;
+        more.dataset.hasMore = hasMore ? "1" : "0";
+        more.classList.toggle("visible", !commentsOpen && hasMore);
       }
 
       function addCards(list) {
@@ -3889,6 +3931,13 @@
       function moreCards() {
         addCards(FEEDRAW.filter((f) => !RENDERED.has(f.pid)).slice(0, PAGE));
       }
+      let feedMoreResizeFrame = 0;
+      window.addEventListener("resize", () => {
+        cancelAnimationFrame(feedMoreResizeFrame);
+        feedMoreResizeFrame = requestAnimationFrame(() => {
+          TR.querySelectorAll(".fp").forEach(updateFeedMore);
+        });
+      }, { passive: true });
       function paintFeed(force) {
         const L = FEEDRAW,
           sig = L.map((f) => f.pid + f.lk + f.tx.length).join();
@@ -4215,6 +4264,12 @@
           return;
         }
       });
+      TR.addEventListener("keydown", (e) => {
+        const more = e.target.closest("[data-fp-more]");
+        if (!more || (e.key !== "Enter" && e.key !== " ")) return;
+        e.preventDefault();
+        more.click();
+      });
       TR.addEventListener("submit", (e) => {
         const form = e.target.closest(".fp-c-sendbar");
         if (!form) return;
@@ -4226,7 +4281,7 @@
         if (more) {
           const card = more.closest(".fp");
           const expanded = card.classList.toggle("text-expanded");
-          more.textContent = expanded ? "See less" : "See more";
+          more.textContent = expanded ? "Read less..." : "Read more...";
           more.setAttribute("aria-expanded", expanded ? "true" : "false");
           if (!expanded) {
             const tx = card.querySelector(".fp-text");
