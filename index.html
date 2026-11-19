@@ -233,6 +233,18 @@
         background: rgba(59, 130, 246, 0.2);
         border-color: rgba(96, 165, 250, 0.5);
       }
+      .evtog.has-events {
+        color: #d1fae5;
+        background: rgba(16, 185, 129, 0.2);
+        border-color: rgba(16, 185, 129, 0.8);
+        box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.12);
+        animation: pulse 2s infinite;
+      }
+      .evtog.has-events.on {
+        color: #ecfdf5;
+        background: rgba(16, 185, 129, 0.3);
+        border-color: #34d399;
+      }
       @media (max-width: 350px) {
         .evtog span {
           display: none;
@@ -1132,13 +1144,17 @@
       }
       /* text area scrolls vertically inside the card; no content clamp */
       .fp-text {
-        flex: 1 1 0;
+        flex: 1 1 0%;
+        height: 0;
         min-height: 0;
         overflow-y: auto;
         overflow-x: hidden;
-        overscroll-behavior: contain;
+        overscroll-behavior-y: contain;
+        overscroll-behavior-x: none;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
+        touch-action: pan-y pinch-zoom;
+        position: relative;
+        z-index: 1;
         padding: 2px 1px;
         color: var(--ink);
         font-size: 0.94rem;
@@ -3379,6 +3395,8 @@
         const el = $("#evc"),
           { up, past } = evLists(),
           e = up[0] || past[0];
+        /* Keep the top Events button visibly green only when event data exists. */
+        $("#ev-toggle").classList.toggle("has-events", EV.length > 0);
         if (!e) {
           el.classList.add("none");
           el.dataset.st = "none";
