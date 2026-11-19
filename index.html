@@ -737,11 +737,11 @@
         font-weight: 500;
         line-height: 1.2;
         word-break: break-word;
-       display: -webkit-box;
--webkit-line-clamp: 2;
-line-clamp: 2;
--webkit-box-orient: vertical;
-overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
       .launch-item .row-badge {
         position: absolute;
@@ -1169,6 +1169,37 @@ overflow: hidden;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
+      }
+      /* Readable post typography: paragraphs, lists and clear line spacing. */
+      .fp-text p {
+        margin: 0 0 0.8em;
+      }
+      .fp-text p:last-child {
+        margin-bottom: 0;
+      }
+      .fp-text ul,
+      .fp-text ol {
+        margin: 0.35em 0 0.85em;
+        padding-left: 1.45em;
+      }
+      .fp-text li {
+        margin: 0.22em 0;
+        padding-left: 0.12em;
+      }
+      .fp-text .fp-text-heading {
+        display: block;
+        margin: 0.15em 0 0.45em;
+        color: #dbeafe;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+      }
+      .fp-text strong {
+        color: #f1f5f9;
+        font-weight: 750;
+      }
+      .fp-foot {
+        margin-top: auto;
+        transform: none;
       }
       .fp-more {
         display: none;
@@ -1801,8 +1832,8 @@ overflow: hidden;
         font-size: 0.8rem;
         color: var(--steel);
         display: -webkit-box !important;
-       -webkit-line-clamp: 2;
-line-clamp: 2;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
@@ -3595,7 +3626,61 @@ line-clamp: 2;
           .replace(/\/view\b\S*/gi, "")
           .replace(/usp=\S+/gi, "")
           .replace(/[ \t]{2,}/g, " ")
+          .replace(/\r\n?/g, "\n")
           .trim();
+      }
+
+      /* Convert plain post text into safe, readable paragraphs and lists. */
+      function formatFeedText(value) {
+        const lines = String(value || "").split("\n");
+        const blocks = [];
+        let paragraph = [],
+          list = [],
+          listType = "";
+        const flushParagraph = () => {
+          if (paragraph.length) {
+            blocks.push(`<p>${paragraph.map(esc).join("<br>")}</p>`);
+            paragraph = [];
+          }
+        };
+        const flushList = () => {
+          if (list.length) {
+            blocks.push(
+              `<${listType}>${list.map((item) => `<li>${esc(item)}</li>`).join("")}</${listType}>`,
+            );
+            list = [];
+            listType = "";
+          }
+        };
+        for (const raw of lines) {
+          const line = raw.trim();
+          if (!line) {
+            flushParagraph();
+            flushList();
+            continue;
+          }
+          const bullet = line.match(/^(?:[•●▪◦*-])\s+(.+)$/);
+          const numbered = line.match(/^\d+[.)]\s+(.+)$/);
+          if (bullet || numbered) {
+            flushParagraph();
+            const type = numbered ? "ol" : "ul";
+            if (listType && listType !== type) flushList();
+            listType = type;
+            list.push((bullet || numbered)[1]);
+            continue;
+          }
+          flushList();
+          /* A short standalone line ending in a colon reads as a section heading. */
+          if (!paragraph.length && line.length <= 70 && /:$/.test(line)) {
+            flushParagraph();
+            blocks.push(
+              `<strong class="fp-text-heading">${esc(line)}</strong>`,
+            );
+          } else paragraph.push(line);
+        }
+        flushParagraph();
+        flushList();
+        return blocks.join("");
       }
       function feedItem(p, c) {
         const m = []
@@ -3664,7 +3749,7 @@ line-clamp: 2;
             ? `<div class="fp-media" aria-label="Post media">${f.m.map((m, i) => thumb(m, i)).join("")}</div>`
             : "") +
           (f.tx
-            ? `<div class="fp-text">${esc(f.tx)}</div><button class="fp-more" type="button" data-fp-more aria-expanded="false">See more</button>`
+            ? `<div class="fp-text">${formatFeedText(f.tx)}</div><button class="fp-more" type="button" data-fp-more aria-expanded="false">See more</button>`
             : "") +
           `<div class="fp-foot"><span class="fp-stat" title="Views">${ICO_EYE}<span class="fv">${VC[f.pid] || 0}</span></span><button class="fp-like ${f.liked ? "liked" : ""}" type="button" data-liked="${f.liked ? 1 : 0}" aria-label="Like post">${ICO_HEART}<span class="fp-like-count">${f.lk || 0}</span></button><button class="fp-comment-toggle" type="button" aria-expanded="false">💬 <span class="fp-comment-count">—</span> Comments</button></div>` +
           `<section class="fp-comments" aria-label="Post comments"><div class="fp-comment-list"><div class="fp-c-empty">Open comments to load</div></div><form class="fp-c-sendbar"><input type="text" maxlength="1000" placeholder="Write a comment…" aria-label="Write a comment"><button type="submit">Send</button></form></section></article>`
